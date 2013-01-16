@@ -347,7 +347,7 @@ public class Humbug extends JavaPlugin implements Listener {
       return;
     }
     Block block = event.getBlock();
-    LavaAreaCheck(block, 1);
+    LavaAreaCheck(block, config_.getCobbleFromLavaScanRadius());
   }
 
   // ================================================
@@ -504,6 +504,11 @@ public class Humbug extends JavaPlugin implements Listener {
         config_.setCobbleFromLavaEnabled(toBool(value));
       }
       msg = String.format("cobble_from_lava = %s", config_.getCobbleFromLavaEnabled());
+    } else if (option.equals("cobble_from_lava_scan_radius")) {
+      if (set) {
+        config_.setCobbleFromLavaScanRadius(toInt(value, config_.getCobbleFromLavaScanRadius()));
+      }
+      msg = String.format("cobble_from_lava_scan_radius = %d", config_.getCobbleFromLavaScanRadius());
     } else if (option.equals("ench_book_craftable")) {
       if (set) {
         config_.setEnchBookCraftable(toBool(value));

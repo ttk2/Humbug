@@ -26,6 +26,7 @@ Config file settings:
 - wither_explosions: Boolean, Turns on wither explosions destroying blocks. Wither/Wither Skull explosions will always occur to damage players, this only effects block breakage.
 - wither_insta_break: Boolean, Turns on the wither insta-break ability
 - cobble_from_lava: Boolean, Turns on cobblestone generation when lava and water mix
+- cobble_from_lava_scan_radius: Integer, Sets the radius to scan for lava/water interaction
 - ench_book_craftable: Boolean, Allows the Enchanted Book recipe to be used
 - scale_protection_enchant: Boolean, Increases damage reduction granted by the Protection enchantment
 - player_max_health: Integer, sets all Player maximum health
@@ -41,6 +42,7 @@ Default configuration:
 - wither_explosions: false
 - wither_insta_break: false
 - cobble_from_lava: false
+- cobble_from_lava_scan_radius: 0
 - ench_book_craftable: false
 - scale_protection_enchant: true
 - player_max_health: 20

@@ -4,6 +4,8 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.Plugin;
 
+import com.untamedears.humbug.Humbug;
+
 public class Config {
   private static Config global_instance_ = null;
 
@@ -17,6 +19,7 @@ public class Config {
   private static final boolean wither_explosions_enabled_ = false;
   private static final boolean wither_insta_break_enabled_ = false;
   private static final boolean cobble_from_lava_enabled_ = false;
+  private static final int cobble_from_lava_scan_radius_ = 0;
   private static final boolean ench_book_craftable_ = false;
   private static final boolean scale_protection_enchant_ = true;
   private static final int player_max_health_ = 20;
@@ -136,6 +139,21 @@ public class Config {
 
   public void setCobbleFromLavaEnabled(boolean value) {
     config_.set("cobble_from_lava", value);
+  }
+
+  public int getCobbleFromLavaScanRadius() {
+    return config_.getInt("cobble_from_lava_scan_radius", cobble_from_lava_scan_radius_);
+  }
+
+  public void setCobbleFromLavaScanRadius(int value) {
+    if (value < 0) {
+      value = 0;
+      Humbug.warning("cobble_from_lava_scan_radius adjusted to 0");
+    } else if (value > 20) {  // 8000 blocks to scan at 20
+      value = 20;
+      Humbug.warning("cobble_from_lava_scan_radius adjusted to 20");
+    }
+    config_.set("cobble_from_lava_scan_radius", value);
   }
 
   public boolean getEnchBookCraftable() {
