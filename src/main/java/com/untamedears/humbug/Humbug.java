@@ -1,9 +1,12 @@
 package com.untamedears.humbug;
 
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -21,6 +24,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPhysicsEvent;
+import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.enchantment.EnchantItemEvent;
 import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
@@ -28,6 +32,7 @@ import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -399,6 +404,74 @@ public class Humbug extends JavaPlugin implements Listener {
   public void onPlayerJoinEvent(PlayerJoinEvent event) {
     Player player = event.getPlayer();
     player.setMaxHealth(config_.getMaxHealth());
+  }
+
+  // ================================================
+  // Prevent entity dup bug
+
+  private class RecentPistonEvent {
+    public RecentPistonEvent(Location location) {
+      location_ = location;
+      event_nano_time_ = System.nanoTime();
+      item_spawn_counter_ = 0;
+    }
+    public boolean isSameLocation(Location loc) {
+      return
+          location_.getBlockX() == loc.getBlockX() &&
+          location_.getBlockY() == loc.getBlockY() &&
+          location_.getBlockZ() == loc.getBlockZ();
+    }
+    public boolean withinTimeWindow(long current_nano_time) {
+      return current_nano_time - event_nano_time_ < 10 * 1000000;
+    }
+    public int increment() {
+      return ++item_spawn_counter_;
+    }
+    private Location location_;
+    private long event_nano_time_;
+    private int item_spawn_counter_;
+  }
+
+  private List<RecentPistonEvent> recent_piston_events_ =
+      new LinkedList<RecentPistonEvent>();
+
+  @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
+  public void onBlockPistonRetractEvent(BlockPistonRetractEvent event) {
+    if (event.isSticky()) {
+      recent_piston_events_.add(new RecentPistonEvent(event.getRetractLocation()));
+    }
+  }
+
+  @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
+  public void onItemSpawnEvent(ItemSpawnEvent event) {
+    if (recent_piston_events_.isEmpty()) {
+      return;
+    }
+    long current_nano_time = System.nanoTime();
+    List<RecentPistonEvent> new_recent_events = new LinkedList<RecentPistonEvent>();
+    for (RecentPistonEvent recent_event : recent_piston_events_) {
+      if (recent_event.withinTimeWindow(current_nano_time)) {
+        new_recent_events.add(recent_event);
+      }
+    }
+    recent_piston_events_ = new_recent_events;
+    if (recent_piston_events_.isEmpty() ||
+        event.getEntityType() != EntityType.DROPPED_ITEM) {
+      return;
+    }
+    Location location = event.getLocation();
+    for (RecentPistonEvent recent_event : recent_piston_events_) {
+      if (recent_event.isSameLocation(location)) {
+        int counter = recent_event.increment();
+        if (counter >= 2) {
+          event.setCancelled(true);
+          if (counter == 2) {
+            warning("Prevented item duplication by Sticky Piston at " + location.toString());
+          }
+          break;
+        }
+      }
+    }
   }
 
   // ================================================
