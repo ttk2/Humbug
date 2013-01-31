@@ -24,7 +24,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPhysicsEvent;
-import org.bukkit.event.block.BlockPistonRetractEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.enchantment.EnchantItemEvent;
 import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
@@ -408,67 +409,42 @@ public class Humbug extends JavaPlugin implements Listener {
 
   // ================================================
   // Prevent entity dup bug
-
-  private class RecentPistonEvent {
-    public RecentPistonEvent(Location location) {
-      location_ = location;
-      event_nano_time_ = System.nanoTime();
-      item_spawn_counter_ = 0;
-    }
-    public boolean isSameLocation(Location loc) {
-      return
-          location_.getBlockX() == loc.getBlockX() &&
-          location_.getBlockY() == loc.getBlockY() &&
-          location_.getBlockZ() == loc.getBlockZ();
-    }
-    public boolean withinTimeWindow(long current_nano_time) {
-      return current_nano_time - event_nano_time_ < 10 * 1000000;
-    }
-    public int increment() {
-      return ++item_spawn_counter_;
-    }
-    private Location location_;
-    private long event_nano_time_;
-    private int item_spawn_counter_;
-  }
-
-  private List<RecentPistonEvent> recent_piston_events_ =
-      new LinkedList<RecentPistonEvent>();
+  // From https://github.com/intangir/EventBlocker
 
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
-  public void onBlockPistonRetractEvent(BlockPistonRetractEvent event) {
-    if (event.isSticky()) {
-      recent_piston_events_.add(new RecentPistonEvent(event.getRetractLocation()));
-    }
-  }
-
-  @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
-  public void onItemSpawnEvent(ItemSpawnEvent event) {
-    if (recent_piston_events_.isEmpty()) {
+  public void onPistonPushRail(BlockPistonExtendEvent e) {
+    if (!config_.getFixRailDupBug()) {
       return;
     }
-    long current_nano_time = System.nanoTime();
-    List<RecentPistonEvent> new_recent_events = new LinkedList<RecentPistonEvent>();
-    for (RecentPistonEvent recent_event : recent_piston_events_) {
-      if (recent_event.withinTimeWindow(current_nano_time)) {
-        new_recent_events.add(recent_event);
+    for (Block b : e.getBlocks()) {
+      Material t = b.getType();
+      if (t == Material.RAILS ||
+          t == Material.POWERED_RAIL ||
+          t == Material.DETECTOR_RAIL) {
+        e.setCancelled(true);
+        return;
       }
     }
-    recent_piston_events_ = new_recent_events;
-    if (recent_piston_events_.isEmpty() ||
-        event.getEntityType() != EntityType.DROPPED_ITEM) {
+  }
+
+  @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
+  public void onRailPlace(BlockPlaceEvent e) {
+    if (!config_.getFixRailDupBug()) {
       return;
     }
-    Location location = event.getLocation();
-    for (RecentPistonEvent recent_event : recent_piston_events_) {
-      if (recent_event.isSameLocation(location)) {
-        int counter = recent_event.increment();
-        if (counter >= 2) {
-          event.setCancelled(true);
-          if (counter == 2) {
-            warning("Prevented item duplication by Sticky Piston at " + location.toString());
-          }
-          break;
+    Block b = e.getBlock();
+    Material t = b.getType();
+    if (t == Material.RAILS ||
+        t == Material.POWERED_RAIL ||
+        t == Material.DETECTOR_RAIL) {
+      for (BlockFace face : faces_) {
+        t = b.getRelative(face).getType();
+        if (t == Material.PISTON_STICKY_BASE ||
+            t == Material.PISTON_EXTENSION ||
+            t == Material.PISTON_MOVING_PIECE ||
+            t == Material.PISTON_BASE) {
+          e.setCancelled(true);
+          return;
         }
       }
     }
@@ -593,6 +569,11 @@ public class Humbug extends JavaPlugin implements Listener {
       }
       msg = String.format(
           "scale_protection_enchant = %s", config_.getScaleProtectionEnchant());
+    } else if (option.equals("fix_rail_dup_bug")) {
+      if (set) {
+        config_.setFixRailDupBug(toBool(value));
+      }
+      msg = String.format("fix_rail_dup_bug = %s", config_.getFixRailDupBug());
     } else if (option.equals("player_max_health")) {
       if (set) {
         config_.setMaxHealth(toInt(value, config_.getMaxHealth()));

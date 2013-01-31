@@ -22,6 +22,7 @@ public class Config {
   private static final int cobble_from_lava_scan_radius_ = 0;
   private static final boolean ench_book_craftable_ = false;
   private static final boolean scale_protection_enchant_ = true;
+  private static final boolean fix_rail_dup_bug_ = true;
   private static final int player_max_health_ = 20;
   // For Enchanted GOLDEN_APPLES
   private static final boolean ench_gold_app_edible_ = false;
@@ -170,6 +171,14 @@ public class Config {
 
   public void setScaleProtectionEnchant(boolean value) {
     config_.set("scale_protection_enchant", value);
+  }
+
+  public boolean getFixRailDupBug() {
+    return config_.getBoolean("fix_rail_dup_bug", fix_rail_dup_bug_);
+  }
+
+  public void setFixRailDupBug(boolean value) {
+    config_.set("fix_rail_dup_bug", value);
   }
 
   public int getMaxHealth() {
