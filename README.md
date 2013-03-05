@@ -6,6 +6,13 @@ Minecraft server plug-in: Simply disables various functionality
 - Disables Anvil use.
 - Disables Ender Chest use.
 - Disables Villager trading.
+- Disables Portal creation.
+- Disables Ender dragon.
+- Disables join/quit/kick announcements.
+- Enables personal death message with coords
+- Disabled Death announcements.
+- Enables Red coloring on Death announcements.
+- Disabled Enderman Griefing (stealing blocks)
 - Disables Wither block destruction radius.
 - Disables Wither and Wither Skull explosions.
 - Disables cobblestone generation from lava and water.
@@ -22,6 +29,13 @@ Config file settings:
 - anvil: Boolean, Turns on anvil use
 - ender_chest: Boolean, Turns on ender chest use
 - villager_trades: Boolean, Turns on villager trades
+- portalcreate: Boolean, turns on portal creation
+- enderdragon: Boolean, turns on ender dragon
+- joinquitkick: Boolean, show part/quit and kick announcements
+- deathpersonal: Boolean, send a private message to the person who dies, with coords
+- deathannounce: Boolean, death message announcements
+- deathred: Boolean, makes death announce messages red
+- endergrief: Boolean, turns on enderman stealing blocks
 - wither: Boolean, Turns on the wither
 - wither_explosions: Boolean, Turns on wither explosions destroying blocks. Wither/Wither Skull explosions will always occur to damage players, this only effects block breakage.
 - wither_insta_break: Boolean, Turns on the wither insta-break ability
@@ -38,6 +52,13 @@ Default configuration:
 - anvil: false
 - ender_chest: false
 - villager_trades: false
+- portalcreate: true
+- enderdragon: true
+- joinquitkick: true
+- deathpersonal: true
+- deathannounce: true
+- deathred: true
+- endergrief: false
 - wither: true
 - wither_explosions: false
 - wither_insta_break: false

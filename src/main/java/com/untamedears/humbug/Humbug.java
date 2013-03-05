@@ -1,11 +1,10 @@
 package com.untamedears.humbug;
 
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -14,10 +13,9 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Damageable;
+import org.bukkit.entity.Enderman;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -30,19 +28,21 @@ import org.bukkit.event.enchantment.EnchantItemEvent;
 import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
+import org.bukkit.event.entity.EntityCreatePortalEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerKickEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.Recipe;
-import org.bukkit.material.MaterialData;
-import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.untamedears.humbug.Config;
@@ -125,6 +125,95 @@ public class Humbug extends JavaPlugin implements Listener {
     }
   }
 
+  @EventHandler(ignoreCancelled=true)
+  public void onEnderChestPlace(BlockPlaceEvent e) {
+    if (!config_.getEnderChestEnabled() && e.getBlock().getType() == Material.ENDER_CHEST) {
+      e.setCancelled(true);
+    }
+  }
+  
+  // ================================================
+  // portals
+  
+  @EventHandler(ignoreCancelled=true)
+  public void onPortalCreate(PortalCreateEvent e) {
+    if(!config_.getPortalCreateEnabled()) {
+      e.setCancelled(true);
+    }
+  }
+
+  @EventHandler(ignoreCancelled=true)
+  public void onEntityPortalCreate(EntityCreatePortalEvent e) {
+    if(!config_.getPortalCreateEnabled()) {
+      e.setCancelled(true);
+    }
+  }
+
+  // ================================================
+  // EnderDragon
+  
+  @EventHandler(ignoreCancelled=true)
+  public void onDragonSpawn(CreatureSpawnEvent e) {
+    if(e.getEntityType() == EntityType.ENDER_DRAGON && !config_.getEnderDragonEnabled()) {
+      e.setCancelled(true);
+    }
+  }
+  
+  // ================================================
+  // Join Quit Kick messages
+
+  @EventHandler(priority=EventPriority.MONITOR)
+  public void onJoin(PlayerJoinEvent e) {
+    if(!config_.getJoinQuitKickEnabled()) {
+      e.setJoinMessage(null);
+    }
+  }
+
+  //disable quit message
+  @EventHandler(priority=EventPriority.MONITOR)
+  public void onQuit(PlayerQuitEvent e) {
+    if(!config_.getJoinQuitKickEnabled()) {
+      e.setQuitMessage(null);
+    }
+  }
+
+  //disable kick message
+  @EventHandler(priority=EventPriority.MONITOR)
+  public void onKick(PlayerKickEvent e) {
+    if(!config_.getJoinQuitKickEnabled()) {
+      e.setLeaveMessage(null);
+    }
+  }
+  
+  // ================================================
+  // Death Messages
+  
+  @EventHandler(priority=EventPriority.MONITOR)
+  public void onDeath(PlayerDeathEvent e) {
+    Location location = e.getEntity().getLocation();
+    String msg = e.getDeathMessage() + " ([" + location.getWorld().getName() + "] " + (int)location.getX() + ", " + (int)location.getY() + ", " + (int)location.getZ() + ")";
+    info(msg);
+    if(config_.getDeathMessagePersonalEnabled()) {
+      e.getEntity().sendMessage(ChatColor.RED + msg);
+    }
+ 
+    if(!config_.getDeathMessageEnabled()) {
+      e.setDeathMessage(null);
+    } else if(config_.getDeathMessageRedEnabled()) {
+      e.setDeathMessage(ChatColor.RED + e.getDeathMessage());
+    }
+  }
+
+  // ================================================
+  // Endermen Griefing
+  @EventHandler(ignoreCancelled=true)
+  public void onEndermanGrief(EntityChangeBlockEvent e)
+  {
+    if(!config_.getEndermenGriefEnabled() && e.getEntity() instanceof Enderman) {
+      e.setCancelled(true);
+    }
+  }
+
   // ================================================
   // Wither Insta-breaking and Explosions
 
@@ -148,7 +237,6 @@ public class Humbug extends JavaPlugin implements Listener {
     if (config_.getWitherExplosionsEnabled()) {
       return;
     }
-    boolean leave_blocks_intact = false;
     Entity npc = event.getEntity();
     if (npc == null) {
         return;
@@ -161,7 +249,7 @@ public class Humbug extends JavaPlugin implements Listener {
   }
 
   @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
-  public void onCreatureSpawn(CreatureSpawnEvent event) {
+  public void onWitherSpawn(CreatureSpawnEvent event) {
     if (config_.getWitherEnabled()) {
       return;
     }
@@ -519,6 +607,46 @@ public class Humbug extends JavaPlugin implements Listener {
         config_.setVillagerTradesEnabled(toBool(value));
       }
       msg = String.format("villager_trades = %s", config_.getVillagerTradesEnabled());
+    } else if (option.equals("portalcreate")) {
+      if (set) {
+        config_.setPortalCreateEnabled(toBool(value));
+      }
+      msg = String.format("portalcreate = %s", config_.getPortalCreateEnabled());
+    } else if (option.equals("enderdragon")) {
+      if (set) {
+        config_.setEnderDragonEnabled(toBool(value));
+      }
+      msg = String.format("enderdragon = %s", config_.getEnderDragonEnabled());
+    } else if (option.equals("enderdragon")) {
+      if (set) {
+        config_.setEnderDragonEnabled(toBool(value));
+      }
+      msg = String.format("enderdragon = %s", config_.getEnderDragonEnabled());
+    } else if (option.equals("joinquitkick")) {
+      if (set) {
+        config_.setJoinQuitKickEnabled(toBool(value));
+      }
+      msg = String.format("joinquitkick = %s", config_.getJoinQuitKickEnabled());
+    } else if (option.equals("deathpersonal")) {
+      if (set) {
+        config_.setDeathMessagePersonalEnabled(toBool(value));
+      }
+      msg = String.format("deathpersonal = %s", config_.getDeathMessagePersonalEnabled());
+    } else if (option.equals("deathannounce")) {
+      if (set) {
+        config_.setDeathMessageEnabled(toBool(value));
+      }
+      msg = String.format("deathannounce = %s", config_.getDeathMessageEnabled());
+    } else if (option.equals("deathred")) {
+      if (set) {
+        config_.setDeathMessageRedEnabled(toBool(value));
+      }
+      msg = String.format("deathred = %s", config_.getDeathMessageRedEnabled());
+    } else if (option.equals("endergrief")) {
+      if (set) {
+        config_.setEndermenGriefEnabled(toBool(value));
+      }
+      msg = String.format("endergrief = %s", config_.getEndermenGriefEnabled());
     } else if (option.equals("wither")) {
       if (set) {
         config_.setWitherEnabled(toBool(value));

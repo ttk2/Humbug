@@ -1,6 +1,5 @@
 package com.untamedears.humbug;
 
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.Plugin;
 
@@ -15,6 +14,13 @@ public class Config {
   private static final boolean anvil_enabled_ = false;
   private static final boolean ender_chest_enabled_ = false;
   private static final boolean villager_trades_enabled_ = false;
+  private static final boolean portalcreate_enabled_ = true;
+  private static final boolean enderdragon_enabled_ = true;
+  private static final boolean joinquitkick_enabled_ = true;
+  private static final boolean deathpersonal_enabled_ = true;
+  private static final boolean deathannounce_enabled_ = true;
+  private static final boolean deathred_enabled_ = true;
+  private static final boolean endergrief_enabled_ = false;
   private static final boolean wither_enabled_ = true;
   private static final boolean wither_explosions_enabled_ = false;
   private static final boolean wither_insta_break_enabled_ = false;
@@ -92,6 +98,62 @@ public class Config {
 
   public void setVillagerTradesEnabled(boolean value) {
     config_.set("villager_trades", value);
+  }
+
+  public boolean getPortalCreateEnabled() {
+    return config_.getBoolean("portalcreate", portalcreate_enabled_);
+  }
+
+  public void setPortalCreateEnabled(boolean value) {
+    config_.set("portalcreate", value);
+  }
+
+  public boolean getEnderDragonEnabled() {
+    return config_.getBoolean("enderdragon", enderdragon_enabled_);
+  }
+
+  public void setEnderDragonEnabled(boolean value) {
+    config_.set("enderdragon", value);
+  }
+
+  public boolean getJoinQuitKickEnabled() {
+    return config_.getBoolean("joinquitkick", joinquitkick_enabled_);
+  }
+
+  public void setJoinQuitKickEnabled(boolean value) {
+    config_.set("joinquitkick", value);
+  }
+
+  public boolean getDeathMessagePersonalEnabled() {
+    return config_.getBoolean("deathpersonal", deathpersonal_enabled_);
+  }
+
+  public void setDeathMessagePersonalEnabled(boolean value) {
+    config_.set("deathpersonal", value);
+  }
+
+  public boolean getDeathMessageEnabled() {
+    return config_.getBoolean("deathannounce", deathannounce_enabled_);
+  }
+
+  public void setDeathMessageEnabled(boolean value) {
+    config_.set("deathannounce", value);
+  }
+
+  public boolean getDeathMessageRedEnabled() {
+    return config_.getBoolean("deathred", deathred_enabled_);
+  }
+
+  public void setDeathMessageRedEnabled(boolean value) {
+    config_.set("deathred", value);
+  }
+
+  public boolean getEndermenGriefEnabled() {
+    return config_.getBoolean("endergrief", endergrief_enabled_);
+  }
+
+  public void setEndermenGriefEnabled(boolean value) {
+    config_.set("endergrief", value);
   }
 
   public boolean getWitherEnabled() {
