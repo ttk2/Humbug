@@ -37,6 +37,8 @@ import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -231,6 +233,19 @@ public class Humbug extends JavaPlugin implements Listener {
     ItemStack item = event.getItem();
     replaceEnchantedGoldenApple(
         player.getName(), item, inventory.getMaxStackSize());
+  }
+  
+  // ================================================
+  // Ender Pearl Teleportation
+  
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void onTeleport(PlayerTeleportEvent event) {
+	  if (config_.getEnderPearlTeleportationEnabled())
+		  return;
+	  
+	  if (event.getCause() == TeleportCause.ENDER_PEARL) {
+		  event.setCancelled(true);
+	  }
   }
 
   // ================================================
@@ -579,6 +594,11 @@ public class Humbug extends JavaPlugin implements Listener {
         config_.setMaxHealth(toInt(value, config_.getMaxHealth()));
       }
       msg = String.format("player_max_health = %d", config_.getMaxHealth());
+    } else if (option.equals("ender_pearl_teleportation")) {
+      if (set) {
+    	  config_.setEnderPearlTeleportationEnabled(toBool(value));
+      }
+      msg = String.format("ender_pearl_teleportation = %s", config_.getEnderPearlTeleportationEnabled());
     } else if (option.equals("save")) {
       config_.save();
       msg = "Configuration saved";

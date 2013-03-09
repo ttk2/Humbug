@@ -24,6 +24,7 @@ public class Config {
   private static final boolean scale_protection_enchant_ = true;
   private static final boolean fix_rail_dup_bug_ = true;
   private static final int player_max_health_ = 20;
+  private static final boolean ender_pearl_teleportation_enabled_ = false;
   // For Enchanted GOLDEN_APPLES
   private static final boolean ench_gold_app_edible_ = false;
   private static final boolean ench_gold_app_craftable_ = false;
@@ -187,5 +188,13 @@ public class Config {
 
   public void setMaxHealth(int value) {
     config_.set("player_max_health", value);
+  }
+  
+  public boolean getEnderPearlTeleportationEnabled() {
+	  return config_.getBoolean("ender_pearl_teleportation", ender_pearl_teleportation_enabled_);
+  }
+  
+  public void setEnderPearlTeleportationEnabled(boolean value) {
+	  config_.set("ender_pearl_teleportation", value);
   }
 }
