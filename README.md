@@ -11,6 +11,8 @@ Minecraft server plug-in: Simply disables various functionality
 - Disables cobblestone generation from lava and water.
 - Makes the Protection enchantment a little stronger
 - Enables adjustment of all Player maximum health
+- Fixes a rail duplication bug.
+- Fixes a teleport bug when players log out while riding vehicles.
 - Removes the Enchanted Book recipe.
 - Removes the Enchanted Golden Apple recipe.
 - Converts Enchanted Golden Apples to normal Golden Apples if a Player attempts to eat them.
@@ -29,6 +31,8 @@ Config file settings:
 - cobble_from_lava_scan_radius: Integer, Sets the radius to scan for lava/water interaction
 - ench_book_craftable: Boolean, Allows the Enchanted Book recipe to be used
 - scale_protection_enchant: Boolean, Increases damage reduction granted by the Protection enchantment
+- fix_rail_dup_bug: Boolean, Fixes a rail duplication bug
+- fix_vehicle_logout_bug: Boolean, Fixes a teleport bug when players logout in vehicles
 - player_max_health: Integer, sets all Player maximum health
 - ench_gold_app_edible: Boolean, Allows players to eat Enchanted Golden Apples. If false, Enchanted Golden Apples are converted to normal Golden Apples
 - ench_gold_app_craftable: Boolean, Allows the Enchanted Golden Apple recipe to be used
@@ -45,6 +49,8 @@ Default configuration:
 - cobble_from_lava_scan_radius: 0
 - ench_book_craftable: false
 - scale_protection_enchant: true
+- fix_rail_dup_bug: true
+- fix_vehicle_logout_bug: true
 - player_max_health: 20
 - ench_gold_app_edible: false
 - ench_gold_app_craftable: false

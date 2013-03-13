@@ -1,6 +1,7 @@
 package com.untamedears.humbug;
 
 import java.util.Iterator;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -8,6 +9,8 @@ import java.util.logging.Logger;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
@@ -37,6 +40,7 @@ import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -46,7 +50,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.untamedears.humbug.Config;
-
+ 
 public class Humbug extends JavaPlugin implements Listener {
   public static void severe(String message) {
     log_.severe("[Humbug] " + message);
@@ -55,7 +59,7 @@ public class Humbug extends JavaPlugin implements Listener {
   public static void warning(String message) {
     log_.warning("[Humbug] " + message);
   }
-
+ 
   public static void info(String message) {
     log_.info("[Humbug] " + message);
   }
@@ -450,6 +454,105 @@ public class Humbug extends JavaPlugin implements Listener {
     }
   }
 
+  //================================================
+  // Fix player in vehicle logout bug
+
+  private static final int air_material_id_ = Material.AIR.getId();
+
+  @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
+  public void onDisallowVehicleLogout(PlayerQuitEvent event) {
+    if (!config_.getFixVehicleLogoutBug()) {
+      return;
+    }
+    Player player = event.getPlayer();
+    Entity vehicle = player.getVehicle();
+    if (vehicle == null) {
+      return;
+    }
+    Location loc = vehicle.getLocation();
+    World world = loc.getWorld();
+    // Vehicle data has been cached, now safe to kick the player out
+    player.leaveVehicle();
+
+    // First attempt to place the player just above the vehicle
+    // Normalize the location. Add 1 to Y so it is just above the minecart
+    loc.setX(Math.floor(loc.getX()) + 0.5000);
+    loc.setY(Math.floor(loc.getY()) + 1.0000);
+    loc.setZ(Math.floor(loc.getZ()) + 0.5000);
+    Block block = world.getBlockAt(loc);
+    if (block.getTypeId() == air_material_id_) {
+      block = block.getRelative(BlockFace.UP);
+      if (block.getTypeId() == air_material_id_) {
+        player.teleport(loc);
+        Humbug.info(String.format(
+            "Vehicle logout [%s]: Teleported to %s",
+            player.getName(), loc.toString()));
+        return;
+      }
+    }
+
+    // The space above the cart was blocked. Scan from the top of the world down
+    //  and find 4 vertically contiguous AIR blocks resting above a non-AIR
+    //  block. The size is 4 to provide players a way to prevent griefers from
+    //  teleporting into small spaces (2 or 3 blocks high).
+    Environment world_type = world.getEnvironment();
+    int max_height;
+    if (world_type == Environment.NETHER) {
+      max_height = 126;
+    } else {
+      max_height = world.getMaxHeight() - 2;
+    }
+    // Create a sliding window of block types and track how many of those
+    //  are AIR. Keep fetching the block below the current block to move down.
+    int air_count = 0;
+    LinkedList<Integer> air_window = new LinkedList<Integer>();
+    loc.setY((float)max_height);
+    block = world.getBlockAt(loc);
+    for (int i = 0; i < 4; ++i) {
+      int block_type = block.getTypeId();
+      if (block_type == air_material_id_) {
+        ++air_count;
+      }
+      air_window.addLast(block_type);
+      block = block.getRelative(BlockFace.DOWN);
+    }
+
+    // Now that the window is prepared, scan down the Y-axis.
+    // 3 to prevent bedrock pocket access
+    while (block.getY() > 3) {
+      int block_type = block.getTypeId();
+      if (block_type != air_material_id_) {
+        if (air_count == 4) {
+          // Normalize the location on the block's center. Y+1 which is the
+          //  first AIR above this block.
+          loc = block.getLocation();
+          loc.setX(Math.floor(loc.getX()) + 0.5000);
+          loc.setY(Math.floor(loc.getY()) + 1.0000);
+          loc.setZ(Math.floor(loc.getZ()) + 0.5000);
+          player.teleport(loc);
+          Humbug.info(String.format(
+              "Vehicle logout [%s]: Teleported to %s",
+              player.getName(), loc.toString()));
+          return;
+        }
+      } else { // block_type == air_material_id_
+        ++air_count;
+      }
+      air_window.addLast(block_type);
+      if (air_window.removeFirst() == air_material_id_) {
+        --air_count;
+      }
+      block = block.getRelative(BlockFace.DOWN);
+    }
+
+    // No space in this (x,z) column to teleport the player. Feed them
+    //  to the lions.
+    Humbug.info(String.format(
+        "Vehicle logout [%s]: No space for teleport, killed",
+        player.getName()));
+    player.setHealth(0);
+  }
+
   // ================================================
   // General
 
@@ -574,6 +677,11 @@ public class Humbug extends JavaPlugin implements Listener {
         config_.setFixRailDupBug(toBool(value));
       }
       msg = String.format("fix_rail_dup_bug = %s", config_.getFixRailDupBug());
+    } else if (option.equals("fix_vehicle_logout_bug")) {
+      if (set) {
+        config_.setFixVehicleLogoutBug(toBool(value));
+      }
+      msg = String.format("fix_vehicle_logout_bug = %s", config_.getFixVehicleLogoutBug());
     } else if (option.equals("player_max_health")) {
       if (set) {
         config_.setMaxHealth(toInt(value, config_.getMaxHealth()));
