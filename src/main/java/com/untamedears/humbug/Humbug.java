@@ -94,19 +94,14 @@ public class Humbug extends JavaPlugin implements Listener {
         return;
     }
     Location to = event.getTo();
-    //info( "TeleportEvent from " +
-    //	from.getBlockX() + " " + from.getBlockY() + " " + from.getBlockZ() + " to " +
-    //	to.getBlockX() + " " + to.getBlockY() + " " + to.getBlockZ() );
-    //event.getPlayer().sendMessage("TeleportEvent from " +
-    //	from.getBlockX() + " " + from.getBlockY() + " " + from.getBlockZ() + " to " +
-    //	to.getBlockX() + " " + to.getBlockY() + " " + to.getBlockZ());
     org.bukkit.World world = to.getWorld();
     // From and To are feet positions.  Check and make sure we can teleport to a location with air
     // above the To location.
+    Block toBlock = world.getBlockAt( to );
     Block aboveBlock = world.getBlockAt( to.getBlockX(), to.getBlockY()+1, to.getBlockZ() );
-    if( !aboveBlock.isEmpty() && !aboveBlock.isLiquid()) {
-    	// Refund the item
-    	event.getPlayer().getInventory().addItem( new ItemStack(368, 1) );
+    if( !aboveBlock.isEmpty() && !aboveBlock.isLiquid() ||
+    	(toBlock.getType() == Material.WOODEN_DOOR) || 
+    	(toBlock.getType() == Material.IRON_DOOR_BLOCK) ) {
     	event.setCancelled( true );
     }
     
