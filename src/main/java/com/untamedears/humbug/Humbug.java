@@ -1,8 +1,6 @@
 package com.untamedears.humbug;
 
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
 
@@ -14,10 +12,8 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -33,16 +29,15 @@ import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.Recipe;
-import org.bukkit.material.MaterialData;
-import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.untamedears.humbug.Config;
@@ -86,6 +81,37 @@ public class Humbug extends JavaPlugin implements Listener {
 
   public Humbug() {}
 
+  // ================================================
+  // Fixes Teleporting through walls
+
+  @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+  public void onPlayerTelport( PlayerTeleportEvent event) {
+    if (config_.getTeleportFixEnabled()) {
+      return;
+    }
+    TeleportCause cause = event.getCause();
+    if (cause != TeleportCause.ENDER_PEARL) {
+        return;
+    }
+    Location to = event.getTo();
+    //info( "TeleportEvent from " +
+    //	from.getBlockX() + " " + from.getBlockY() + " " + from.getBlockZ() + " to " +
+    //	to.getBlockX() + " " + to.getBlockY() + " " + to.getBlockZ() );
+    //event.getPlayer().sendMessage("TeleportEvent from " +
+    //	from.getBlockX() + " " + from.getBlockY() + " " + from.getBlockZ() + " to " +
+    //	to.getBlockX() + " " + to.getBlockY() + " " + to.getBlockZ());
+    org.bukkit.World world = to.getWorld();
+    // From and To are feet positions.  Check and make sure we can teleport to a location with air
+    // above the To location.
+    Block aboveBlock = world.getBlockAt( to.getBlockX(), to.getBlockY()+1, to.getBlockZ() );
+    if( !aboveBlock.isEmpty() && !aboveBlock.isLiquid()) {
+    	// Refund the item
+    	event.getPlayer().getInventory().addItem( new ItemStack(368, 1) );
+    	event.setCancelled( true );
+    }
+    
+  }
+  
   // ================================================
   // Villager Trading
 
@@ -148,7 +174,6 @@ public class Humbug extends JavaPlugin implements Listener {
     if (config_.getWitherExplosionsEnabled()) {
       return;
     }
-    boolean leave_blocks_intact = false;
     Entity npc = event.getEntity();
     if (npc == null) {
         return;
@@ -579,6 +604,11 @@ public class Humbug extends JavaPlugin implements Listener {
         config_.setMaxHealth(toInt(value, config_.getMaxHealth()));
       }
       msg = String.format("player_max_health = %d", config_.getMaxHealth());
+    } else if (option.equals("fix_teleport_glitch")) {
+      if (set) {
+        config_.setTeleportFixEnabled(toBool(value));
+      }
+      msg = String.format("fix_teleport_glitch = %s", config_.getTeleportFixEnabled());
     } else if (option.equals("save")) {
       config_.save();
       msg = "Configuration saved";

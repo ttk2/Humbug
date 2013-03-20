@@ -1,6 +1,5 @@
 package com.untamedears.humbug;
 
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.Plugin;
 
@@ -27,10 +26,8 @@ public class Config {
   // For Enchanted GOLDEN_APPLES
   private static final boolean ench_gold_app_edible_ = false;
   private static final boolean ench_gold_app_craftable_ = false;
-
-  private static Config get() {
-    return global_instance_;
-  }
+  // For fixing the teleport glitch
+  private static final boolean fix_teleport_glitch_ = false;
 
   public static Config initialize(Plugin plugin) {
     if (global_instance_ == null) {
@@ -188,4 +185,13 @@ public class Config {
   public void setMaxHealth(int value) {
     config_.set("player_max_health", value);
   }
+
+  public boolean getTeleportFixEnabled() {
+	return config_.getBoolean("fix_teleport_glitch", fix_teleport_glitch_ );
+  }
+
+  public void setTeleportFixEnabled(boolean value) {
+    config_.set("fix_teleport_glitch", value);
+  }
+
 }
