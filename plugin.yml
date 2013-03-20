@@ -1,6 +1,6 @@
 name: Humbug
 main: com.untamedears.humbug.Humbug
-version: 1.1.6
+version: 1.1.7
 description: Disables new functionality until it can be properly delt with
 author: erocs
 database: false

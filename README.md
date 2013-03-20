@@ -12,6 +12,7 @@ Minecraft server plug-in: Simply disables various functionality
 - Enables personal death message with coords
 - Disabled Death announcements.
 - Enables Red coloring on Death announcements.
+- Enables death message logging.
 - Disabled Enderman Griefing (stealing blocks)
 - Disables Wither block destruction radius.
 - Disables Wither and Wither Skull explosions.
@@ -31,6 +32,7 @@ Config file settings:
 - debug: Boolean, Turns on debug logging (currently there is none)
 - anvil: Boolean, Turns on anvil use
 - ender_chest: Boolean, Turns on ender chest use
+- ender_chests_placeable: Boolean, Allows ender chests to be placed
 - villager_trades: Boolean, Turns on villager trades
 - portalcreate: Boolean, turns on portal creation
 - enderdragon: Boolean, turns on ender dragon
@@ -38,6 +40,7 @@ Config file settings:
 - deathpersonal: Boolean, send a private message to the person who dies, with coords
 - deathannounce: Boolean, death message announcements
 - deathred: Boolean, makes death announce messages red
+- deathlog: Boolean, logs player deaths to the console
 - endergrief: Boolean, turns on enderman stealing blocks
 - wither: Boolean, Turns on the wither
 - wither_explosions: Boolean, Turns on wither explosions destroying blocks. Wither/Wither Skull explosions will always occur to damage players, this only effects block breakage.
@@ -53,18 +56,20 @@ Config file settings:
 - ench_gold_app_edible: Boolean, Allows players to eat Enchanted Golden Apples. If false, Enchanted Golden Apples are converted to normal Golden Apples
 - ench_gold_app_craftable: Boolean, Allows the Enchanted Golden Apple recipe to be used
 
-Default configuration:
+Default configuration (biased for CivCraft):
 - debug: false
 - anvil: false
 - ender_chest: false
+- ender_chests_placeable: true
 - villager_trades: false
 - portalcreate: true
 - enderdragon: true
 - joinquitkick: true
-- deathpersonal: true
+- deathpersonal: false
 - deathannounce: true
-- deathred: true
-- endergrief: false
+- deathred: false
+- deathlog: false
+- endergrief: true
 - wither: true
 - wither_explosions: false
 - wither_insta_break: false
@@ -75,6 +80,6 @@ Default configuration:
 - fix_rail_dup_bug: true
 - fix_vehicle_logout_bug: true
 - player_max_health: 20
-- ender_pearl_teleportation: false
+- ender_pearl_teleportation: true
 - ench_gold_app_edible: false
 - ench_gold_app_craftable: false

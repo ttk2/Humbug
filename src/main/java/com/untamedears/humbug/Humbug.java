@@ -133,24 +133,24 @@ public class Humbug extends JavaPlugin implements Listener {
 
   @EventHandler(ignoreCancelled=true)
   public void onEnderChestPlace(BlockPlaceEvent e) {
-    if (!config_.getEnderChestEnabled() && e.getBlock().getType() == Material.ENDER_CHEST) {
+    if (!config_.getEnderChestsPlaceable() && e.getBlock().getType() == Material.ENDER_CHEST) {
       e.setCancelled(true);
     }
   }
   
   // ================================================
-  // portals
+  // Portals
   
   @EventHandler(ignoreCancelled=true)
   public void onPortalCreate(PortalCreateEvent e) {
-    if(!config_.getPortalCreateEnabled()) {
+    if (!config_.getPortalCreateEnabled()) {
       e.setCancelled(true);
     }
   }
 
   @EventHandler(ignoreCancelled=true)
   public void onEntityPortalCreate(EntityCreatePortalEvent e) {
-    if(!config_.getPortalCreateEnabled()) {
+    if (!config_.getPortalCreateEnabled()) {
       e.setCancelled(true);
     }
   }
@@ -160,33 +160,31 @@ public class Humbug extends JavaPlugin implements Listener {
   
   @EventHandler(ignoreCancelled=true)
   public void onDragonSpawn(CreatureSpawnEvent e) {
-    if(e.getEntityType() == EntityType.ENDER_DRAGON && !config_.getEnderDragonEnabled()) {
+    if (e.getEntityType() == EntityType.ENDER_DRAGON && !config_.getEnderDragonEnabled()) {
       e.setCancelled(true);
     }
   }
   
   // ================================================
-  // Join Quit Kick messages
+  // Join/Quit/Kick messages
 
-  @EventHandler(priority=EventPriority.MONITOR)
+  @EventHandler(priority=EventPriority.HIGHEST)
   public void onJoin(PlayerJoinEvent e) {
-    if(!config_.getJoinQuitKickEnabled()) {
+    if (!config_.getJoinQuitKickEnabled()) {
       e.setJoinMessage(null);
     }
   }
 
-  //disable quit message
-  @EventHandler(priority=EventPriority.MONITOR)
+  @EventHandler(priority=EventPriority.HIGHEST)
   public void onQuit(PlayerQuitEvent e) {
-    if(!config_.getJoinQuitKickEnabled()) {
+    if (!config_.getJoinQuitKickEnabled()) {
       e.setQuitMessage(null);
     }
   }
 
-  //disable kick message
-  @EventHandler(priority=EventPriority.MONITOR)
+  @EventHandler(priority=EventPriority.HIGHEST)
   public void onKick(PlayerKickEvent e) {
-    if(!config_.getJoinQuitKickEnabled()) {
+    if (!config_.getJoinQuitKickEnabled()) {
       e.setLeaveMessage(null);
     }
   }
@@ -194,18 +192,25 @@ public class Humbug extends JavaPlugin implements Listener {
   // ================================================
   // Death Messages
   
-  @EventHandler(priority=EventPriority.MONITOR)
+  @EventHandler(priority=EventPriority.HIGHEST)
   public void onDeath(PlayerDeathEvent e) {
-    Location location = e.getEntity().getLocation();
-    String msg = e.getDeathMessage() + " ([" + location.getWorld().getName() + "] " + (int)location.getX() + ", " + (int)location.getY() + ", " + (int)location.getZ() + ")";
-    info(msg);
-    if(config_.getDeathMessagePersonalEnabled()) {
-      e.getEntity().sendMessage(ChatColor.RED + msg);
+    boolean log_msg = config_.getDeathLoggingEnabled();
+    boolean send_personal = config_.getDeathMessagePersonalEnabled();
+    if (log_msg || send_personal) {
+      Location location = e.getEntity().getLocation();
+      String msg = String.format(
+          "%s ([%s] %d, %d, %d)", e.getDeathMessage(), location.getWorld().getName(),
+          location.getBlockX(), location.getBlockY(), location.getBlockZ());
+      if (log_msg) {
+        info(msg);
+      }
+      if (send_personal) {
+        e.getEntity().sendMessage(ChatColor.RED + msg);
+      }
     }
- 
-    if(!config_.getDeathMessageEnabled()) {
+    if (!config_.getDeathAnnounceEnabled()) {
       e.setDeathMessage(null);
-    } else if(config_.getDeathMessageRedEnabled()) {
+    } else if (config_.getDeathMessageRedEnabled()) {
       e.setDeathMessage(ChatColor.RED + e.getDeathMessage());
     }
   }
@@ -215,7 +220,7 @@ public class Humbug extends JavaPlugin implements Listener {
   @EventHandler(ignoreCancelled=true)
   public void onEndermanGrief(EntityChangeBlockEvent e)
   {
-    if(!config_.getEndermenGriefEnabled() && e.getEntity() instanceof Enderman) {
+    if (!config_.getEndermenGriefEnabled() && e.getEntity() instanceof Enderman) {
       e.setCancelled(true);
     }
   }
@@ -332,12 +337,12 @@ public class Humbug extends JavaPlugin implements Listener {
   
   @EventHandler(priority = EventPriority.LOWEST)
   public void onTeleport(PlayerTeleportEvent event) {
-	  if (config_.getEnderPearlTeleportationEnabled())
-		  return;
-	  
-	  if (event.getCause() == TeleportCause.ENDER_PEARL) {
-		  event.setCancelled(true);
-	  }
+    if (config_.getEnderPearlTeleportationEnabled()) {
+      return;
+    }
+    if (event.getCause() == TeleportCause.ENDER_PEARL) {
+      event.setCancelled(true);
+    }
   }
 
   // ================================================
@@ -720,6 +725,11 @@ public class Humbug extends JavaPlugin implements Listener {
         config_.setEnderChestEnabled(toBool(value));
       }
       msg = String.format("ender_chest = %s", config_.getEnderChestEnabled());
+    } else if (option.equals("ender_chests_placeable")) {
+      if (set) {
+        config_.setEnderChestsPlaceable(toBool(value));
+      }
+      msg = String.format("ender_chests_placeable = %s", config_.getEnderChestsPlaceable());
     } else if (option.equals("villager_trades")) {
       if (set) {
         config_.setVillagerTradesEnabled(toBool(value));
@@ -730,11 +740,6 @@ public class Humbug extends JavaPlugin implements Listener {
         config_.setPortalCreateEnabled(toBool(value));
       }
       msg = String.format("portalcreate = %s", config_.getPortalCreateEnabled());
-    } else if (option.equals("enderdragon")) {
-      if (set) {
-        config_.setEnderDragonEnabled(toBool(value));
-      }
-      msg = String.format("enderdragon = %s", config_.getEnderDragonEnabled());
     } else if (option.equals("enderdragon")) {
       if (set) {
         config_.setEnderDragonEnabled(toBool(value));
@@ -752,14 +757,19 @@ public class Humbug extends JavaPlugin implements Listener {
       msg = String.format("deathpersonal = %s", config_.getDeathMessagePersonalEnabled());
     } else if (option.equals("deathannounce")) {
       if (set) {
-        config_.setDeathMessageEnabled(toBool(value));
+        config_.setDeathAnnounceEnabled(toBool(value));
       }
-      msg = String.format("deathannounce = %s", config_.getDeathMessageEnabled());
+      msg = String.format("deathannounce = %s", config_.getDeathAnnounceEnabled());
     } else if (option.equals("deathred")) {
       if (set) {
         config_.setDeathMessageRedEnabled(toBool(value));
       }
       msg = String.format("deathred = %s", config_.getDeathMessageRedEnabled());
+    } else if (option.equals("deathlog")) {
+      if (set) {
+        config_.setDeathLoggingEnabled(toBool(value));
+      }
+      msg = String.format("deathlog = %s", config_.getDeathLoggingEnabled());
     } else if (option.equals("endergrief")) {
       if (set) {
         config_.setEndermenGriefEnabled(toBool(value));
@@ -832,7 +842,7 @@ public class Humbug extends JavaPlugin implements Listener {
       msg = String.format("player_max_health = %d", config_.getMaxHealth());
     } else if (option.equals("ender_pearl_teleportation")) {
       if (set) {
-    	  config_.setEnderPearlTeleportationEnabled(toBool(value));
+        config_.setEnderPearlTeleportationEnabled(toBool(value));
       }
       msg = String.format("ender_pearl_teleportation = %s", config_.getEnderPearlTeleportationEnabled());
     } else if (option.equals("save")) {
