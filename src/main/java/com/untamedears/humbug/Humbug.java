@@ -1,17 +1,22 @@
 package com.untamedears.humbug;
 
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Random;
 import java.util.logging.Logger;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Enderman;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -26,14 +31,19 @@ import org.bukkit.event.enchantment.EnchantItemEvent;
 import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
+import org.bukkit.event.entity.EntityCreatePortalEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerKickEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
+import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -41,7 +51,7 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.untamedears.humbug.Config;
-
+ 
 public class Humbug extends JavaPlugin implements Listener {
   public static void severe(String message) {
     log_.severe("[Humbug] " + message);
@@ -50,7 +60,7 @@ public class Humbug extends JavaPlugin implements Listener {
   public static void warning(String message) {
     log_.warning("[Humbug] " + message);
   }
-
+ 
   public static void info(String message) {
     log_.info("[Humbug] " + message);
   }
@@ -82,19 +92,26 @@ public class Humbug extends JavaPlugin implements Listener {
   public Humbug() {}
 
   // ================================================
-  // Fixes Teleporting through walls
-
-  @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
-  public void onPlayerTelport( PlayerTeleportEvent event) {
-    if (config_.getTeleportFixEnabled()) {
-      return;
-    }
+  // Fixes Teleporting through walls and doors
+  // ** and **
+  // Ender Pearl Teleportation disabling
+  
+  @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+  public void onTeleport( PlayerTeleportEvent event) {
     TeleportCause cause = event.getCause();
     if (cause != TeleportCause.ENDER_PEARL) {
         return;
+    } else {
+    	if(false == config_.getEnderPearlTeleportationEnabled()) {
+    		event.setCancelled(true);
+    		return;
+    	}
+    }
+    if( false == config_.getTeleportFixEnabled()) {
+    	return;
     }
     Location to = event.getTo();
-    org.bukkit.World world = to.getWorld();
+    World world = to.getWorld();
     // From and To are feet positions.  Check and make sure we can teleport to a location with air
     // above the To location.
     Block toBlock = world.getBlockAt( to );
@@ -102,7 +119,17 @@ public class Humbug extends JavaPlugin implements Listener {
     if( !aboveBlock.isEmpty() && !aboveBlock.isLiquid() ||
     	(toBlock.getType() == Material.WOODEN_DOOR) || 
     	(toBlock.getType() == Material.IRON_DOOR_BLOCK) ) {
-    	event.setCancelled( true );
+    	
+    	// One last check because I care about Top Nether.  (someone build me a shrine up there)
+    	boolean bypass = false;
+    	if( ( world.getEnvironment() == Environment.NETHER ) &&
+    	    ( to.getBlockY() > 124 ) &&
+    	    ( to.getBlockY() < 129 ) ) {
+    		  bypass = true;
+    	  }
+    	if( false == bypass ) {
+    		event.setCancelled(true);
+    	}
     }
     
   }
@@ -146,6 +173,100 @@ public class Humbug extends JavaPlugin implements Listener {
     }
   }
 
+  @EventHandler(ignoreCancelled=true)
+  public void onEnderChestPlace(BlockPlaceEvent e) {
+    if (!config_.getEnderChestsPlaceable() && e.getBlock().getType() == Material.ENDER_CHEST) {
+      e.setCancelled(true);
+    }
+  }
+  
+  // ================================================
+  // Portals
+  
+  @EventHandler(ignoreCancelled=true)
+  public void onPortalCreate(PortalCreateEvent e) {
+    if (!config_.getPortalCreateEnabled()) {
+      e.setCancelled(true);
+    }
+  }
+
+  @EventHandler(ignoreCancelled=true)
+  public void onEntityPortalCreate(EntityCreatePortalEvent e) {
+    if (!config_.getPortalCreateEnabled()) {
+      e.setCancelled(true);
+    }
+  }
+
+  // ================================================
+  // EnderDragon
+  
+  @EventHandler(ignoreCancelled=true)
+  public void onDragonSpawn(CreatureSpawnEvent e) {
+    if (e.getEntityType() == EntityType.ENDER_DRAGON && !config_.getEnderDragonEnabled()) {
+      e.setCancelled(true);
+    }
+  }
+  
+  // ================================================
+  // Join/Quit/Kick messages
+
+  @EventHandler(priority=EventPriority.HIGHEST)
+  public void onJoin(PlayerJoinEvent e) {
+    if (!config_.getJoinQuitKickEnabled()) {
+      e.setJoinMessage(null);
+    }
+  }
+
+  @EventHandler(priority=EventPriority.HIGHEST)
+  public void onQuit(PlayerQuitEvent e) {
+    if (!config_.getJoinQuitKickEnabled()) {
+      e.setQuitMessage(null);
+    }
+  }
+
+  @EventHandler(priority=EventPriority.HIGHEST)
+  public void onKick(PlayerKickEvent e) {
+    if (!config_.getJoinQuitKickEnabled()) {
+      e.setLeaveMessage(null);
+    }
+  }
+  
+  // ================================================
+  // Death Messages
+  
+  @EventHandler(priority=EventPriority.HIGHEST)
+  public void onDeath(PlayerDeathEvent e) {
+    boolean log_msg = config_.getDeathLoggingEnabled();
+    boolean send_personal = config_.getDeathMessagePersonalEnabled();
+    if (log_msg || send_personal) {
+      Location location = e.getEntity().getLocation();
+      String msg = String.format(
+          "%s ([%s] %d, %d, %d)", e.getDeathMessage(), location.getWorld().getName(),
+          location.getBlockX(), location.getBlockY(), location.getBlockZ());
+      if (log_msg) {
+        info(msg);
+      }
+      if (send_personal) {
+        e.getEntity().sendMessage(ChatColor.RED + msg);
+      }
+    }
+    if (!config_.getDeathAnnounceEnabled()) {
+      e.setDeathMessage(null);
+    } else if (config_.getDeathMessageRedEnabled()) {
+      e.setDeathMessage(ChatColor.RED + e.getDeathMessage());
+    }
+  }
+
+  // ================================================
+  // Endermen Griefing
+  @EventHandler(ignoreCancelled=true)
+  public void onEndermanGrief(EntityChangeBlockEvent e)
+  {
+    if (!config_.getEndermenGriefEnabled() && e.getEntity() instanceof Enderman) {
+      e.setCancelled(true);
+    }
+  }
+
   // ================================================
   // Wither Insta-breaking and Explosions
 
@@ -181,7 +302,7 @@ public class Humbug extends JavaPlugin implements Listener {
   }
 
   @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
-  public void onCreatureSpawn(CreatureSpawnEvent event) {
+  public void onWitherSpawn(CreatureSpawnEvent event) {
     if (config_.getWitherEnabled()) {
       return;
     }
@@ -252,7 +373,7 @@ public class Humbug extends JavaPlugin implements Listener {
     replaceEnchantedGoldenApple(
         player.getName(), item, inventory.getMaxStackSize());
   }
-
+  
   // ================================================
   // Enchanted Book
 
@@ -470,6 +591,105 @@ public class Humbug extends JavaPlugin implements Listener {
     }
   }
 
+  //================================================
+  // Fix player in vehicle logout bug
+
+  private static final int air_material_id_ = Material.AIR.getId();
+
+  @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
+  public void onDisallowVehicleLogout(PlayerQuitEvent event) {
+    if (!config_.getFixVehicleLogoutBug()) {
+      return;
+    }
+    Player player = event.getPlayer();
+    Entity vehicle = player.getVehicle();
+    if (vehicle == null) {
+      return;
+    }
+    Location loc = vehicle.getLocation();
+    World world = loc.getWorld();
+    // Vehicle data has been cached, now safe to kick the player out
+    player.leaveVehicle();
+
+    // First attempt to place the player just above the vehicle
+    // Normalize the location. Add 1 to Y so it is just above the minecart
+    loc.setX(Math.floor(loc.getX()) + 0.5000);
+    loc.setY(Math.floor(loc.getY()) + 1.0000);
+    loc.setZ(Math.floor(loc.getZ()) + 0.5000);
+    Block block = world.getBlockAt(loc);
+    if (block.getTypeId() == air_material_id_) {
+      block = block.getRelative(BlockFace.UP);
+      if (block.getTypeId() == air_material_id_) {
+        player.teleport(loc);
+        Humbug.info(String.format(
+            "Vehicle logout [%s]: Teleported to %s",
+            player.getName(), loc.toString()));
+        return;
+      }
+    }
+
+    // The space above the cart was blocked. Scan from the top of the world down
+    //  and find 4 vertically contiguous AIR blocks resting above a non-AIR
+    //  block. The size is 4 to provide players a way to prevent griefers from
+    //  teleporting into small spaces (2 or 3 blocks high).
+    Environment world_type = world.getEnvironment();
+    int max_height;
+    if (world_type == Environment.NETHER) {
+      max_height = 126;
+    } else {
+      max_height = world.getMaxHeight() - 2;
+    }
+    // Create a sliding window of block types and track how many of those
+    //  are AIR. Keep fetching the block below the current block to move down.
+    int air_count = 0;
+    LinkedList<Integer> air_window = new LinkedList<Integer>();
+    loc.setY((float)max_height);
+    block = world.getBlockAt(loc);
+    for (int i = 0; i < 4; ++i) {
+      int block_type = block.getTypeId();
+      if (block_type == air_material_id_) {
+        ++air_count;
+      }
+      air_window.addLast(block_type);
+      block = block.getRelative(BlockFace.DOWN);
+    }
+
+    // Now that the window is prepared, scan down the Y-axis.
+    // 3 to prevent bedrock pocket access
+    while (block.getY() > 3) {
+      int block_type = block.getTypeId();
+      if (block_type != air_material_id_) {
+        if (air_count == 4) {
+          // Normalize the location on the block's center. Y+1 which is the
+          //  first AIR above this block.
+          loc = block.getLocation();
+          loc.setX(Math.floor(loc.getX()) + 0.5000);
+          loc.setY(Math.floor(loc.getY()) + 1.0000);
+          loc.setZ(Math.floor(loc.getZ()) + 0.5000);
+          player.teleport(loc);
+          Humbug.info(String.format(
+              "Vehicle logout [%s]: Teleported to %s",
+              player.getName(), loc.toString()));
+          return;
+        }
+      } else { // block_type == air_material_id_
+        ++air_count;
+      }
+      air_window.addLast(block_type);
+      if (air_window.removeFirst() == air_material_id_) {
+        --air_count;
+      }
+      block = block.getRelative(BlockFace.DOWN);
+    }
+
+    // No space in this (x,z) column to teleport the player. Feed them
+    //  to the lions.
+    Humbug.info(String.format(
+        "Vehicle logout [%s]: No space for teleport, killed",
+        player.getName()));
+    player.setHealth(0);
+  }
+
   // ================================================
   // General
 
@@ -534,11 +754,56 @@ public class Humbug extends JavaPlugin implements Listener {
         config_.setEnderChestEnabled(toBool(value));
       }
       msg = String.format("ender_chest = %s", config_.getEnderChestEnabled());
+    } else if (option.equals("ender_chests_placeable")) {
+      if (set) {
+        config_.setEnderChestsPlaceable(toBool(value));
+      }
+      msg = String.format("ender_chests_placeable = %s", config_.getEnderChestsPlaceable());
     } else if (option.equals("villager_trades")) {
       if (set) {
         config_.setVillagerTradesEnabled(toBool(value));
       }
       msg = String.format("villager_trades = %s", config_.getVillagerTradesEnabled());
+    } else if (option.equals("portalcreate")) {
+      if (set) {
+        config_.setPortalCreateEnabled(toBool(value));
+      }
+      msg = String.format("portalcreate = %s", config_.getPortalCreateEnabled());
+    } else if (option.equals("enderdragon")) {
+      if (set) {
+        config_.setEnderDragonEnabled(toBool(value));
+      }
+      msg = String.format("enderdragon = %s", config_.getEnderDragonEnabled());
+    } else if (option.equals("joinquitkick")) {
+      if (set) {
+        config_.setJoinQuitKickEnabled(toBool(value));
+      }
+      msg = String.format("joinquitkick = %s", config_.getJoinQuitKickEnabled());
+    } else if (option.equals("deathpersonal")) {
+      if (set) {
+        config_.setDeathMessagePersonalEnabled(toBool(value));
+      }
+      msg = String.format("deathpersonal = %s", config_.getDeathMessagePersonalEnabled());
+    } else if (option.equals("deathannounce")) {
+      if (set) {
+        config_.setDeathAnnounceEnabled(toBool(value));
+      }
+      msg = String.format("deathannounce = %s", config_.getDeathAnnounceEnabled());
+    } else if (option.equals("deathred")) {
+      if (set) {
+        config_.setDeathMessageRedEnabled(toBool(value));
+      }
+      msg = String.format("deathred = %s", config_.getDeathMessageRedEnabled());
+    } else if (option.equals("deathlog")) {
+      if (set) {
+        config_.setDeathLoggingEnabled(toBool(value));
+      }
+      msg = String.format("deathlog = %s", config_.getDeathLoggingEnabled());
+    } else if (option.equals("endergrief")) {
+      if (set) {
+        config_.setEndermenGriefEnabled(toBool(value));
+      }
+      msg = String.format("endergrief = %s", config_.getEndermenGriefEnabled());
     } else if (option.equals("wither")) {
       if (set) {
         config_.setWitherEnabled(toBool(value));
@@ -594,6 +859,11 @@ public class Humbug extends JavaPlugin implements Listener {
         config_.setFixRailDupBug(toBool(value));
       }
       msg = String.format("fix_rail_dup_bug = %s", config_.getFixRailDupBug());
+    } else if (option.equals("fix_vehicle_logout_bug")) {
+      if (set) {
+        config_.setFixVehicleLogoutBug(toBool(value));
+      }
+      msg = String.format("fix_vehicle_logout_bug = %s", config_.getFixVehicleLogoutBug());
     } else if (option.equals("player_max_health")) {
       if (set) {
         config_.setMaxHealth(toInt(value, config_.getMaxHealth()));
@@ -604,6 +874,11 @@ public class Humbug extends JavaPlugin implements Listener {
         config_.setTeleportFixEnabled(toBool(value));
       }
       msg = String.format("fix_teleport_glitch = %s", config_.getTeleportFixEnabled());
+    } else if (option.equals("ender_pearl_teleportation")) {
+      if (set) {
+        config_.setEnderPearlTeleportationEnabled(toBool(value));
+      }
+      msg = String.format("ender_pearl_teleportation = %s", config_.getEnderPearlTeleportationEnabled());
     } else if (option.equals("save")) {
       config_.save();
       msg = "Configuration saved";

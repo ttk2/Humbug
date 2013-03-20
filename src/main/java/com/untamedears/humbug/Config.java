@@ -13,7 +13,16 @@ public class Config {
   private static final boolean debug_log_ = false;
   private static final boolean anvil_enabled_ = false;
   private static final boolean ender_chest_enabled_ = false;
+  private static final boolean ender_chests_placeable_ = true;
   private static final boolean villager_trades_enabled_ = false;
+  private static final boolean portalcreate_enabled_ = true;
+  private static final boolean enderdragon_enabled_ = true;
+  private static final boolean joinquitkick_enabled_ = true;
+  private static final boolean deathpersonal_enabled_ = false;
+  private static final boolean deathannounce_enabled_ = true;
+  private static final boolean deathred_enabled_ = false;
+  private static final boolean deathlog_enabled_ = false;
+  private static final boolean endergrief_enabled_ = true;
   private static final boolean wither_enabled_ = true;
   private static final boolean wither_explosions_enabled_ = false;
   private static final boolean wither_insta_break_enabled_ = false;
@@ -22,12 +31,13 @@ public class Config {
   private static final boolean ench_book_craftable_ = false;
   private static final boolean scale_protection_enchant_ = true;
   private static final boolean fix_rail_dup_bug_ = true;
+  private static final boolean fix_vehicle_logout_bug_ = true;
   private static final int player_max_health_ = 20;
-  // For Enchanted GOLDEN_APPLES
+  private static final boolean ender_pearl_teleportation_enabled_ = true;
   private static final boolean ench_gold_app_edible_ = false;
   private static final boolean ench_gold_app_craftable_ = false;
   // For fixing the teleport glitch
-  private static final boolean fix_teleport_glitch_ = false;
+  private static final boolean fix_teleport_glitch_ = true;
 
   public static Config initialize(Plugin plugin) {
     if (global_instance_ == null) {
@@ -83,12 +93,84 @@ public class Config {
     config_.set("ender_chest", value);
   }
 
+  public boolean getEnderChestsPlaceable() {
+    return config_.getBoolean("ender_chests_placeable", ender_chests_placeable_);
+  }
+
+  public void setEnderChestsPlaceable(boolean value) {
+    config_.set("ender_chests_placeable", value);
+  }
+
   public boolean getVillagerTradesEnabled() {
     return config_.getBoolean("villager_trades", villager_trades_enabled_);
   }
 
   public void setVillagerTradesEnabled(boolean value) {
     config_.set("villager_trades", value);
+  }
+
+  public boolean getPortalCreateEnabled() {
+    return config_.getBoolean("portalcreate", portalcreate_enabled_);
+  }
+
+  public void setPortalCreateEnabled(boolean value) {
+    config_.set("portalcreate", value);
+  }
+
+  public boolean getEnderDragonEnabled() {
+    return config_.getBoolean("enderdragon", enderdragon_enabled_);
+  }
+
+  public void setEnderDragonEnabled(boolean value) {
+    config_.set("enderdragon", value);
+  }
+
+  public boolean getJoinQuitKickEnabled() {
+    return config_.getBoolean("joinquitkick", joinquitkick_enabled_);
+  }
+
+  public void setJoinQuitKickEnabled(boolean value) {
+    config_.set("joinquitkick", value);
+  }
+
+  public boolean getDeathMessagePersonalEnabled() {
+    return config_.getBoolean("deathpersonal", deathpersonal_enabled_);
+  }
+
+  public void setDeathMessagePersonalEnabled(boolean value) {
+    config_.set("deathpersonal", value);
+  }
+
+  public boolean getDeathAnnounceEnabled() {
+    return config_.getBoolean("deathannounce", deathannounce_enabled_);
+  }
+
+  public void setDeathAnnounceEnabled(boolean value) {
+    config_.set("deathannounce", value);
+  }
+
+  public boolean getDeathMessageRedEnabled() {
+    return config_.getBoolean("deathred", deathred_enabled_);
+  }
+
+  public void setDeathMessageRedEnabled(boolean value) {
+    config_.set("deathred", value);
+  }
+
+  public boolean getDeathLoggingEnabled() {
+    return config_.getBoolean("deathlog", deathlog_enabled_);
+  }
+
+  public void setDeathLoggingEnabled(boolean value) {
+    config_.set("deathlog", value);
+  }
+
+  public boolean getEndermenGriefEnabled() {
+    return config_.getBoolean("endergrief", endergrief_enabled_);
+  }
+
+  public void setEndermenGriefEnabled(boolean value) {
+    config_.set("endergrief", value);
   }
 
   public boolean getWitherEnabled() {
@@ -178,8 +260,16 @@ public class Config {
     config_.set("fix_rail_dup_bug", value);
   }
 
+  public boolean getFixVehicleLogoutBug() {
+    return config_.getBoolean("fix_vehicle_logout_bug", fix_vehicle_logout_bug_);
+  }
+
+  public void setFixVehicleLogoutBug(boolean value) {
+    config_.set("fix_vehicle_logout_bug", value);
+  }
+
   public int getMaxHealth() {
-	return config_.getInt("player_max_health", player_max_health_);
+    return config_.getInt("player_max_health", player_max_health_);
   }
 
   public void setMaxHealth(int value) {
@@ -194,4 +284,12 @@ public class Config {
     config_.set("fix_teleport_glitch", value);
   }
 
+  
+  public boolean getEnderPearlTeleportationEnabled() {
+    return config_.getBoolean("ender_pearl_teleportation", ender_pearl_teleportation_enabled_);
+  }
+  
+  public void setEnderPearlTeleportationEnabled(boolean value) {
+    config_.set("ender_pearl_teleportation", value);
+  }
 }
