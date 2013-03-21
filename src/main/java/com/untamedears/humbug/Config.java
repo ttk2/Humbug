@@ -36,10 +36,8 @@ public class Config {
   private static final boolean ender_pearl_teleportation_enabled_ = true;
   private static final boolean ench_gold_app_edible_ = false;
   private static final boolean ench_gold_app_craftable_ = false;
-
-  private static Config get() {
-    return global_instance_;
-  }
+  // For fixing the teleport glitch
+  private static final boolean fix_teleport_glitch_ = true;
 
   public static Config initialize(Plugin plugin) {
     if (global_instance_ == null) {
@@ -277,7 +275,15 @@ public class Config {
   public void setMaxHealth(int value) {
     config_.set("player_max_health", value);
   }
-  
+
+  public boolean getTeleportFixEnabled() {
+    return config_.getBoolean("fix_teleport_glitch", fix_teleport_glitch_);
+  }
+
+  public void setTeleportFixEnabled(boolean value) {
+    config_.set("fix_teleport_glitch", value);
+  }
+
   public boolean getEnderPearlTeleportationEnabled() {
     return config_.getBoolean("ender_pearl_teleportation", ender_pearl_teleportation_enabled_);
   }

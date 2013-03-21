@@ -2,7 +2,6 @@ package com.untamedears.humbug;
 
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
 
@@ -91,6 +90,44 @@ public class Humbug extends JavaPlugin implements Listener {
   private Random prng_ = new Random();
 
   public Humbug() {}
+
+  // ================================================
+  // Fixes Teleporting through walls and doors
+  // ** and **
+  // Ender Pearl Teleportation disabling
+
+  @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+  public void onTeleport(PlayerTeleportEvent event) {
+    TeleportCause cause = event.getCause();
+    if (cause != TeleportCause.ENDER_PEARL) {
+        return;
+    } else if (!config_.getEnderPearlTeleportationEnabled()) {
+      event.setCancelled(true);
+      return;
+    }
+    if (!config_.getTeleportFixEnabled()) {
+      return;
+    }
+    Location to = event.getTo();
+    World world = to.getWorld();
+    // From and To are feet positions.  Check and make sure we can teleport to a location with air
+    // above the To location.
+    Block toBlock = world.getBlockAt(to);
+    Block aboveBlock = world.getBlockAt(to.getBlockX(), to.getBlockY()+1, to.getBlockZ());
+    if(!aboveBlock.isEmpty() && !aboveBlock.isLiquid() ||
+        (toBlock.getType() == Material.WOODEN_DOOR) || 
+        (toBlock.getType() == Material.IRON_DOOR_BLOCK)) {
+      // One last check because I care about Top Nether.  (someone build me a shrine up there)
+      boolean bypass = false;
+      if ((world.getEnvironment() == Environment.NETHER) &&
+          (to.getBlockY() > 124) && (to.getBlockY() < 129)) {
+        bypass = true;
+      }
+      if (!bypass) {
+        event.setCancelled(true);
+      }
+    }
+  }
 
   // ================================================
   // Villager Trading
@@ -332,19 +369,6 @@ public class Humbug extends JavaPlugin implements Listener {
         player.getName(), item, inventory.getMaxStackSize());
   }
   
-  // ================================================
-  // Ender Pearl Teleportation
-  
-  @EventHandler(priority = EventPriority.LOWEST)
-  public void onTeleport(PlayerTeleportEvent event) {
-    if (config_.getEnderPearlTeleportationEnabled()) {
-      return;
-    }
-    if (event.getCause() == TeleportCause.ENDER_PEARL) {
-      event.setCancelled(true);
-    }
-  }
-
   // ================================================
   // Enchanted Book
 
@@ -840,6 +864,11 @@ public class Humbug extends JavaPlugin implements Listener {
         config_.setMaxHealth(toInt(value, config_.getMaxHealth()));
       }
       msg = String.format("player_max_health = %d", config_.getMaxHealth());
+    } else if (option.equals("fix_teleport_glitch")) {
+      if (set) {
+        config_.setTeleportFixEnabled(toBool(value));
+      }
+      msg = String.format("fix_teleport_glitch = %s", config_.getTeleportFixEnabled());
     } else if (option.equals("ender_pearl_teleportation")) {
       if (set) {
         config_.setEnderPearlTeleportationEnabled(toBool(value));
