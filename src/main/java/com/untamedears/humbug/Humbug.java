@@ -116,16 +116,14 @@ public class Humbug extends JavaPlugin implements Listener {
     World world = to.getWorld();
     
     // Normalize teleport to the center of the block.  Feet ON the ground, plz.
-    Block toBlock = world.getBlockAt(to);
-    Location loc = toBlock.getLocation();
-    
-    loc.setX(Math.floor(loc.getX()) + 0.5000);
-    loc.setY(Math.floor(loc.getY()) + 0.0000);
-    loc.setZ(Math.floor(loc.getZ()) + 0.5000);
-    event.setTo(loc);
-    
+    // Leave Yaw and Pitch alone
+    to.setX(Math.floor(to.getX()) + 0.5000);
+    to.setY(Math.floor(to.getY()) + 0.0000);
+    to.setZ(Math.floor(to.getZ()) + 0.5000);
+        
     // From and To are feet positions.  Check and make sure we can teleport to a location with air
     // above the To location.
+    Block toBlock = world.getBlockAt(to);
     Block aboveBlock = world.getBlockAt(to.getBlockX(), to.getBlockY()+1, to.getBlockZ());
     if(aboveBlock.getType().isSolid() ||
        (toBlock.getType().isSolid())) {
