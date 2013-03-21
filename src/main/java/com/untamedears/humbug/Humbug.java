@@ -127,9 +127,8 @@ public class Humbug extends JavaPlugin implements Listener {
     // From and To are feet positions.  Check and make sure we can teleport to a location with air
     // above the To location.
     Block aboveBlock = world.getBlockAt(to.getBlockX(), to.getBlockY()+1, to.getBlockZ());
-    if(!aboveBlock.isEmpty() && !aboveBlock.isLiquid() ||
-        (toBlock.getType() == Material.WOODEN_DOOR) || 
-        (toBlock.getType() == Material.IRON_DOOR_BLOCK)) {
+    if(aboveBlock.getType().isSolid() ||
+       (toBlock.getType().isSolid())) {
       // One last check because I care about Top Nether.  (someone build me a shrine up there)
       boolean bypass = false;
       if ((world.getEnvironment() == Environment.NETHER) &&
