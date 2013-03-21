@@ -2,6 +2,7 @@ package com.untamedears.humbug;
 
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
 
@@ -20,6 +21,8 @@ import org.bukkit.entity.Enderman;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Skeleton;
+import org.bukkit.entity.Skeleton.SkeletonType;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -33,6 +36,7 @@ import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityCreatePortalEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityExplodeEvent;
@@ -95,45 +99,40 @@ public class Humbug extends JavaPlugin implements Listener {
   // Fixes Teleporting through walls and doors
   // ** and **
   // Ender Pearl Teleportation disabling
-  
+
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-  public void onTeleport( PlayerTeleportEvent event) {
+  public void onTeleport(PlayerTeleportEvent event) {
     TeleportCause cause = event.getCause();
     if (cause != TeleportCause.ENDER_PEARL) {
         return;
-    } else {
-    	if(false == config_.getEnderPearlTeleportationEnabled()) {
-    		event.setCancelled(true);
-    		return;
-    	}
+    } else if (!config_.getEnderPearlTeleportationEnabled()) {
+      event.setCancelled(true);
+      return;
     }
-    if( false == config_.getTeleportFixEnabled()) {
-    	return;
+    if (!config_.getTeleportFixEnabled()) {
+      return;
     }
     Location to = event.getTo();
     World world = to.getWorld();
     // From and To are feet positions.  Check and make sure we can teleport to a location with air
     // above the To location.
-    Block toBlock = world.getBlockAt( to );
-    Block aboveBlock = world.getBlockAt( to.getBlockX(), to.getBlockY()+1, to.getBlockZ() );
-    if( !aboveBlock.isEmpty() && !aboveBlock.isLiquid() ||
-    	(toBlock.getType() == Material.WOODEN_DOOR) || 
-    	(toBlock.getType() == Material.IRON_DOOR_BLOCK) ) {
-    	
-    	// One last check because I care about Top Nether.  (someone build me a shrine up there)
-    	boolean bypass = false;
-    	if( ( world.getEnvironment() == Environment.NETHER ) &&
-    	    ( to.getBlockY() > 124 ) &&
-    	    ( to.getBlockY() < 129 ) ) {
-    		  bypass = true;
-    	  }
-    	if( false == bypass ) {
-    		event.setCancelled(true);
-    	}
+    Block toBlock = world.getBlockAt(to);
+    Block aboveBlock = world.getBlockAt(to.getBlockX(), to.getBlockY()+1, to.getBlockZ());
+    if(!aboveBlock.isEmpty() && !aboveBlock.isLiquid() ||
+        (toBlock.getType() == Material.WOODEN_DOOR) || 
+        (toBlock.getType() == Material.IRON_DOOR_BLOCK)) {
+      // One last check because I care about Top Nether.  (someone build me a shrine up there)
+      boolean bypass = false;
+      if ((world.getEnvironment() == Environment.NETHER) &&
+          (to.getBlockY() > 124) && (to.getBlockY() < 129)) {
+        bypass = true;
+      }
+      if (!bypass) {
+        event.setCancelled(true);
+      }
     }
-    
   }
-  
+
   // ================================================
   // Villager Trading
 
@@ -310,6 +309,46 @@ public class Humbug extends JavaPlugin implements Listener {
       return;
     }
     event.setCancelled(true);
+  }
+
+  // ================================================
+  // Wither Skull drop rate
+
+  public static final int skull_id_ = Material.SKULL_ITEM.getId();
+  public static final byte wither_skull_data_ = 1;
+
+  @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+  public void onWitherSkeletonDeath(EntityDeathEvent event) {
+    Entity entity = event.getEntity();
+    if (!(entity instanceof Skeleton)) {
+      return;
+    }
+    int rate = config_.getWitherSkullDropRate();
+    if (rate < 0 || rate > 1000000) {
+      return;
+    }
+    Skeleton skele = (Skeleton)entity;
+    if (skele.getSkeletonType() != SkeletonType.WITHER) {
+      return;
+    }
+    List<ItemStack> drops = event.getDrops();
+    ItemStack item;
+    int i = drops.size() - 1;
+    while (i >= 0) {
+      item = drops.get(i);
+      if (item.getTypeId() == skull_id_
+          && item.getData().getData() == wither_skull_data_) {
+        drops.remove(i);
+      }
+      --i;
+    }
+    if (rate - prng_.nextInt(1000000) <= 0) {
+      return;
+    }
+    item = new ItemStack(Material.SKULL_ITEM);
+    item.setAmount(1);
+    item.setDurability((short)wither_skull_data_);
+    drops.add(item);
   }
 
   // ================================================
@@ -864,6 +903,11 @@ public class Humbug extends JavaPlugin implements Listener {
         config_.setFixVehicleLogoutBug(toBool(value));
       }
       msg = String.format("fix_vehicle_logout_bug = %s", config_.getFixVehicleLogoutBug());
+    } else if (option.equals("wither_skull_drop_rate")) {
+      if (set) {
+        config_.setWitherSkullDropRate(toInt(value, config_.getWitherSkullDropRate()));
+      }
+      msg = String.format("wither_skull_drop_rate = %d", config_.getWitherSkullDropRate());
     } else if (option.equals("player_max_health")) {
       if (set) {
         config_.setMaxHealth(toInt(value, config_.getMaxHealth()));

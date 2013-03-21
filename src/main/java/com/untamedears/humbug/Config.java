@@ -32,6 +32,7 @@ public class Config {
   private static final boolean scale_protection_enchant_ = true;
   private static final boolean fix_rail_dup_bug_ = true;
   private static final boolean fix_vehicle_logout_bug_ = true;
+  private static final int wither_skull_drop_rate_ = -1;
   private static final int player_max_health_ = 20;
   private static final boolean ender_pearl_teleportation_enabled_ = true;
   private static final boolean ench_gold_app_edible_ = false;
@@ -268,6 +269,14 @@ public class Config {
     config_.set("fix_vehicle_logout_bug", value);
   }
 
+  public int getWitherSkullDropRate() {
+    return config_.getInt("wither_skull_drop_rate", wither_skull_drop_rate_);
+  }
+
+  public void setWitherSkullDropRate(int value) {
+    config_.set("wither_skull_drop_rate", value);
+  }
+
   public int getMaxHealth() {
     return config_.getInt("player_max_health", player_max_health_);
   }
@@ -277,14 +286,13 @@ public class Config {
   }
 
   public boolean getTeleportFixEnabled() {
-	return config_.getBoolean("fix_teleport_glitch", fix_teleport_glitch_ );
+    return config_.getBoolean("fix_teleport_glitch", fix_teleport_glitch_);
   }
 
   public void setTeleportFixEnabled(boolean value) {
     config_.set("fix_teleport_glitch", value);
   }
 
-  
   public boolean getEnderPearlTeleportationEnabled() {
     return config_.getBoolean("ender_pearl_teleportation", ender_pearl_teleportation_enabled_);
   }
