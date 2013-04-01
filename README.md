@@ -1,7 +1,7 @@
 Humbug
 ======
 
-Minecraft server plug-in: Simply disables various functionality
+Minecraft server plug-in: Simply toggles various functionality
 
 - Disables Anvil use.
 - Disables Ender Chest use.
@@ -10,10 +10,12 @@ Minecraft server plug-in: Simply disables various functionality
 - Disables Ender dragon.
 - Disables join/quit/kick announcements.
 - Enables personal death message with coords
-- Disabled Death announcements.
+- Disables Death announcements.
 - Enables Red coloring on Death announcements.
 - Enables death message logging.
-- Disabled Enderman Griefing (stealing blocks)
+- Disables Enderman Griefing (stealing blocks)
+- Enables Unlimited Cauldron Water
+- Enables Quartz from Gravel
 - Disables Wither block destruction radius.
 - Disables Wither and Wither Skull explosions.
 - Disables cobblestone generation from lava and water.
@@ -43,6 +45,8 @@ Config file settings:
 - deathred: Boolean, makes death announce messages red
 - deathlog: Boolean, logs player deaths to the console
 - endergrief: Boolean, turns on enderman stealing blocks
+- unlimitedcauldron: Boolean, turns on unlimited cauldron water
+- quartz_gravel_percentage: Integer between 0 and 100, 0 is standard behavior.
 - wither: Boolean, Turns on the wither
 - wither_explosions: Boolean, Turns on wither explosions destroying blocks. Wither/Wither Skull explosions will always occur to damage players, this only effects block breakage.
 - wither_insta_break: Boolean, Turns on the wither insta-break ability
@@ -72,6 +76,8 @@ Default configuration (biased for CivCraft):
 - deathred: false
 - deathlog: false
 - endergrief: true
+- unlimitedcauldron: false
+- quartz_gravel_percentage: 0
 - wither: true
 - wither_explosions: false
 - wither_insta_break: false

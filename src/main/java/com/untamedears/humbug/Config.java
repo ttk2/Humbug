@@ -15,6 +15,8 @@ public class Config {
   private static final boolean ender_chest_enabled_ = false;
   private static final boolean ender_chests_placeable_ = true;
   private static final boolean villager_trades_enabled_ = false;
+  private static final boolean unlimited_cauldron_enabled_ = false;
+  private static final int quartz_gravel_percentage_ = 0;
   private static final boolean portalcreate_enabled_ = true;
   private static final boolean enderdragon_enabled_ = true;
   private static final boolean joinquitkick_enabled_ = true;
@@ -124,6 +126,29 @@ public class Config {
 
   public void setEnderDragonEnabled(boolean value) {
     config_.set("enderdragon", value);
+  }
+
+  public boolean getUnlimitedCauldronEnabled() {
+    return config_.getBoolean("unlimitedcauldron", unlimited_cauldron_enabled_);
+  }
+
+  public void setUnlimitedCauldronEnabled(boolean value) {
+    config_.set("unlimitedcauldron", value);
+  }
+
+  public int getQuartzGravelPercentage() {
+    return config_.getInt("quartz_gravel_percentage", quartz_gravel_percentage_);
+  }
+
+  public void setQuartzGravelPercentage(int value) {
+    if (value < 0) {
+      value = 0;
+      Humbug.warning("quartz_gravel_percentage adjusted to 0");
+    } else if (value > 100) {
+      value = 100;
+      Humbug.warning("quartz_gravel_percentage adjusted to 100");
+    }
+    config_.set("quartz_gravel_percentage", value);
   }
 
   public boolean getJoinQuitKickEnabled() {

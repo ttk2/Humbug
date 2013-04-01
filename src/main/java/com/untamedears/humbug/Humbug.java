@@ -27,6 +27,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
@@ -182,6 +183,42 @@ public class Humbug extends JavaPlugin implements Listener {
   public void onEnderChestPlace(BlockPlaceEvent e) {
     if (!config_.getEnderChestsPlaceable() && e.getBlock().getType() == Material.ENDER_CHEST) {
       e.setCancelled(true);
+    }
+  }
+  
+  // ================================================
+  // Unlimited Cauldron water
+
+  @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+  public void onCauldronInteract(PlayerInteractEvent e) {
+    if (!config_.getUnlimitedCauldronEnabled()) {
+      return;
+    }
+  
+    // block water going down on cauldrons
+    if(e.getClickedBlock().getType() == Material.CAULDRON && e.getMaterial() == Material.GLASS_BOTTLE && e.getAction() == Action.RIGHT_CLICK_BLOCK)
+    {
+      Block block = e.getClickedBlock();
+      if(block.getData() > 0)
+      {
+        block.setData((byte)(block.getData()+1));
+      }
+    }
+  }
+  
+  // ================================================
+  // Quartz from Gravel
+  @EventHandler(ignoreCancelled=true, priority = EventPriority.HIGHEST)
+  public void onGravelBreak(BlockBreakEvent e) {
+    if(e.getBlock().getType() != Material.GRAVEL || config_.getQuartzGravelPercentage() == 0) {
+      return;
+    }
+	  
+    if(prng_.nextInt(100) < config_.getQuartzGravelPercentage())
+    {
+      e.setCancelled(true);
+      e.getBlock().setType(Material.AIR);
+      e.getBlock().getWorld().dropItemNaturally(e.getBlock().getLocation(), new ItemStack(Material.QUARTZ, 1));
     }
   }
   
@@ -849,6 +886,16 @@ public class Humbug extends JavaPlugin implements Listener {
         config_.setEndermenGriefEnabled(toBool(value));
       }
       msg = String.format("endergrief = %s", config_.getEndermenGriefEnabled());
+    } else if (option.equals("unlimitedcauldron")) {
+      if (set) {
+        config_.setUnlimitedCauldronEnabled(toBool(value));
+      }
+      msg = String.format("unlimitedcauldron = %s", config_.getUnlimitedCauldronEnabled());
+    } else if (option.equals("quartz_gravel_percentage")) {
+      if (set) {
+        config_.setQuartzGravelPercentage(toInt(value, config_.getQuartzGravelPercentage()));
+      }
+      msg = String.format("quartz_gravel_percentage = %d", config_.getQuartzGravelPercentage());
     } else if (option.equals("wither")) {
       if (set) {
         config_.setWitherEnabled(toBool(value));
