@@ -209,7 +209,6 @@ public class Humbug extends JavaPlugin implements Listener {
   
   // ================================================
   // Quartz from Gravel
-  /* 1.5 specific functionality
   @EventHandler(ignoreCancelled=true, priority = EventPriority.HIGHEST)
   public void onGravelBreak(BlockBreakEvent e) {
     if(e.getBlock().getType() != Material.GRAVEL || config_.getQuartzGravelPercentage() == 0) {
@@ -223,7 +222,6 @@ public class Humbug extends JavaPlugin implements Listener {
       e.getBlock().getWorld().dropItemNaturally(e.getBlock().getLocation(), new ItemStack(Material.QUARTZ, 1));
     }
   }
-  */
   
   // ================================================
   // Portals
