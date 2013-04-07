@@ -28,6 +28,7 @@ Minecraft server plug-in: Simply toggles various functionality
 - Converts Enchanted Golden Apples to normal Golden Apples if a Player attempts to eat them.
 - Disables Ender Pearl Teleportation
 - Alters the drop rate of wither skulls
+- Removes specific items from dropping when a mob is killed
 
 The 'humbug' console command can be used to get or set any of the configuration file settings while the server is running. Also available are 'humbug save' and 'humbug reload'.
 
@@ -61,6 +62,7 @@ Config file settings:
 - ench_gold_app_edible: Boolean, Allows players to eat Enchanted Golden Apples. If false, Enchanted Golden Apples are converted to normal Golden Apples
 - ench_gold_app_craftable: Boolean, Allows the Enchanted Golden Apple recipe to be used
 - wither_skull_drop_rate: Integer between -1 and 1000000, -1 is standard behavior. If a random number [0, 1000000) is less then this value, a wither skull drops. For example, 200000 is a 20% drop rate.
+- remove_mob_drops: List<Integer>, a list of item IDs to remove from the dropped items when mobs are killed. The in-game command can also accept Material names.
 
 Default configuration (biased for CivCraft):
 - debug: false
@@ -92,3 +94,4 @@ Default configuration (biased for CivCraft):
 - ench_gold_app_edible: false
 - ench_gold_app_craftable: false
 - wither_skull_drop_rate: -1
+- remove_mob_drops:
