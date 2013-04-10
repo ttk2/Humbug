@@ -28,7 +28,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
@@ -116,21 +115,67 @@ public class Humbug extends JavaPlugin implements Listener {
     }
     Location to = event.getTo();
     World world = to.getWorld();
-    
-    // Normalize teleport to the center of the block.  Feet ON the ground, plz.
-    // Leave Yaw and Pitch alone
-    to.setX(Math.floor(to.getX()) + 0.5000);
-    to.setY(Math.floor(to.getY()) + 0.0000);
-    to.setZ(Math.floor(to.getZ()) + 0.5000);
-        
+
     // From and To are feet positions.  Check and make sure we can teleport to a location with air
     // above the To location.
     Block toBlock = world.getBlockAt(to);
     Block aboveBlock = world.getBlockAt(to.getBlockX(), to.getBlockY()+1, to.getBlockZ());
+    Block belowBlock = world.getBlockAt(to.getBlockX(), to.getBlockY()-1, to.getBlockZ());
+    boolean bypass = false;
+    double height = 0.0;
+    switch( toBlock.getType() ) {
+    case CHEST: // Probably never will get hit directly
+    case ENDER_CHEST: // Probably never will get hit directly
+    	height = 0.875;
+    	break;
+    case STEP:
+    	bypass = true;
+    	height = 0.5;
+    	break;
+    case WATER_LILY:
+    	height = 0.016;
+    	break;
+    case ENCHANTMENT_TABLE:
+    	bypass = true;
+    	height = 0.75;
+    	break;
+    case BED_BLOCK:
+    	bypass = true;
+    	height = 0.563;
+    	break;
+    case FLOWER_POT: 
+    case FLOWER_POT_ITEM:
+    	height = 0.375;
+    	break;
+    case SKULL: // Probably never will get hit directly
+    	height = 0.5;
+    	break;
+    default:
+    	break;
+    }
+    // Check if the below block is difficult
+    // This is added because if you face downward directly on a gate, it will
+    // teleport your feet INTO the gate, thus bypassing the gate until you leave that block.
+    switch( belowBlock.getType() ) {
+    case FENCE:
+    case FENCE_GATE:
+    case NETHER_FENCE:
+    	height = 0.5;
+    	break;
+    default:
+    	break;
+    }
+    
+    // Normalize teleport to the center of the block.  Feet ON the ground, plz.
+    // Leave Yaw and Pitch alone
+    to.setX(Math.floor(to.getX()) + 0.5000);
+    to.setY(Math.floor(to.getY()) + height);
+    to.setZ(Math.floor(to.getZ()) + 0.5000);
+        
     if(aboveBlock.getType().isSolid() ||
        (toBlock.getType().isSolid())) {
       // One last check because I care about Top Nether.  (someone build me a shrine up there)
-      boolean bypass = false;
+      
       if ((world.getEnvironment() == Environment.NETHER) &&
           (to.getBlockY() > 124) && (to.getBlockY() < 129)) {
         bypass = true;
