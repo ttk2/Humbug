@@ -1,5 +1,12 @@
 package com.untamedears.humbug;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+
+import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.Plugin;
 
@@ -15,6 +22,8 @@ public class Config {
   private static final boolean ender_chest_enabled_ = false;
   private static final boolean ender_chests_placeable_ = true;
   private static final boolean villager_trades_enabled_ = false;
+  private static final boolean unlimited_cauldron_enabled_ = false;
+  private static final int quartz_gravel_percentage_ = 0;
   private static final boolean portalcreate_enabled_ = true;
   private static final boolean enderdragon_enabled_ = true;
   private static final boolean joinquitkick_enabled_ = true;
@@ -50,6 +59,7 @@ public class Config {
 
   private FileConfiguration config_ = null;
   private Plugin plugin_ = null;
+  private Set<Integer> remove_item_drops_ = null;
 
   public Config(Plugin plugin) {
     plugin_ = plugin;
@@ -60,6 +70,8 @@ public class Config {
     FileConfiguration config = plugin_.getConfig();
     config.options().copyDefaults(true);
     config_ = config;
+    // Setting specific initialization
+    loadRemoveItemDrops();
   }
 
   public void reload() {
@@ -124,6 +136,29 @@ public class Config {
 
   public void setEnderDragonEnabled(boolean value) {
     config_.set("enderdragon", value);
+  }
+
+  public boolean getUnlimitedCauldronEnabled() {
+    return config_.getBoolean("unlimitedcauldron", unlimited_cauldron_enabled_);
+  }
+
+  public void setUnlimitedCauldronEnabled(boolean value) {
+    config_.set("unlimitedcauldron", value);
+  }
+
+  public int getQuartzGravelPercentage() {
+    return config_.getInt("quartz_gravel_percentage", quartz_gravel_percentage_);
+  }
+
+  public void setQuartzGravelPercentage(int value) {
+    if (value < 0) {
+      value = 0;
+      Humbug.warning("quartz_gravel_percentage adjusted to 0");
+    } else if (value > 100) {
+      value = 100;
+      Humbug.warning("quartz_gravel_percentage adjusted to 100");
+    }
+    config_.set("quartz_gravel_percentage", value);
   }
 
   public boolean getJoinQuitKickEnabled() {
@@ -299,5 +334,85 @@ public class Config {
   
   public void setEnderPearlTeleportationEnabled(boolean value) {
     config_.set("ender_pearl_teleportation", value);
+  }
+
+  private void loadRemoveItemDrops() {
+    if (!config_.isSet("remove_mob_drops")) {
+      remove_item_drops_ = new HashSet<Integer>(4);
+      return;
+    }
+    remove_item_drops_ = new HashSet<Integer>();
+    if (!config_.isList("remove_mob_drops")) {
+      Integer val = config_.getInt("remove_mob_drops");
+      if (val == null) {
+        config_.set("remove_mob_drops", new LinkedList<Integer>());
+        Humbug.info("remove_mob_drops was invalid, reset");
+        return;
+      }
+      remove_item_drops_.add(val);
+      List<Integer> list = new LinkedList<Integer>();
+      list.add(val);
+      config_.set("remove_mob_drops", val);
+      Humbug.info("remove_mob_drops was not an Integer list, converted");
+      return;
+    }
+    remove_item_drops_.addAll(config_.getIntegerList("remove_mob_drops"));
+  }
+
+  public boolean doRemoveItemDrops() {
+    return !remove_item_drops_.isEmpty();
+  }
+
+  public Set<Integer> getRemoveItemDrops() {
+    return Collections.unmodifiableSet(remove_item_drops_);
+  }
+
+  public void addRemoveItemDrop(int item_id) {
+    if (item_id < 0) {
+      return;
+    }
+    remove_item_drops_.add(item_id);
+    List<Integer> list;
+    if (!config_.isSet("remove_mob_drops")) {
+      list = new LinkedList<Integer>();
+    } else {
+      list = config_.getIntegerList("remove_mob_drops");
+    }
+    list.add(item_id);
+    config_.set("remove_mob_drops", list);
+  }
+
+  public void removeRemoveItemDrop(int item_id) {
+    if (item_id < 0) {
+      return;
+    }
+    if (!remove_item_drops_.remove(item_id)) {
+      return;
+    }
+    List<Integer> list = config_.getIntegerList("remove_mob_drops");
+    list.remove((Object)item_id);
+    config_.set("remove_mob_drops", list);
+  }
+
+  public void setRemoveItemDrops(Set<Integer> item_ids) {
+    remove_item_drops_ = new HashSet<Integer>();
+    remove_item_drops_.addAll(item_ids);
+    List<Integer> list = new LinkedList<Integer>();
+    list.addAll(item_ids);
+    config_.set("remove_mob_drops", list);
+  }
+
+  public String toDisplayRemoveItemDrops() {
+    StringBuilder sb = new StringBuilder();
+    for (Integer item_id : remove_item_drops_) {
+      Material mat = Material.getMaterial(item_id);
+      if (mat == null) {
+        sb.append(item_id);
+      } else {
+        sb.append(mat.toString());
+      }
+      sb.append(",");
+    }
+    return sb.toString();
   }
 }

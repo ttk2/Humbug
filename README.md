@@ -1,7 +1,7 @@
 Humbug
 ======
 
-Minecraft server plug-in: Simply disables various functionality
+Minecraft server plug-in: Simply toggles various functionality
 
 - Disables Anvil use.
 - Disables Ender Chest use.
@@ -10,10 +10,12 @@ Minecraft server plug-in: Simply disables various functionality
 - Disables Ender dragon.
 - Disables join/quit/kick announcements.
 - Enables personal death message with coords
-- Disabled Death announcements.
+- Disables Death announcements.
 - Enables Red coloring on Death announcements.
 - Enables death message logging.
-- Disabled Enderman Griefing (stealing blocks)
+- Disables Enderman Griefing (stealing blocks)
+- Enables Unlimited Cauldron Water
+- Enables Quartz from Gravel
 - Disables Wither block destruction radius.
 - Disables Wither and Wither Skull explosions.
 - Disables cobblestone generation from lava and water.
@@ -26,6 +28,7 @@ Minecraft server plug-in: Simply disables various functionality
 - Converts Enchanted Golden Apples to normal Golden Apples if a Player attempts to eat them.
 - Disables Ender Pearl Teleportation
 - Alters the drop rate of wither skulls
+- Removes specific items from dropping when a mob is killed
 
 The 'humbug' console command can be used to get or set any of the configuration file settings while the server is running. Also available are 'humbug save' and 'humbug reload'.
 
@@ -43,6 +46,8 @@ Config file settings:
 - deathred: Boolean, makes death announce messages red
 - deathlog: Boolean, logs player deaths to the console
 - endergrief: Boolean, turns on enderman stealing blocks
+- unlimitedcauldron: Boolean, turns on unlimited cauldron water
+- quartz_gravel_percentage: Integer between 0 and 100, 0 is standard behavior.
 - wither: Boolean, Turns on the wither
 - wither_explosions: Boolean, Turns on wither explosions destroying blocks. Wither/Wither Skull explosions will always occur to damage players, this only effects block breakage.
 - wither_insta_break: Boolean, Turns on the wither insta-break ability
@@ -57,6 +62,7 @@ Config file settings:
 - ench_gold_app_edible: Boolean, Allows players to eat Enchanted Golden Apples. If false, Enchanted Golden Apples are converted to normal Golden Apples
 - ench_gold_app_craftable: Boolean, Allows the Enchanted Golden Apple recipe to be used
 - wither_skull_drop_rate: Integer between -1 and 1000000, -1 is standard behavior. If a random number [0, 1000000) is less then this value, a wither skull drops. For example, 200000 is a 20% drop rate.
+- remove_mob_drops: List<Integer>, a list of item IDs to remove from the dropped items when mobs are killed. The in-game command can also accept Material names.
 
 Default configuration (biased for CivCraft):
 - debug: false
@@ -72,6 +78,8 @@ Default configuration (biased for CivCraft):
 - deathred: false
 - deathlog: false
 - endergrief: true
+- unlimitedcauldron: false
+- quartz_gravel_percentage: 0
 - wither: true
 - wither_explosions: false
 - wither_insta_break: false
@@ -86,3 +94,4 @@ Default configuration (biased for CivCraft):
 - ench_gold_app_edible: false
 - ench_gold_app_craftable: false
 - wither_skull_drop_rate: -1
+- remove_mob_drops:

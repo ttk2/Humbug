@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import org.bukkit.ChatColor;
@@ -27,6 +28,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
@@ -186,6 +188,44 @@ public class Humbug extends JavaPlugin implements Listener {
   }
   
   // ================================================
+  // Unlimited Cauldron water
+
+  @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+  public void onCauldronInteract(PlayerInteractEvent e) {
+    if (!config_.getUnlimitedCauldronEnabled()) {
+      return;
+    }
+  
+    // block water going down on cauldrons
+    if(e.getClickedBlock().getType() == Material.CAULDRON && e.getMaterial() == Material.GLASS_BOTTLE && e.getAction() == Action.RIGHT_CLICK_BLOCK)
+    {
+      Block block = e.getClickedBlock();
+      if(block.getData() > 0)
+      {
+        block.setData((byte)(block.getData()+1));
+      }
+    }
+  }
+  
+  // ================================================
+  // Quartz from Gravel
+  /* 1.5 specific functionality
+  @EventHandler(ignoreCancelled=true, priority = EventPriority.HIGHEST)
+  public void onGravelBreak(BlockBreakEvent e) {
+    if(e.getBlock().getType() != Material.GRAVEL || config_.getQuartzGravelPercentage() == 0) {
+      return;
+    }
+
+    if(prng_.nextInt(100) < config_.getQuartzGravelPercentage())
+    {
+      e.setCancelled(true);
+      e.getBlock().setType(Material.AIR);
+      e.getBlock().getWorld().dropItemNaturally(e.getBlock().getLocation(), new ItemStack(Material.QUARTZ, 1));
+    }
+  }
+  */
+  
+  // ================================================
   // Portals
   
   @EventHandler(ignoreCancelled=true)
@@ -318,13 +358,35 @@ public class Humbug extends JavaPlugin implements Listener {
   }
 
   // ================================================
+  // Prevent specified items from dropping off mobs
+
+  public void removeItemDrops(EntityDeathEvent event) {
+    if (!config_.doRemoveItemDrops()) {
+      return;
+    }
+    if (event.getEntity() instanceof Player) {
+      return;
+    }
+    Set<Integer> remove_ids = config_.getRemoveItemDrops();
+    List<ItemStack> drops = event.getDrops();
+    ItemStack item;
+    int i = drops.size() - 1;
+    while (i >= 0) {
+      item = drops.get(i);
+      if (remove_ids.contains(item.getTypeId())) {
+        drops.remove(i);
+      }
+      --i;
+    }
+  }
+
+  // ================================================
   // Wither Skull drop rate
 
   public static final int skull_id_ = Material.SKULL_ITEM.getId();
   public static final byte wither_skull_data_ = 1;
 
-  @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
-  public void onWitherSkeletonDeath(EntityDeathEvent event) {
+  public void adjustWitherSkulls(EntityDeathEvent event) {
     Entity entity = event.getEntity();
     if (!(entity instanceof Skeleton)) {
       return;
@@ -355,6 +417,12 @@ public class Humbug extends JavaPlugin implements Listener {
     item.setAmount(1);
     item.setDurability((short)wither_skull_data_);
     drops.add(item);
+  }
+
+  @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+  public void onEntityDeathEvent(EntityDeathEvent event) {
+    removeItemDrops(event);
+    adjustWitherSkulls(event);
   }
 
   // ================================================
@@ -766,6 +834,18 @@ public class Humbug extends JavaPlugin implements Listener {
     }
   }
 
+  public int toMaterialId(String value, int default_value) {
+    try {
+      return Integer.parseInt(value);
+    } catch(Exception e) {
+      Material mat = Material.matchMaterial(value);
+      if (mat != null) {
+        return mat.getId();
+      }
+    }
+    return default_value;
+  }
+
   public boolean onCommand(
       CommandSender sender,
       Command command,
@@ -778,11 +858,17 @@ public class Humbug extends JavaPlugin implements Listener {
     }
     String option = args[0];
     String value = null;
+    String subvalue = null;
     boolean set = false;
+    boolean subvalue_set = false;
     String msg = "";
     if (args.length > 1) {
       value = args[1];
       set = true;
+    }
+    if (args.length > 2) {
+      subvalue = args[2];
+      subvalue_set = true;
     }
     if (option.equals("debug")) {
       if (set) {
@@ -849,6 +935,16 @@ public class Humbug extends JavaPlugin implements Listener {
         config_.setEndermenGriefEnabled(toBool(value));
       }
       msg = String.format("endergrief = %s", config_.getEndermenGriefEnabled());
+    } else if (option.equals("unlimitedcauldron")) {
+      if (set) {
+        config_.setUnlimitedCauldronEnabled(toBool(value));
+      }
+      msg = String.format("unlimitedcauldron = %s", config_.getUnlimitedCauldronEnabled());
+    } else if (option.equals("quartz_gravel_percentage")) {
+      if (set) {
+        config_.setQuartzGravelPercentage(toInt(value, config_.getQuartzGravelPercentage()));
+      }
+      msg = String.format("quartz_gravel_percentage = %d", config_.getQuartzGravelPercentage());
     } else if (option.equals("wither")) {
       if (set) {
         config_.setWitherEnabled(toBool(value));
@@ -929,6 +1025,15 @@ public class Humbug extends JavaPlugin implements Listener {
         config_.setEnderPearlTeleportationEnabled(toBool(value));
       }
       msg = String.format("ender_pearl_teleportation = %s", config_.getEnderPearlTeleportationEnabled());
+    } else if (option.equals("remove_mob_drops")) {
+      if (set && subvalue_set) {
+        if (value.equals("add")) {
+          config_.addRemoveItemDrop(toMaterialId(subvalue, -1));
+        } else if (value.equals("del")) {
+          config_.removeRemoveItemDrop(toMaterialId(subvalue, -1));
+        }
+      }
+      msg = String.format("remove_mob_drops = %s", config_.toDisplayRemoveItemDrops());
     } else if (option.equals("save")) {
       config_.save();
       msg = "Configuration saved";
