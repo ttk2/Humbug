@@ -160,6 +160,7 @@ public class Humbug extends JavaPlugin implements Listener {
     case FENCE:
     case FENCE_GATE:
     case NETHER_FENCE:
+    case COBBLE_WALL:
     	height = 0.5;
     	break;
     default:
