@@ -121,7 +121,7 @@ public class Humbug extends JavaPlugin implements Listener {
     Block toBlock = world.getBlockAt(to);
     Block aboveBlock = world.getBlockAt(to.getBlockX(), to.getBlockY()+1, to.getBlockZ());
     Block belowBlock = world.getBlockAt(to.getBlockX(), to.getBlockY()-1, to.getBlockZ());
-    boolean bypass = false;
+    boolean lowerBlockBypass = false;
     double height = 0.0;
     switch( toBlock.getType() ) {
     case CHEST: // Probably never will get hit directly
@@ -129,19 +129,22 @@ public class Humbug extends JavaPlugin implements Listener {
     	height = 0.875;
     	break;
     case STEP:
-    	bypass = true;
+    	lowerBlockBypass = true;
     	height = 0.5;
     	break;
     case WATER_LILY:
     	height = 0.016;
     	break;
     case ENCHANTMENT_TABLE:
-    	bypass = true;
+    	lowerBlockBypass = true;
     	height = 0.75;
     	break;
+    case BED:
     case BED_BLOCK:
-    	bypass = true;
-    	height = 0.563;
+    	// This one is tricky, since even with a height offset of 2.5, it still glitches.
+    	//lowerBlockBypass = true;
+    	//height = 0.563;
+    	// Disabling teleporting on top of beds for now by leaving lowerBlockBypass false.
     	break;
     case FLOWER_POT: 
     case FLOWER_POT_ITEM:
@@ -166,6 +169,16 @@ public class Humbug extends JavaPlugin implements Listener {
     default:
     	break;
     }
+
+    boolean upperBlockBypass = false;
+    if( height >= 0.5 ) {
+    	Block aboveHeadBlock = world.getBlockAt(aboveBlock.getX(), aboveBlock.getY()+1, aboveBlock.getZ());
+    	if( false == aboveHeadBlock.getType().isSolid() ) {
+    		height = 0.5;
+    	} else {
+    		upperBlockBypass = true; // Cancel this event.  What's happening is the user is going to get stuck due to the height.
+    	}
+    }
     
     // Normalize teleport to the center of the block.  Feet ON the ground, plz.
     // Leave Yaw and Pitch alone
@@ -174,9 +187,10 @@ public class Humbug extends JavaPlugin implements Listener {
     to.setZ(Math.floor(to.getZ()) + 0.5000);
         
     if(aboveBlock.getType().isSolid() ||
-       (toBlock.getType().isSolid())) {
+       (toBlock.getType().isSolid() && !lowerBlockBypass) ||
+       upperBlockBypass ) {
       // One last check because I care about Top Nether.  (someone build me a shrine up there)
-      
+      boolean bypass = false;
       if ((world.getEnvironment() == Environment.NETHER) &&
           (to.getBlockY() > 124) && (to.getBlockY() < 129)) {
         bypass = true;
