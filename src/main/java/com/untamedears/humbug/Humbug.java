@@ -97,6 +97,21 @@ public class Humbug extends JavaPlugin implements Listener {
   public Humbug() {}
 
   // ================================================
+  // Reduce registered PlayerInteractEvent count. onPlayerInteractAll can't be
+  // added here as it handles cancelled events.
+
+  @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+  public void onPlayerInteract(PlayerInteractEvent event) {
+    onAnvilOrEnderChestUse(event);
+    if (!event.isCancelled()) {
+      onCauldronInteract(event);
+    }
+    if (!event.isCancelled()) {
+      onRecordInJukebox(event);
+    }
+  }
+
+  // ================================================
   // Fixes Teleporting through walls and doors
   // ** and **
   // Ender Pearl Teleportation disabling
@@ -221,8 +236,8 @@ public class Humbug extends JavaPlugin implements Listener {
   // ================================================
   // Anvil and Ender Chest usage
 
-  @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
-  public void onPlayerInteract(PlayerInteractEvent event) {
+  // EventHandler registered in onPlayerInteract
+  public void onAnvilOrEnderChestUse(PlayerInteractEvent event) {
     if (config_.getAnvilEnabled() &&
         config_.getEnderChestEnabled()) {
       return;
@@ -250,7 +265,7 @@ public class Humbug extends JavaPlugin implements Listener {
   // ================================================
   // Unlimited Cauldron water
 
-  @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+  // EventHandler registered in onPlayerInteract
   public void onCauldronInteract(PlayerInteractEvent e) {
     if (!config_.getUnlimitedCauldronEnabled()) {
       return;
@@ -864,6 +879,24 @@ public class Humbug extends JavaPlugin implements Listener {
   }
 
   // ================================================
+  // Playing records in jukeboxen? Gone
+
+  // EventHandler registered in onPlayerInteract
+  public void onRecordInJukebox(PlayerInteractEvent event) {
+    if (!config_.getDisallowRecordPlaying()) {
+      return;
+    }
+    Block cb = event.getClickedBlock();
+    if (cb == null || cb.getType() != Material.JUKEBOX) {
+      return;
+    }
+    ItemStack his = event.getItem();
+    if(his != null && his.getType().isRecord()) {
+      event.setCancelled(true);
+    }
+  }
+
+  // ================================================
   // General
 
   public void onEnable() {
@@ -1085,6 +1118,11 @@ public class Humbug extends JavaPlugin implements Listener {
         config_.setEnderPearlTeleportationEnabled(toBool(value));
       }
       msg = String.format("ender_pearl_teleportation = %s", config_.getEnderPearlTeleportationEnabled());
+    } else if (option.equals("disallow_record_playing")) {
+      if (set) {
+        config_.setDisallowRecordPlaying(toBool(value));
+      }
+      msg = String.format("disallow_record_playing = %s", config_.getDisallowRecordPlaying());
     } else if (option.equals("remove_mob_drops")) {
       if (set && subvalue_set) {
         if (value.equals("add")) {

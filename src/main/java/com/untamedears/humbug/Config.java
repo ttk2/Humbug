@@ -48,6 +48,7 @@ public class Config {
   private static final boolean ench_gold_app_craftable_ = false;
   // For fixing the teleport glitch
   private static final boolean fix_teleport_glitch_ = true;
+  private static final boolean disallow_record_playing_ = true;
 
   public static Config initialize(Plugin plugin) {
     if (global_instance_ == null) {
@@ -334,6 +335,14 @@ public class Config {
   
   public void setEnderPearlTeleportationEnabled(boolean value) {
     config_.set("ender_pearl_teleportation", value);
+  }
+
+  public boolean getDisallowRecordPlaying() {
+    return config_.getBoolean("disallow_record_playing", disallow_record_playing_);
+  }
+
+  public void setDisallowRecordPlaying(boolean value) {
+    config_.set("disallow_record_playing", value);
   }
 
   private void loadRemoveItemDrops() {
