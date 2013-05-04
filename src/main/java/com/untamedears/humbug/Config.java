@@ -49,6 +49,7 @@ public class Config {
   // For fixing the teleport glitch
   private static final boolean fix_teleport_glitch_ = true;
   private static final boolean disallow_record_playing_ = true;
+  private static final boolean allow_dye_sheep_ = true;
 
   public static Config initialize(Plugin plugin) {
     if (global_instance_ == null) {
@@ -343,6 +344,14 @@ public class Config {
 
   public void setDisallowRecordPlaying(boolean value) {
     config_.set("disallow_record_playing", value);
+  }
+
+  public boolean getAllowDyeSheep() {
+    return config_.getBoolean("allow_dye_sheep", allow_dye_sheep_);
+  }
+
+  public void setAllowDyeSheep(boolean value) {
+    config_.set("allow_dye_sheep", value);
   }
 
   private void loadRemoveItemDrops() {
