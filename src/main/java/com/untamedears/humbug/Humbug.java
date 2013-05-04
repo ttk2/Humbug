@@ -41,6 +41,7 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.entity.SheepDyeWoolEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -108,6 +109,16 @@ public class Humbug extends JavaPlugin implements Listener {
     }
     if (!event.isCancelled()) {
       onRecordInJukebox(event);
+    }
+  }
+
+  // ================================================
+  // Stops people from dying sheep
+  
+  @EventHandler
+  public void onDyeWool(SheepDyeWoolEvent event) {
+    if (!config_.getAllowDyeSheep()) {
+      event.setCancelled(true);
     }
   }
 
@@ -1123,6 +1134,11 @@ public class Humbug extends JavaPlugin implements Listener {
         config_.setDisallowRecordPlaying(toBool(value));
       }
       msg = String.format("disallow_record_playing = %s", config_.getDisallowRecordPlaying());
+    } else if (option.equals("allow_dye_sheep")) {
+      if (set) {
+        config_.setAllowDyeSheep(toBool(value));
+      }
+      msg = String.format("allow_dye_sheep = %s", config_.getAllowDyeSheep());
     } else if (option.equals("remove_mob_drops")) {
       if (set && subvalue_set) {
         if (value.equals("add")) {
