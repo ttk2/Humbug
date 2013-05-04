@@ -41,6 +41,7 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.entity.SheepDyeWoolEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -109,6 +110,14 @@ public class Humbug extends JavaPlugin implements Listener {
     if (!event.isCancelled()) {
       onRecordInJukebox(event);
     }
+  }
+
+  // ================================================
+  // Stops people from dying sheep
+  
+  @EventHandler
+  public void onDyeWool(SheepDyeWoolEvent event) {
+    event.setCancelled(true);
   }
 
   // ================================================
