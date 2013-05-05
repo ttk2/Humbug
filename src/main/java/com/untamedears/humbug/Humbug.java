@@ -58,6 +58,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import com.untamedears.humbug.Config;
 
@@ -916,10 +918,11 @@ public class Humbug extends JavaPlugin implements Listener {
   @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
   public void onPlayerBucketEmptyEvent(PlayerBucketEmptyEvent e) {
 	  if(!config_.getAllowWaterInNether()) {
-	      if( ( e.getBlockClicked().getBiome() == Biome.HELL ) &&
+	      if( ( e.getBlockClicked().getBiome() == Biome.DESERT ) &&
 	          ( e.getBucket() == Material.WATER_BUCKET ) ) {
 	          e.setCancelled(true);
 	          e.getItemStack().setType(Material.BUCKET);
+	          e.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.WATER_BREATHING, 5, 1));
 	      }
 	  }
   }
