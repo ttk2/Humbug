@@ -918,7 +918,7 @@ public class Humbug extends JavaPlugin implements Listener {
   @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
   public void onPlayerBucketEmptyEvent(PlayerBucketEmptyEvent e) {
 	  if(!config_.getAllowWaterInNether()) {
-	      if( ( e.getBlockClicked().getBiome() == Biome.DESERT ) &&
+	      if( ( e.getBlockClicked().getBiome() == Biome.HELL ) &&
 	          ( e.getBucket() == Material.WATER_BUCKET ) ) {
 	          e.setCancelled(true);
 	          e.getItemStack().setType(Material.BUCKET);
