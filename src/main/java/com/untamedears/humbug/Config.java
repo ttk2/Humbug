@@ -50,6 +50,7 @@ public class Config {
   private static final boolean fix_teleport_glitch_ = true;
   private static final boolean disallow_record_playing_ = true;
   private static final boolean allow_dye_sheep_ = true;
+  private static final boolean allow_water_in_nether_ = false;
 
   public static Config initialize(Plugin plugin) {
     if (global_instance_ == null) {
@@ -333,7 +334,7 @@ public class Config {
   public boolean getEnderPearlTeleportationEnabled() {
     return config_.getBoolean("ender_pearl_teleportation", ender_pearl_teleportation_enabled_);
   }
-  
+
   public void setEnderPearlTeleportationEnabled(boolean value) {
     config_.set("ender_pearl_teleportation", value);
   }
@@ -352,6 +353,14 @@ public class Config {
 
   public void setAllowDyeSheep(boolean value) {
     config_.set("allow_dye_sheep", value);
+  }
+
+  public boolean getAllowWaterInNether() {
+	  return config_.getBoolean("allow_water_in_nether", allow_water_in_nether_);
+  }
+
+  public void setAllowWaterInNether(boolean value) {
+	  config_.set("allow_water_in_nether", value);
   }
 
   private void loadRemoveItemDrops() {
