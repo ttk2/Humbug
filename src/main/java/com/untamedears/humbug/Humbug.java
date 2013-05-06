@@ -1,10 +1,13 @@
 package com.untamedears.humbug;
 
+import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import org.bukkit.ChatColor;
@@ -43,6 +46,7 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.SheepDyeWoolEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -939,6 +943,79 @@ public class Humbug extends JavaPlugin implements Listener {
     }
   }
 
+  //=================================================
+  // Bow shots cause slow debuff
+
+  @EventHandler
+  public void onEDBE(EntityDamageByEntityEvent event) {
+    int rate = config_.getProjectileSlowChance();
+    if (rate <= 0 || rate > 100) {
+      return;
+    }
+    if (!(event.getEntity() instanceof Player)) {
+      return;
+    }
+    int chance_scaling = 0;
+    Entity damager_entity = event.getDamager();
+    if (damager_entity != null) {
+      if (damager_entity instanceof Player) {
+        String player_name = ((Player)damager_entity).getName();
+        if (bow_level_.containsKey(player_name)) {
+          chance_scaling = bow_level_.get(player_name);
+        }
+      } else {
+        // public LivingEntity CraftArrow.getShooter()
+        // Playing this game to not have to take a hard dependency on
+        //  craftbukkit internals.
+        try {
+          Class<?> damager_class = damager_entity.getClass();
+          Method getShooter = damager_class.getMethod("getShooter");
+          Object result = getShooter.invoke(damager_entity);
+          if (result instanceof Player) {
+            String player_name = ((Player)result).getName();
+            if (bow_level_.containsKey(player_name)) {
+              chance_scaling = bow_level_.get(player_name);
+            }
+          }
+        } catch(Exception ex) {}
+      }
+    }
+    rate += chance_scaling * 5;
+    int percent = prng_.nextInt(100);
+    if (percent < rate){
+      int ticks = config_.getProjectileSlowTicks();
+      Player player = (Player)event.getEntity();
+      player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, ticks, 1, false));
+    }
+  }
+
+  // Used to track bow enchantment levels per player
+  private Map<String, Integer> bow_level_ = new TreeMap<String, Integer>();
+
+  @EventHandler
+  public void onEntityShootBow(EntityShootBowEvent event) {
+    if (!(event.getEntity() instanceof Player)) {
+         return;
+    }
+    int ench_level = 0;
+    ItemStack bow = event.getBow();
+    Map<Enchantment, Integer> enchants = bow.getEnchantments();
+    for (Enchantment ench : enchants.keySet()) {
+      int tmp_ench_level = 0;
+      if (ench.equals(Enchantment.KNOCKBACK) || ench.equals(Enchantment.ARROW_KNOCKBACK)) {
+        tmp_ench_level = enchants.get(ench) * 2;
+      } else if (ench.equals(Enchantment.ARROW_DAMAGE)) {
+        tmp_ench_level = enchants.get(ench);
+      }
+      if (tmp_ench_level > ench_level) {
+        ench_level = tmp_ench_level;
+      }
+    }
+    bow_level_.put(
+        ((Player)event.getEntity()).getName(),
+        ench_level);
+  }
+
   // ================================================
   // General
 
@@ -1171,6 +1248,16 @@ public class Humbug extends JavaPlugin implements Listener {
         config_.setAllowDyeSheep(toBool(value));
       }
       msg = String.format("allow_dye_sheep = %s", config_.getAllowDyeSheep());
+    } else if (option.equals("projectile_slow_chance")) {
+      if (set) {
+        config_.setProjectileSlowChance(toInt(value, config_.getProjectileSlowChance()));
+      }
+      msg = String.format("projectile_slow_chance = %d", config_.getProjectileSlowChance());
+    } else if (option.equals("projectile_slow_ticks")) {
+      if (set) {
+        config_.setProjectileSlowTicks(toInt(value, config_.getProjectileSlowTicks()));
+      }
+      msg = String.format("projectile_slow_ticks = %d", config_.getProjectileSlowTicks());
     } else if (option.equals("remove_mob_drops")) {
       if (set && subvalue_set) {
         if (value.equals("add")) {

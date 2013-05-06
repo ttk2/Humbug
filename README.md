@@ -32,6 +32,7 @@ Minecraft server plug-in: Simply toggles various functionality
 - Prevents records from playing in jukeboxes
 - Disabled dying sheep
 - Disables water usage in main world hell biomes
+- Give projectiles a slow debuff on hit
 
 The 'humbug' console command can be used to get or set any of the configuration file settings while the server is running. Also available are 'humbug save' and 'humbug reload'.
 
@@ -69,6 +70,8 @@ Config file settings:
 - disallow_record_playing: Boolean, Disables the ability for records to play in jukeboxes
 - allow_dye_sheep: Boolean, defaults to true. Allows sheep to be dyed directly (rather than dyeing each bit of wool).
 - allow_water_in_nether: Boolean, enables water use in hell biomes
+- projectile_slow_chance: Integer between 1 and 100 or out of bounds to disable, percentage chance of a projectile shot causing a slow debuff
+- projectile_slow_ticks: Integer, number of server ticks a projectile shot's slow debuff will last
 
 Default configuration (biased for CivCraft):
 - debug: false
@@ -104,3 +107,5 @@ Default configuration (biased for CivCraft):
 - disallow_record_playing: true
 - allow_dye_sheep: true
 - allow_water_in_nether: false
+- projectile_slow_chance: 30
+- projectile_slow_ticks: 100

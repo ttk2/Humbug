@@ -51,6 +51,8 @@ public class Config {
   private static final boolean disallow_record_playing_ = true;
   private static final boolean allow_dye_sheep_ = true;
   private static final boolean allow_water_in_nether_ = false;
+  private static final int projectile_slow_chance_ = 30;
+  private static final int projectile_slow_ticks_ = 100;
 
   public static Config initialize(Plugin plugin) {
     if (global_instance_ == null) {
@@ -361,6 +363,26 @@ public class Config {
 
   public void setAllowWaterInNether(boolean value) {
     config_.set("allow_water_in_nether", value);
+  }
+
+  public int getProjectileSlowChance() {
+    return config_.getInt("projectile_slow_chance", projectile_slow_chance_);
+  }
+
+  public void setProjectileSlowChance(int value) {
+    config_.set("projectile_slow_chance", value);
+  }
+
+  public int getProjectileSlowTicks() {
+    int ticks = config_.getInt("projectile_slow_ticks", projectile_slow_ticks_);
+    if (ticks <= 0 || ticks > 600) {
+      ticks = 100;
+    }
+    return ticks;
+  }
+
+  public void setProjectileSlowTicks(int value) {
+    config_.set("projectile_slow_ticks", value);
   }
 
   private void loadRemoveItemDrops() {
