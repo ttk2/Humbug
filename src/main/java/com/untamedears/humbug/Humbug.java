@@ -12,6 +12,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
+import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
@@ -28,6 +29,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
@@ -42,6 +44,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.SheepDyeWoolEvent;
+import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -55,9 +58,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import com.untamedears.humbug.Config;
- 
+
 public class Humbug extends JavaPlugin implements Listener {
   public static void severe(String message) {
     log_.severe("[Humbug] " + message);
@@ -66,7 +71,7 @@ public class Humbug extends JavaPlugin implements Listener {
   public static void warning(String message) {
     log_.warning("[Humbug] " + message);
   }
- 
+
   public static void info(String message) {
     log_.info("[Humbug] " + message);
   }
@@ -114,7 +119,7 @@ public class Humbug extends JavaPlugin implements Listener {
 
   // ================================================
   // Stops people from dying sheep
-  
+
   @EventHandler
   public void onDyeWool(SheepDyeWoolEvent event) {
     if (!config_.getAllowDyeSheep()) {
@@ -172,7 +177,7 @@ public class Humbug extends JavaPlugin implements Listener {
     	//height = 0.563;
     	// Disabling teleporting on top of beds for now by leaving lowerBlockBypass false.
     	break;
-    case FLOWER_POT: 
+    case FLOWER_POT:
     case FLOWER_POT_ITEM:
     	height = 0.375;
     	break;
@@ -205,13 +210,13 @@ public class Humbug extends JavaPlugin implements Listener {
     		upperBlockBypass = true; // Cancel this event.  What's happening is the user is going to get stuck due to the height.
     	}
     }
-    
+
     // Normalize teleport to the center of the block.  Feet ON the ground, plz.
     // Leave Yaw and Pitch alone
     to.setX(Math.floor(to.getX()) + 0.5000);
     to.setY(Math.floor(to.getY()) + height);
     to.setZ(Math.floor(to.getZ()) + 0.5000);
-        
+
     if(aboveBlock.getType().isSolid() ||
        (toBlock.getType().isSolid() && !lowerBlockBypass) ||
        upperBlockBypass ) {
@@ -272,7 +277,7 @@ public class Humbug extends JavaPlugin implements Listener {
       e.setCancelled(true);
     }
   }
-  
+
   // ================================================
   // Unlimited Cauldron water
 
@@ -281,7 +286,7 @@ public class Humbug extends JavaPlugin implements Listener {
     if (!config_.getUnlimitedCauldronEnabled()) {
       return;
     }
-  
+
     // block water going down on cauldrons
     if(e.getClickedBlock().getType() == Material.CAULDRON && e.getMaterial() == Material.GLASS_BOTTLE && e.getAction() == Action.RIGHT_CLICK_BLOCK)
     {
@@ -292,7 +297,7 @@ public class Humbug extends JavaPlugin implements Listener {
       }
     }
   }
-  
+
   // ================================================
   // Quartz from Gravel
   /* 1.5 specific functionality
@@ -310,10 +315,10 @@ public class Humbug extends JavaPlugin implements Listener {
     }
   }
   */
-  
+
   // ================================================
   // Portals
-  
+
   @EventHandler(ignoreCancelled=true)
   public void onPortalCreate(PortalCreateEvent e) {
     if (!config_.getPortalCreateEnabled()) {
@@ -330,14 +335,14 @@ public class Humbug extends JavaPlugin implements Listener {
 
   // ================================================
   // EnderDragon
-  
+
   @EventHandler(ignoreCancelled=true)
   public void onDragonSpawn(CreatureSpawnEvent e) {
     if (e.getEntityType() == EntityType.ENDER_DRAGON && !config_.getEnderDragonEnabled()) {
       e.setCancelled(true);
     }
   }
-  
+
   // ================================================
   // Join/Quit/Kick messages
 
@@ -361,10 +366,10 @@ public class Humbug extends JavaPlugin implements Listener {
       e.setLeaveMessage(null);
     }
   }
-  
+
   // ================================================
   // Death Messages
-  
+
   @EventHandler(priority=EventPriority.HIGHEST)
   public void onDeath(PlayerDeathEvent e) {
     boolean log_msg = config_.getDeathLoggingEnabled();
@@ -572,7 +577,7 @@ public class Humbug extends JavaPlugin implements Listener {
     replaceEnchantedGoldenApple(
         player.getName(), item, inventory.getMaxStackSize());
   }
-  
+
   // ================================================
   // Enchanted Book
 
@@ -905,6 +910,33 @@ public class Humbug extends JavaPlugin implements Listener {
     if(his != null && his.getType().isRecord()) {
       event.setCancelled(true);
     }
+  }
+
+  //=================================================
+  // Water in the nether? Nope.
+
+  @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+  public void onPlayerBucketEmptyEvent(PlayerBucketEmptyEvent e) {
+	  if(!config_.getAllowWaterInNether()) {
+	      if( ( e.getBlockClicked().getBiome() == Biome.HELL ) &&
+	          ( e.getBucket() == Material.WATER_BUCKET ) ) {
+	          e.setCancelled(true);
+	          e.getItemStack().setType(Material.BUCKET);
+	          e.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.WATER_BREATHING, 5, 1));
+	      }
+	  }
+  }
+
+  @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+  public void onBlockFromToEvent(BlockFromToEvent e) {
+	  if(!config_.getAllowWaterInNether()) {
+	      if( e.getToBlock().getBiome() == Biome.HELL ) {
+	          if( ( e.getBlock().getType() == Material.WATER ) ||
+	          ( e.getBlock().getType() == Material.STATIONARY_WATER ) ) {
+	        	  e.setCancelled(true);
+	          }
+	      }
+	  }
   }
 
   // ================================================
