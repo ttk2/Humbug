@@ -157,35 +157,35 @@ public class Humbug extends JavaPlugin implements Listener {
     switch( toBlock.getType() ) {
     case CHEST: // Probably never will get hit directly
     case ENDER_CHEST: // Probably never will get hit directly
-    	height = 0.875;
-    	break;
+      height = 0.875;
+      break;
     case STEP:
-    	lowerBlockBypass = true;
-    	height = 0.5;
-    	break;
+      lowerBlockBypass = true;
+      height = 0.5;
+      break;
     case WATER_LILY:
-    	height = 0.016;
-    	break;
+      height = 0.016;
+      break;
     case ENCHANTMENT_TABLE:
-    	lowerBlockBypass = true;
-    	height = 0.75;
-    	break;
+      lowerBlockBypass = true;
+      height = 0.75;
+      break;
     case BED:
     case BED_BLOCK:
-    	// This one is tricky, since even with a height offset of 2.5, it still glitches.
-    	//lowerBlockBypass = true;
-    	//height = 0.563;
-    	// Disabling teleporting on top of beds for now by leaving lowerBlockBypass false.
-    	break;
+      // This one is tricky, since even with a height offset of 2.5, it still glitches.
+      //lowerBlockBypass = true;
+      //height = 0.563;
+      // Disabling teleporting on top of beds for now by leaving lowerBlockBypass false.
+      break;
     case FLOWER_POT:
     case FLOWER_POT_ITEM:
-    	height = 0.375;
-    	break;
+      height = 0.375;
+      break;
     case SKULL: // Probably never will get hit directly
-    	height = 0.5;
-    	break;
+      height = 0.5;
+      break;
     default:
-    	break;
+      break;
     }
     // Check if the below block is difficult
     // This is added because if you face downward directly on a gate, it will
@@ -195,20 +195,20 @@ public class Humbug extends JavaPlugin implements Listener {
     case FENCE_GATE:
     case NETHER_FENCE:
     case COBBLE_WALL:
-    	height = 0.5;
-    	break;
+      height = 0.5;
+      break;
     default:
-    	break;
+      break;
     }
 
     boolean upperBlockBypass = false;
     if( height >= 0.5 ) {
-    	Block aboveHeadBlock = world.getBlockAt(aboveBlock.getX(), aboveBlock.getY()+1, aboveBlock.getZ());
-    	if( false == aboveHeadBlock.getType().isSolid() ) {
-    		height = 0.5;
-    	} else {
-    		upperBlockBypass = true; // Cancel this event.  What's happening is the user is going to get stuck due to the height.
-    	}
+      Block aboveHeadBlock = world.getBlockAt(aboveBlock.getX(), aboveBlock.getY()+1, aboveBlock.getZ());
+      if( false == aboveHeadBlock.getType().isSolid() ) {
+        height = 0.5;
+      } else {
+        upperBlockBypass = true; // Cancel this event.  What's happening is the user is going to get stuck due to the height.
+      }
     }
 
     // Normalize teleport to the center of the block.  Feet ON the ground, plz.
@@ -917,26 +917,26 @@ public class Humbug extends JavaPlugin implements Listener {
 
   @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
   public void onPlayerBucketEmptyEvent(PlayerBucketEmptyEvent e) {
-	  if(!config_.getAllowWaterInNether()) {
-	      if( ( e.getBlockClicked().getBiome() == Biome.HELL ) &&
-	          ( e.getBucket() == Material.WATER_BUCKET ) ) {
-	          e.setCancelled(true);
-	          e.getItemStack().setType(Material.BUCKET);
-	          e.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.WATER_BREATHING, 5, 1));
-	      }
-	  }
+    if(!config_.getAllowWaterInNether()) {
+      if( ( e.getBlockClicked().getBiome() == Biome.HELL )
+          && ( e.getBucket() == Material.WATER_BUCKET ) ) {
+        e.setCancelled(true);
+        e.getItemStack().setType(Material.BUCKET);
+        e.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.WATER_BREATHING, 5, 1));
+      }
+    }
   }
 
   @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
   public void onBlockFromToEvent(BlockFromToEvent e) {
-	  if(!config_.getAllowWaterInNether()) {
-	      if( e.getToBlock().getBiome() == Biome.HELL ) {
-	          if( ( e.getBlock().getType() == Material.WATER ) ||
-	          ( e.getBlock().getType() == Material.STATIONARY_WATER ) ) {
-	        	  e.setCancelled(true);
-	          }
-	      }
-	  }
+    if(!config_.getAllowWaterInNether()) {
+      if( e.getToBlock().getBiome() == Biome.HELL ) {
+        if( ( e.getBlock().getType() == Material.WATER )
+            || ( e.getBlock().getType() == Material.STATIONARY_WATER ) ) {
+          e.setCancelled(true);
+        }
+      }
+    }
   }
 
   // ================================================

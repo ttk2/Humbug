@@ -31,6 +31,7 @@ Minecraft server plug-in: Simply toggles various functionality
 - Removes specific items from dropping when a mob is killed
 - Prevents records from playing in jukeboxes
 - Disabled dying sheep
+- Disables water usage in main world hell biomes
 
 The 'humbug' console command can be used to get or set any of the configuration file settings while the server is running. Also available are 'humbug save' and 'humbug reload'.
 
@@ -67,6 +68,7 @@ Config file settings:
 - remove_mob_drops: List<Integer>, a list of item IDs to remove from the dropped items when mobs are killed. The in-game command can also accept Material names.
 - disallow_record_playing: Boolean, Disables the ability for records to play in jukeboxes
 - allow_dye_sheep: Boolean, defaults to true. Allows sheep to be dyed directly (rather than dyeing each bit of wool).
+- allow_water_in_nether: Boolean, enables water use in hell biomes
 
 Default configuration (biased for CivCraft):
 - debug: false
@@ -100,3 +102,5 @@ Default configuration (biased for CivCraft):
 - wither_skull_drop_rate: -1
 - remove_mob_drops:
 - disallow_record_playing: true
+- allow_dye_sheep: true
+- allow_water_in_nether: false

@@ -356,11 +356,11 @@ public class Config {
   }
 
   public boolean getAllowWaterInNether() {
-	  return config_.getBoolean("allow_water_in_nether", allow_water_in_nether_);
+    return config_.getBoolean("allow_water_in_nether", allow_water_in_nether_);
   }
 
   public void setAllowWaterInNether(boolean value) {
-	  config_.set("allow_water_in_nether", value);
+    config_.set("allow_water_in_nether", value);
   }
 
   private void loadRemoveItemDrops() {
