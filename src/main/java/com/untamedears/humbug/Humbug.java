@@ -955,10 +955,12 @@ public class Humbug extends JavaPlugin implements Listener {
     if (!(event.getEntity() instanceof Player)) {
       return;
     }
+    boolean damager_is_player = false;
     int chance_scaling = 0;
     Entity damager_entity = event.getDamager();
     if (damager_entity != null) {
       if (damager_entity instanceof Player) {
+        damager_is_player = true;
         String player_name = ((Player)damager_entity).getName();
         if (bow_level_.containsKey(player_name)) {
           chance_scaling = bow_level_.get(player_name);
@@ -972,6 +974,7 @@ public class Humbug extends JavaPlugin implements Listener {
           Method getShooter = damager_class.getMethod("getShooter");
           Object result = getShooter.invoke(damager_entity);
           if (result instanceof Player) {
+            damager_is_player = true;
             String player_name = ((Player)result).getName();
             if (bow_level_.containsKey(player_name)) {
               chance_scaling = bow_level_.get(player_name);
@@ -979,6 +982,9 @@ public class Humbug extends JavaPlugin implements Listener {
           }
         } catch(Exception ex) {}
       }
+    }
+    if (!damager_is_player) {
+      return;
     }
     rate += chance_scaling * 5;
     int percent = prng_.nextInt(100);
