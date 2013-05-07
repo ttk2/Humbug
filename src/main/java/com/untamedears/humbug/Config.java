@@ -44,6 +44,7 @@ public class Config {
   private static final int wither_skull_drop_rate_ = -1;
   private static final int player_max_health_ = 20;
   private static final boolean ender_pearl_teleportation_enabled_ = true;
+  private static final double ender_pearl_launch_velocity_ = 1.0F;
   private static final boolean ench_gold_app_edible_ = false;
   private static final boolean ench_gold_app_craftable_ = false;
   // For fixing the teleport glitch
@@ -339,6 +340,14 @@ public class Config {
 
   public void setEnderPearlTeleportationEnabled(boolean value) {
     config_.set("ender_pearl_teleportation", value);
+  }
+  
+  public double getEnderPearlLaunchVelocity() {
+	return config_.getDouble("ender_pearl_launch_velocity", ender_pearl_launch_velocity_);
+  }
+  
+  public void setEnderPearlLaunchVelocity(double value) {
+	config_.set("ender_pearl_launch_velocity", value);
   }
 
   public boolean getDisallowRecordPlaying() {

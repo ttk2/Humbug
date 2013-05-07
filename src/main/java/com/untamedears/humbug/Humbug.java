@@ -22,10 +22,12 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.Enderman;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Skeleton.SkeletonType;
 import org.bukkit.event.EventHandler;
@@ -35,19 +37,20 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.enchantment.EnchantItemEvent;
 import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityCreatePortalEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.entity.SheepDyeWoolEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -65,8 +68,6 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-
-import com.untamedears.humbug.Config;
 
 public class Humbug extends JavaPlugin implements Listener {
   public static void severe(String message) {
@@ -1021,6 +1022,24 @@ public class Humbug extends JavaPlugin implements Listener {
         ((Player)event.getEntity()).getName(),
         ench_level);
   }
+  
+  // ================================================
+  // Change ender pearl velocity!
+  
+  @EventHandler
+  public void onEnderPearlThrow(ProjectileLaunchEvent event) {
+	double velocity = config_.getEnderPearlLaunchVelocity();
+	
+	if(velocity == 1) {
+      return;
+	}
+	
+	Projectile entity = event.getEntity();
+	
+	if(entity instanceof EnderPearl) {
+      entity.setVelocity(entity.getVelocity().multiply(velocity));
+	}
+  }
 
   // ================================================
   // General
@@ -1051,6 +1070,14 @@ public class Humbug extends JavaPlugin implements Listener {
     } catch(Exception e) {
       return default_value;
     }
+  }
+  
+  public double toDouble(String value, double default_value) {
+	try {
+	  return Double.parseDouble(value);
+	} catch(Exception e) {
+	  return default_value;
+	}
   }
 
   public int toMaterialId(String value, int default_value) {
@@ -1244,6 +1271,11 @@ public class Humbug extends JavaPlugin implements Listener {
         config_.setEnderPearlTeleportationEnabled(toBool(value));
       }
       msg = String.format("ender_pearl_teleportation = %s", config_.getEnderPearlTeleportationEnabled());
+    } else if (option.equals("ender_pearl_launch_velocity")) {
+      if (set) {
+        config_.setEnderPearlLaunchVelocity(toDouble(value, 1));
+      }
+      msg = String.format("ender_pearl_launch_velocity = %s", config_.getEnderPearlLaunchVelocity());
     } else if (option.equals("disallow_record_playing")) {
       if (set) {
         config_.setDisallowRecordPlaying(toBool(value));

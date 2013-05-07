@@ -27,6 +27,7 @@ Minecraft server plug-in: Simply toggles various functionality
 - Removes the Enchanted Golden Apple recipe.
 - Converts Enchanted Golden Apples to normal Golden Apples if a Player attempts to eat them.
 - Disables Ender Pearl Teleportation
+- Alters the initial velocity of Ender Pearls
 - Alters the drop rate of wither skulls
 - Removes specific items from dropping when a mob is killed
 - Prevents records from playing in jukeboxes
@@ -63,6 +64,7 @@ Config file settings:
 - fix_vehicle_logout_bug: Boolean, Fixes a teleport bug when players logout in vehicles
 - player_max_health: Integer, sets all Player maximum health
 - ender_pearl_teleportation: Boolean, Turns on Ender Pearl teleportation
+- ender_pearl_launch_velocity: Double, Alters initial velocity of Ender Pearls
 - ench_gold_app_edible: Boolean, Allows players to eat Enchanted Golden Apples. If false, Enchanted Golden Apples are converted to normal Golden Apples
 - ench_gold_app_craftable: Boolean, Allows the Enchanted Golden Apple recipe to be used
 - wither_skull_drop_rate: Integer between -1 and 1000000, -1 is standard behavior. If a random number [0, 1000000) is less then this value, a wither skull drops. For example, 200000 is a 20% drop rate.
