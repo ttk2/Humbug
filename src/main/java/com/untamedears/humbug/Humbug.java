@@ -32,6 +32,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -304,7 +305,7 @@ public class Humbug extends JavaPlugin implements Listener {
 
   // ================================================
   // Quartz from Gravel
-  /* 1.5 specific functionality
+
   @EventHandler(ignoreCancelled=true, priority = EventPriority.HIGHEST)
   public void onGravelBreak(BlockBreakEvent e) {
     if(e.getBlock().getType() != Material.GRAVEL || config_.getQuartzGravelPercentage() == 0) {
@@ -318,7 +319,6 @@ public class Humbug extends JavaPlugin implements Listener {
       e.getBlock().getWorld().dropItemNaturally(e.getBlock().getLocation(), new ItemStack(Material.QUARTZ, 1));
     }
   }
-  */
 
   // ================================================
   // Portals
