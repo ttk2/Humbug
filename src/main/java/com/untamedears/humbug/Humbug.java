@@ -27,7 +27,6 @@ import org.bukkit.entity.Enderman;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Skeleton.SkeletonType;
 import org.bukkit.event.EventHandler;
@@ -1028,17 +1027,15 @@ public class Humbug extends JavaPlugin implements Listener {
   
   @EventHandler
   public void onEnderPearlThrow(ProjectileLaunchEvent event) {
-	double velocity = config_.getEnderPearlLaunchVelocity();
-	
-	if(velocity == 1) {
+    Entity entity = (Entity)event.getEntity();
+    if (!(entity instanceof EnderPearl)) {
       return;
-	}
-	
-	Projectile entity = event.getEntity();
-	
-	if(entity instanceof EnderPearl) {
-      entity.setVelocity(entity.getVelocity().multiply(velocity));
-	}
+    }
+    double adjustment = config_.getEnderPearlLaunchVelocity();
+    if (adjustment < 1.00001 && adjustment > 0.99999) {
+      return;
+    }
+    entity.setVelocity(entity.getVelocity().multiply(adjustment));
   }
 
   // ================================================
@@ -1073,11 +1070,11 @@ public class Humbug extends JavaPlugin implements Listener {
   }
   
   public double toDouble(String value, double default_value) {
-	try {
-	  return Double.parseDouble(value);
-	} catch(Exception e) {
-	  return default_value;
-	}
+    try {
+      return Double.parseDouble(value);
+    } catch(Exception e) {
+      return default_value;
+    }
   }
 
   public int toMaterialId(String value, int default_value) {
@@ -1273,7 +1270,7 @@ public class Humbug extends JavaPlugin implements Listener {
       msg = String.format("ender_pearl_teleportation = %s", config_.getEnderPearlTeleportationEnabled());
     } else if (option.equals("ender_pearl_launch_velocity")) {
       if (set) {
-        config_.setEnderPearlLaunchVelocity(toDouble(value, 1));
+        config_.setEnderPearlLaunchVelocity(toDouble(value, 1.0000));
       }
       msg = String.format("ender_pearl_launch_velocity = %s", config_.getEnderPearlLaunchVelocity());
     } else if (option.equals("disallow_record_playing")) {

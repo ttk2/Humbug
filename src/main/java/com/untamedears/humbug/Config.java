@@ -343,11 +343,11 @@ public class Config {
   }
   
   public double getEnderPearlLaunchVelocity() {
-	return config_.getDouble("ender_pearl_launch_velocity", ender_pearl_launch_velocity_);
+    return config_.getDouble("ender_pearl_launch_velocity", ender_pearl_launch_velocity_);
   }
   
   public void setEnderPearlLaunchVelocity(double value) {
-	config_.set("ender_pearl_launch_velocity", value);
+    config_.set("ender_pearl_launch_velocity", value);
   }
 
   public boolean getDisallowRecordPlaying() {

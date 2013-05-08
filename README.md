@@ -102,6 +102,7 @@ Default configuration (biased for CivCraft):
 - fix_vehicle_logout_bug: true
 - player_max_health: 20
 - ender_pearl_teleportation: true
+- ender_pearl_launch_velocity: 1.0
 - ench_gold_app_edible: false
 - ench_gold_app_craftable: false
 - wither_skull_drop_rate: -1
