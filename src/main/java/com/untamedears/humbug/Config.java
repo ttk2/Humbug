@@ -44,6 +44,7 @@ public class Config {
   private static final int wither_skull_drop_rate_ = -1;
   private static final int player_max_health_ = 20;
   private static final boolean ender_pearl_teleportation_enabled_ = true;
+  private static final boolean ender_pearl_teleportation_throttled_ = true;
   private static final double ender_pearl_launch_velocity_ = 1.0F;
   private static final boolean ench_gold_app_edible_ = false;
   private static final boolean ench_gold_app_craftable_ = false;
@@ -341,7 +342,15 @@ public class Config {
   public void setEnderPearlTeleportationEnabled(boolean value) {
     config_.set("ender_pearl_teleportation", value);
   }
-  
+
+  public boolean getThrottlePearlTeleport() {
+    return config_.getBoolean("ender_pearl_teleportation_throttled", ender_pearl_teleportation_throttled_);
+  }
+
+  public void setThrottlePearlTeleport(boolean value) {
+    config_.set("ender_pearl_teleportation_throttled", value);
+  }
+
   public double getEnderPearlLaunchVelocity() {
     return config_.getDouble("ender_pearl_launch_velocity", ender_pearl_launch_velocity_);
   }

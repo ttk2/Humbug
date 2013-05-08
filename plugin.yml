@@ -1,6 +1,6 @@
 name: Humbug
 main: com.untamedears.humbug.Humbug
-version: 1.2.8
+version: 1.2.9
 description: toggles various functionality
 author: erocs
 database: false

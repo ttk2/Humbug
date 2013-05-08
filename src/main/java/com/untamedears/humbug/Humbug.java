@@ -108,8 +108,8 @@ public class Humbug extends JavaPlugin implements Listener {
   public Humbug() {}
 
   // ================================================
-  // Reduce registered PlayerInteractEvent count. onPlayerInteractAll can't be
-  // added here as it handles cancelled events.
+  // Reduce registered PlayerInteractEvent count. onPlayerInteractAll handles
+  //  cancelled events.
 
   @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
   public void onPlayerInteract(PlayerInteractEvent event) {
@@ -120,6 +120,12 @@ public class Humbug extends JavaPlugin implements Listener {
     if (!event.isCancelled()) {
       onRecordInJukebox(event);
     }
+  }
+
+  @EventHandler(priority = EventPriority.LOWEST) // ignoreCancelled=false
+  public void onPlayerInteractAll(PlayerInteractEvent event) {
+    onPlayerEatGoldenApple(event);
+    onPlayerPearlTeleport(event);
   }
 
   // ================================================
@@ -568,8 +574,8 @@ public class Humbug extends JavaPlugin implements Listener {
     }
   }
 
-  @EventHandler(priority = EventPriority.LOWEST) // ignoreCancelled=false
-  public void onPlayerInteractAll(PlayerInteractEvent event) {
+  // EventHandler registered in onPlayerInteractAll
+  public void onPlayerEatGoldenApple(PlayerInteractEvent event) {
     // The event when eating is cancelled before even LOWEST fires when the
     //  player clicks on AIR.
     if (config_.getEnchGoldAppleEdible()) {
@@ -1039,6 +1045,65 @@ public class Humbug extends JavaPlugin implements Listener {
   }
 
   // ================================================
+  // Ender pearl cooldown timer
+
+  private class PearlTeleportInfo {
+    public long last_teleport;
+    public long teleport_count;
+    public boolean notified_player;
+  }
+
+  private Map<String, PearlTeleportInfo> pearl_teleport_info_
+      = new TreeMap<String, PearlTeleportInfo>();
+
+  // EventHandler registered in onPlayerInteractAll
+  public void onPlayerPearlTeleport(PlayerInteractEvent event) {
+    if (!config_.getThrottlePearlTeleport()) {
+      return;
+    }
+    if (!event.getItem().getType().equals(Material.ENDER_PEARL)) {
+      return;
+    }
+    Action action = event.getAction();
+    if (action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) {
+      return;
+    }
+    long current_time = System.currentTimeMillis();
+    String player_name = event.getPlayer().getName();
+    PearlTeleportInfo teleport_info = pearl_teleport_info_.get(player_name);
+    if (teleport_info == null) {
+      teleport_info = new PearlTeleportInfo();
+      teleport_info.teleport_count = 1;
+      teleport_info.last_teleport = current_time;
+      teleport_info.notified_player = false;
+    } else {
+      long time_diff = current_time - teleport_info.last_teleport;
+      long block_window = teleport_info.teleport_count * 5000;
+      if (block_window > 60000) {
+        block_window = 60000;
+      }
+      if (block_window > time_diff) {
+        if (!teleport_info.notified_player) {
+          event.getPlayer().sendMessage(String.format(
+              "Pearl Teleport Cooldown: %ds",
+              (block_window - time_diff + 500) / 1000));
+          teleport_info.notified_player = true;
+        }
+        event.setCancelled(true);
+      } else if (block_window + 10000 > time_diff) {
+        teleport_info.teleport_count++;
+        teleport_info.last_teleport = current_time;
+        teleport_info.notified_player = false;
+      } else {
+        teleport_info.teleport_count = 1;
+        teleport_info.last_teleport = current_time;
+        teleport_info.notified_player = false;
+      }
+    }
+    pearl_teleport_info_.put(player_name, teleport_info);
+  }
+
+  // ================================================
   // General
 
   public void onEnable() {
@@ -1268,6 +1333,11 @@ public class Humbug extends JavaPlugin implements Listener {
         config_.setEnderPearlTeleportationEnabled(toBool(value));
       }
       msg = String.format("ender_pearl_teleportation = %s", config_.getEnderPearlTeleportationEnabled());
+    } else if (option.equals("ender_pearl_teleportation_throttled")) {
+      if (set) {
+        config_.setThrottlePearlTeleport(toBool(value));
+      }
+      msg = String.format("ender_pearl_teleportation_throttled = %s", config_.getThrottlePearlTeleport());
     } else if (option.equals("ender_pearl_launch_velocity")) {
       if (set) {
         config_.setEnderPearlLaunchVelocity(toDouble(value, 1.0000));

@@ -27,6 +27,7 @@ Minecraft server plug-in: Simply toggles various functionality
 - Removes the Enchanted Golden Apple recipe.
 - Converts Enchanted Golden Apples to normal Golden Apples if a Player attempts to eat them.
 - Disables Ender Pearl Teleportation
+- Throttles Ender Pearl Teleportation
 - Alters the initial velocity of Ender Pearls
 - Alters the drop rate of wither skulls
 - Removes specific items from dropping when a mob is killed
@@ -64,6 +65,7 @@ Config file settings:
 - fix_vehicle_logout_bug: Boolean, Fixes a teleport bug when players logout in vehicles
 - player_max_health: Integer, sets all Player maximum health
 - ender_pearl_teleportation: Boolean, Turns on Ender Pearl teleportation
+- ender_pearl_teleportation_throttled: Boolean, Activates a cooldown between Ender Pearl teleports
 - ender_pearl_launch_velocity: Double, Alters initial velocity of Ender Pearls
 - ench_gold_app_edible: Boolean, Allows players to eat Enchanted Golden Apples. If false, Enchanted Golden Apples are converted to normal Golden Apples
 - ench_gold_app_craftable: Boolean, Allows the Enchanted Golden Apple recipe to be used
@@ -102,6 +104,7 @@ Default configuration (biased for CivCraft):
 - fix_vehicle_logout_bug: true
 - player_max_health: 20
 - ender_pearl_teleportation: true
+- ender_pearl_teleportation_throttled: true
 - ender_pearl_launch_velocity: 1.0
 - ench_gold_app_edible: false
 - ench_gold_app_craftable: false
