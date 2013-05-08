@@ -1061,7 +1061,7 @@ public class Humbug extends JavaPlugin implements Listener {
     if (!config_.getThrottlePearlTeleport()) {
       return;
     }
-    if (!event.getItem().getType().equals(Material.ENDER_PEARL)) {
+    if (event.getItem() == null || !event.getItem().getType().equals(Material.ENDER_PEARL)) {
       return;
     }
     Action action = event.getAction();
