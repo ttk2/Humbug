@@ -48,6 +48,7 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.entity.SheepDyeWoolEvent;
@@ -67,6 +68,9 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+
+import com.untamedears.humbug.Config;
+import com.untamedears.humbug.CustomNMSItemEnderPearl;
 
 public class Humbug extends JavaPlugin implements Listener {
   public static void severe(String message) {
@@ -1106,11 +1110,19 @@ public class Humbug extends JavaPlugin implements Listener {
   // ================================================
   // General
 
+  public void hookEnderPearls() {
+    net.minecraft.server.v1_5_R2.Item.ENDER_PEARL = (new CustomNMSItemEnderPearl(112)).b("enderPearl");
+  }
+
+  // ================================================
+  // General
+
   public void onEnable() {
     registerEvents();
     registerCommands();
     loadConfiguration();
     removeRecipies();
+    hookEnderPearls();
     global_instance_ = this;
     info("Enabled");
   }
