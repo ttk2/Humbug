@@ -961,35 +961,29 @@ public class Humbug extends JavaPlugin implements Listener {
     if (!(event.getEntity() instanceof Player)) {
       return;
     }
-    boolean damager_is_player = false;
+    boolean damager_is_player_arrow = false;
     int chance_scaling = 0;
     Entity damager_entity = event.getDamager();
     if (damager_entity != null) {
-      if (damager_entity instanceof Player) {
-        damager_is_player = true;
-        String player_name = ((Player)damager_entity).getName();
-        if (bow_level_.containsKey(player_name)) {
-          chance_scaling = bow_level_.get(player_name);
-        }
-      } else {
-        // public LivingEntity CraftArrow.getShooter()
-        // Playing this game to not have to take a hard dependency on
-        //  craftbukkit internals.
-        try {
-          Class<?> damager_class = damager_entity.getClass();
+      // public LivingEntity CraftArrow.getShooter()
+      // Playing this game to not have to take a hard dependency on
+      //  craftbukkit internals.
+      try {
+        Class<?> damager_class = damager_entity.getClass();
+        if (damager_class.getName().endsWith(".CraftArrow")) {
           Method getShooter = damager_class.getMethod("getShooter");
           Object result = getShooter.invoke(damager_entity);
           if (result instanceof Player) {
-            damager_is_player = true;
+            damager_is_player_arrow = true;
             String player_name = ((Player)result).getName();
             if (bow_level_.containsKey(player_name)) {
               chance_scaling = bow_level_.get(player_name);
             }
           }
-        } catch(Exception ex) {}
-      }
+        }
+      } catch(Exception ex) {}
     }
-    if (!damager_is_player) {
+    if (!damager_is_player_arrow) {
       return;
     }
     rate += chance_scaling * 5;
