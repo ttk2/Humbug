@@ -64,6 +64,8 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.Recipe;
+import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -807,7 +809,30 @@ public class Humbug extends JavaPlugin implements Listener {
 
   //================================================
   // Fix player in vehicle logout bug
+@EventHandler
+  public void OnPlayerFirstJoin(PlayerJoinEvent event){
+    Boolean first = event.getPlayer().hasPlayedBefore();
+	  
+	  if (first == true){
+		  return;
+	  }
+		  Player player= event.getPlayer();
+		  Inventory inv= player.getInventory();
+		  
+		  ItemStack book= new ItemStack(Material.WRITTEN_BOOK);
+		  BookMeta sbook= (BookMeta)book.getItemMeta();
+		  sbook.setTitle(config_.getTitle());
+		  sbook.setAuthor(config_.getAuthor());		  
+		  sbook.setPages(config_.getPages());
+		  book.setItemMeta(sbook);
+		  
+		  inv.addItem(book);
+		  
+		  
+	  
+  }
 
+  
   private static final int air_material_id_ = Material.AIR.getId();
 
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
