@@ -766,21 +766,15 @@ public class Humbug extends JavaPlugin implements Listener {
 	  if (mob instanceof Player){
 		  return;
 	  }
-	  int amount=0;
-	  
 	  List<ItemStack> drops;
-	  
 	  drops= event.getDrops();
-	  
-	  amount=drops.size();
-	  int multiplier= config_.getLootMultiplier();
-	  multiplier=amount*multiplier;
 	  for(ItemStack item: drops){
+		  int amount=0;
+		  amount=drops.size();
+		  int multiplier= config_.getLootMultiplier();
+		  multiplier=amount*multiplier;
 		  drops.set(multiplier, item);
-	  }
-	  
-	  
-	  
+	  }  
   }
 
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
