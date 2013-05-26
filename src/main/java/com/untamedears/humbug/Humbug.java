@@ -10,6 +10,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
+import net.minecraft.server.v1_5_R3.Item;
+
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -48,6 +50,7 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.entity.SheepDyeWoolEvent;
@@ -732,7 +735,7 @@ public class Humbug extends JavaPlugin implements Listener {
     }
     Entity entity = event.getEntity();
     if (!(entity instanceof Player)) {
-      return;
+    	return;
     }
     Player defender = (Player)entity;
     PlayerInventory inventory = defender.getInventory();
@@ -756,6 +759,28 @@ public class Humbug extends JavaPlugin implements Listener {
     }
     damage = Math.max(damage - damage_adjustment, 0);
     event.setDamage(damage);
+  }
+  
+  public void MobItemDrop(EntityDeathEvent event){
+	  Entity mob= event.getEntity();
+	  if (mob instanceof Player){
+		  return;
+	  }
+	  int amount=0;
+	  
+	  List<ItemStack> drops;
+	  
+	  drops= event.getDrops();
+	  
+	  amount=drops.size();
+	  int multiplier= config_.getLootMultiplier();
+	  multiplier=amount*multiplier;
+	  for(ItemStack item: drops){
+		  drops.set(multiplier, item);
+	  }
+	  
+	  
+	  
   }
 
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
@@ -809,28 +834,7 @@ public class Humbug extends JavaPlugin implements Listener {
 
   //================================================
   // Fix player in vehicle logout bug
-@EventHandler
-  public void OnPlayerFirstJoin(PlayerJoinEvent event){
-    Boolean first = event.getPlayer().hasPlayedBefore();
-	  
-	  if (first == true){
-		  return;
-	  }
-		  Player player= event.getPlayer();
-		  Inventory inv= player.getInventory();
-		  
-		  ItemStack book= new ItemStack(Material.WRITTEN_BOOK);
-		  BookMeta sbook= (BookMeta)book.getItemMeta();
-		  sbook.setTitle(config_.getTitle());
-		  sbook.setAuthor(config_.getAuthor());		  
-		  sbook.setPages(config_.getPages());
-		  book.setItemMeta(sbook);
-		  
-		  inv.addItem(book);
-		  
-		  
-	  
-  }
+
 
   
   private static final int air_material_id_ = Material.AIR.getId();
