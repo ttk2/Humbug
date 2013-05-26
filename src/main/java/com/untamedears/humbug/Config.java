@@ -160,11 +160,11 @@ public class Config {
   }
 
   public int getLootMultiplier(){
-    return config_.getInt("loot_multipler", loot_multiplier_);
+    return config_.getInt("loot_multiplier", loot_multiplier_);
   }
 
   public void setLootMultiplier(int value){
-    config_.set("loot_multipler", loot_multiplier_);
+    config_.set("loot_multiplier", value);
   }
 
   public boolean getAnvilEnabled() {
