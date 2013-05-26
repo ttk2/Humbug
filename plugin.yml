@@ -1,6 +1,6 @@
 name: Humbug
 main: com.untamedears.humbug.Humbug
-version: 1.2.11
+version: 1.2.12
 description: toggles various functionality
 author: erocs
 database: false
@@ -9,7 +9,16 @@ commands:
     description: Gets and sets Humbugs settings
     usage: /humbug <setting> [<value>]
     permission: humbug.console
+  introbook:
+    description: Creates the intro book for new players
+    usage: /introbook [<playerName>]
+    permission: humbug.admin.introbook
 permissions:
   humbug.console:
     description: Console commands for Humbug
     default: false
+  humbug.admin:
+    description: Admin commands for Humbug
+    default: op
+    children:
+      humbug.admin.introbook: true

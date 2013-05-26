@@ -56,10 +56,50 @@ public class Config {
   private static final boolean allow_water_in_nether_ = false;
   private static final int projectile_slow_chance_ = 30;
   private static final int projectile_slow_ticks_ = 100;
-  private static final String book_name="A Guide to Civcraft";
-  private static final String book_author="dydomite";
-  private static final String book_text="         §oWhat is CivCraft?“Civcraft is an experiment for communities & political ideologies […] to worktogether to createand shape civilizationor to watch it fall”§r-Ttk2, server owner                                                                      §oWhat is CivCraft?§r§lNOT just survival §rAdmins are hands-offand only handle glitches and hackers §r§lNOT just chaos §rMods allow players and towns to enforce their own rules §r§lNOT just roleplay §rNobody pretends – conflict is genuine &heated                  §oBasic Mechanics §r-The world is a circle -Stretches 15k blocks-500 block chat range-Respawn in random area unless you sleep-Food grows slowly-Mobs spawn sparsely-No Nether portals-Nether biomes instead-No XP from killing-Less spawners      §oCivCraft Mods §r§lCitadel: §rReinforces things so it takes numerous breaks to destroy them. Locks some things too. §lMore Info: §r§oVisual Guide: §rimgur.com/BnlL2 §oWiki Page: §rtinyurl.com/citadelmod §oType “/help citadel” in chat to get commands             §r§lPrison Pearl: §rEnder Pearls trap players in the end. Others can steal back your pearl and free you – you always know where it is so they cannot hide it §r§lMore Info: §r§oVisual Guide: §rimgur.com/XbhkK §oWiki Page: §rtinyurl.com/prisperl            §r§lPrecious Stones: §rCreates ‘snitch’ blocks that record player activity in radius. If you steal, grief, or trespass – people will know about it & put a bounty for you to be pearled. §r§lMore Info: §r§oWiki Page: §rtinyurl.com/snitchblock                §r§lMineral Vein: §rChange in ore distribution. Harder to find ore, but when you do, there’s a lot of it. Some parts of the map have normal ore distribution. §r§lMore Info: §r§oGuide on Reddit: §rtinyurl.com/mineralvein §oWiki Page: §rtinyurl.com/veinwiki §r§lMusterCull: §rKills some of your farm animals when there’s too many to decrease lag. Mob spawners stop spawning if there are too many mobs around – grinders must be cleared a lot. §r§lMore Info: §r§oWiki Page: §rtinyurl.com/mustercull                    §r§lPhysical Shop: §rAllows automated stores. Hit a sign with it’s designated ‘currency’ to buy. Currencies are commodities and free markets dictate their worth – no fixed prices §r§lMore Info: §r§oWiki Page: §rtinyurl.com/storemod                       §r§lHumbug: §rDisables some features of minecraft – see wiki for short list. Please read it to ensure you don’t waste resources on a useless block. §r§lMore Info: §r§oWiki Page: §rtinyurl.com/humbugwiki                                                        §r§lFactory Mod: §rFactories are hard to create but can mass produce goods for cheaper.Gives groups gear advantages over lone wolves. Trading may be cheaper than crafting due to this. §r§lMore Info: §r§oGithub Wiki: §rtinyurl.com/factorymod               §r§lRealistic Biomes: §rBiomes are huge, crops grow different in different biomes. Hit ground with seed to see growth rate. Farms need sunlight. Crops grow with nobody around. §r§lMore Info: §r§oGithub Wiki: §rtinyurl.com/realbiome                        §r§oFurther Info §rVisit our subreddit at: §oreddit.com/r/civcraft §rVisit the unofficial wiki: §oCivCraft.org §rBoth have player made guides on other mods, towns, & general tips";
-  
+  private static final String book_name = "A Guide to Civcraft";
+  private static final String book_author = "dydomite";
+  private static final String book_text =
+      "    {|oWhat is CivCraft?\n"
+      + "\"Civcraft is an experiment for communities & political ideologies [...] to work together to create and shape civilization or to watch it fall\"{|r\n"
+      + "-Ttk2, server owner\n}|"
+      + "    {|oWhat is CivCraft?{|r\n"
+      + "{|lNOT just survival{|r Admins are hands-off and only handle glitches and hackers\n"
+      + "{|lNOT just chaos{|r Mods allow players and towns to enforce their own rules\n"
+      + "{|lNOT just roleplay{|r Nobody pretends -- conflict is genuine and heated\n}|"
+      + "    {|oBasic Mechanics{|r\n"
+      + "-The world is a circle\n"
+      + "-Stretches 15k blocks\n"
+      + "-500 block chat range\n"
+      + "-Respawn in random area unless you sleep\n"
+      + "-Food grows slowly\n"
+      + "-Mobs spawn sparsely\n"
+      + "-No Nether portals\n"
+      + "-Nether biomes instead\n"
+      + "-No XP from killing\n}|"
+      + "   {|oCivCraft Mods{|r\n"
+      + "{|lCitadel{|r: Reinforces things so it takes numerous breaks to destroy them. Locks some things too.\n"
+      + "{|lMore Info:{|r {|oVisual Guide:{|r imgur.com/BnlL2 {|oWiki Page:{|r tinyurl.com/citadelmod\n"
+      + "{|oType \"/help citadel\" in chat to get commands\n}|"
+      + "   {|lPrison Pearl{|r: Ender Pearls trap players in the end. Others can steal back your pearl and free you -- you always know where it is so they cannot hide it\n"
+      + "{|lMore Info:{|r {|oVisual Guide:{|r imgur.com/XbhkK {|oWiki Page:{|r tinyurl.com/prisperl\n}|"
+      + "   {|lJuke Alert{|r: Creates 'Juke' blocks that record player activity in radius. If you steal, grief, or trespass -- people will know about it & put a bounty for you to be pearled.\n"
+      + "{|lMore Info:{|r {|oWiki Page:{|r tinyurl.com/snitchblock\n}|"
+      + "   {|lMusterCull{|r: Kills some of your farm animals when there's too many to decrease lag. Mob spawners stop spawning if there are too many mobs around -- grinders must be cleared a lot.\n"
+      + "{|lMore Info:{|r {|oWiki Page:{|r tinyurl.com/mustercull\n}|"
+      + "   {|lPhysical Shop{|r: Allows automated stores. Hit a sign with it's designated 'currency' to buy. Currencies are commodities and free markets dictate their worth -- no fixed prices\n"
+      + "{|lMore Info:{|r {|oWiki Page:{|r tinyurl.com/storemod\n}|"
+      + "   {|lHumbug:{|r Disables some features of minecraft -- see wiki for short list. Please read it to ensure you don't waste resources on a useless block.\n"
+      + "{|lMore Info:{|r {|oWiki Page:{|r tinyurl.com/humbugwiki\n}|"
+      + "   {|lFactory Mod{|r: Factories are hard to create but can mass produce goods for cheaper. Gives groups gear advantages over lone wolves. Trading may be cheaper than crafting due to this.\n"
+      + "{|lMore Info:{|r {|oWiki Page:{|r tinyurl.com/factorymod\n}|"
+      + "   {|lRealistic Biomes{|r: Biomes are huge, crops grow different in different biomes. Hit ground with seed to see growth rate. Farms need sunlight. Crops grow with nobody around.\n"
+      + "{|lMore Info:{|r {|oWiki Page:{|r tinyurl.com/realbiome\n}|"
+      + "   {|oFurther Info{|r\n"
+      + "Visit our subreddit at: {|oreddit.com/r/civcraft{|r\n"
+      + "Visit the unofficial wiki: {|oCivCraft.org{|r\n"
+      + "Both have player made guides on other mods, towns, and general tips";
+  private static final Iterable<String> compiled_book_text = Splitter.on("}|").split(book_text.replaceAll("\\{\\|", "\u00A7"));
+
 
   public static Config initialize(Plugin plugin) {
     if (global_instance_ == null) {
@@ -106,23 +146,22 @@ public class Config {
     return config_.getBoolean("anvil", anvil_enabled_);
   }
   
-    public String getTitle(){
-	     return config_.getString("noobbook.name", book_name);
-	 }
-	 
-	 public String getAuthor(){
-	     return config_.getString("noobbook.author", book_author);
-	 }
-	
-	 public List<String> getPages(){
-		 List<String> book_pages = new LinkedList<String>();
-		 String booktext= config_.getString("noobbook.text",book_text);
-		 for(final String text: Splitter.fixedLength(256).split(booktext)){
-		 book_pages.add(text);
-		 }
-	     return book_pages;
-	 }
-	 
+  public String getTitle(){
+      return config_.getString("noobbook.name", book_name);
+  }
+
+  public String getAuthor(){
+      return config_.getString("noobbook.author", book_author);
+  }
+
+  public List<String> getPages(){
+      List<String> book_pages = new LinkedList<String>();
+      for(final String text: compiled_book_text){
+          book_pages.add(text);
+      }
+      return book_pages;
+  }
+
   public void setAnvilEnabled(boolean value) {
     config_.set("anvil", value);
   }

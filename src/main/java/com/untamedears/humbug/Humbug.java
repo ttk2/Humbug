@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -808,31 +809,35 @@ public class Humbug extends JavaPlugin implements Listener {
   }
 
   //================================================
-  // Fix player in vehicle logout bug
-@EventHandler
+  // Give introduction book to n00bs
+
+  @EventHandler
   public void OnPlayerFirstJoin(PlayerJoinEvent event){
-    Boolean first = event.getPlayer().hasPlayedBefore();
-	  
-	  if (first == true){
-		  return;
-	  }
-		  Player player= event.getPlayer();
-		  Inventory inv= player.getInventory();
-		  
-		  ItemStack book= new ItemStack(Material.WRITTEN_BOOK);
-		  BookMeta sbook= (BookMeta)book.getItemMeta();
-		  sbook.setTitle(config_.getTitle());
-		  sbook.setAuthor(config_.getAuthor());		  
-		  sbook.setPages(config_.getPages());
-		  book.setItemMeta(sbook);
-		  
-		  inv.addItem(book);
-		  
-		  
-	  
+    Player player = event.getPlayer();
+    if (player.hasPlayedBefore()) {
+      return;
+    }
+    giveN00bBook(player);
   }
 
-  
+  public void giveN00bBook(Player player) {
+    Inventory inv = player.getInventory();
+    inv.addItem(createN00bBook());
+  }
+
+  public ItemStack createN00bBook() {
+    ItemStack book = new ItemStack(Material.WRITTEN_BOOK);
+    BookMeta sbook = (BookMeta)book.getItemMeta();
+    sbook.setTitle(config_.getTitle());
+    sbook.setAuthor(config_.getAuthor());
+    sbook.setPages(config_.getPages());
+    book.setItemMeta(sbook);
+    return book;
+  }
+
+  //================================================
+  // Fix player in vehicle logout bug
+
   private static final int air_material_id_ = Material.AIR.getId();
 
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
@@ -1178,6 +1183,18 @@ public class Humbug extends JavaPlugin implements Listener {
       Command command,
       String label,
       String[] args) {
+    if (sender instanceof Player
+        && command.getName().equals("introbook")) {
+      Player sendBookTo = (Player)sender;
+      if (args.length >= 1) {
+        Player possible = Bukkit.getPlayerExact(args[0]);
+        if (possible != null) {
+          sendBookTo = possible;
+        }
+      }
+      giveN00bBook(sendBookTo);
+      return true;
+    }
     if (!(sender instanceof ConsoleCommandSender) ||
         !command.getName().equals("humbug") ||
         args.length < 1) {
