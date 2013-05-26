@@ -770,7 +770,7 @@ public class Humbug extends JavaPlugin implements Listener {
 	  drops= event.getDrops();
 	  for(ItemStack item: drops){
 		  int amount=0;
-		  amount=drops.size();
+		  amount=item.getAmount();   
 		  int multiplier= config_.getLootMultiplier();
 		  multiplier=amount*multiplier;
 		  drops.set(multiplier, item);
