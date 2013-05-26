@@ -56,6 +56,7 @@ public class Config {
   private static final boolean allow_water_in_nether_ = false;
   private static final int projectile_slow_chance_ = 30;
   private static final int projectile_slow_ticks_ = 100;
+  private static final int loot_multiplier_ = 1;
   private static final String book_name = "A Guide to Civcraft";
   private static final String book_author = "dydomite";
   private static final String book_text =
@@ -142,10 +143,6 @@ public class Config {
     config_.set("debug", value);
   }
 
-  public boolean getAnvilEnabled() {
-    return config_.getBoolean("anvil", anvil_enabled_);
-  }
-  
   public String getTitle(){
       return config_.getString("noobbook.name", book_name);
   }
@@ -162,6 +159,18 @@ public class Config {
       return book_pages;
   }
 
+  public int getLootMultiplier(){
+    return config_.getInt("loot_multipler", loot_multiplier_);
+  }
+
+  public void setLootMultiplier(int value){
+    config_.set("loot_multipler", loot_multiplier_);
+  }
+
+  public boolean getAnvilEnabled() {
+    return config_.getBoolean("anvil", anvil_enabled_);
+  }
+  
   public void setAnvilEnabled(boolean value) {
     config_.set("anvil", value);
   }

@@ -49,6 +49,7 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.entity.SheepDyeWoolEvent;
@@ -523,10 +524,23 @@ public class Humbug extends JavaPlugin implements Listener {
     drops.add(item);
   }
 
+  public void adjustMobItemDrops(EntityDeathEvent event){
+    Entity mob = event.getEntity();
+    if (mob instanceof Player){
+      return;
+    }
+    int multiplier = config_.getLootMultiplier();
+    for (ItemStack item : event.getDrops()) {
+      int amount = item.getAmount() * multiplier;   
+      item.setAmount(amount);
+    }  
+  }
+
   @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
   public void onEntityDeathEvent(EntityDeathEvent event) {
     removeItemDrops(event);
     adjustWitherSkulls(event);
+    adjustMobItemDrops(event);
   }
 
   // ================================================
@@ -758,7 +772,7 @@ public class Humbug extends JavaPlugin implements Listener {
     damage = Math.max(damage - damage_adjustment, 0);
     event.setDamage(damage);
   }
-
+  
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
   public void onPlayerJoinEvent(PlayerJoinEvent event) {
     Player player = event.getPlayer();
@@ -1354,6 +1368,11 @@ public class Humbug extends JavaPlugin implements Listener {
         config_.setWitherSkullDropRate(toInt(value, config_.getWitherSkullDropRate()));
       }
       msg = String.format("wither_skull_drop_rate = %d", config_.getWitherSkullDropRate());
+    } else if (option.equals("loot_multiplier")) {
+      if (set) {
+        config_.setLootMultiplier(toInt(value, config_.getLootMultiplier()));
+      }
+      msg = String.format("loot_multiplier = %d", config_.getLootMultiplier());
     } else if (option.equals("player_max_health")) {
       if (set) {
         config_.setMaxHealth(toInt(value, config_.getMaxHealth()));
