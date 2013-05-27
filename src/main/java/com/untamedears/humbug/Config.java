@@ -67,10 +67,10 @@ public class Config {
   private static final int ghast_multiplier=3;
   private static final int pig_zombie_multiplier=1;
   private static final int enderman_multiplier=3;
-  private static final int cave_spider_multiplier=1;
+  private static final int cave_spider_multiplier=2;
   private static final int silverfish_multiplier=1;
   private static final int blaze_multiplier=1;
-  private static final int magma_cube_multiplier=1;
+  private static final int magma_cube_multiplier=3;
   private static final int wither_multiplier=1;
   private static final int pig_multiplier=1;
   private static final int sheep_multiplier=1;
@@ -147,73 +147,73 @@ public class Config {
 	     return book_pages;
 	 }
 	 public int getLootMultiplier(){
-			return config_.getInt("LootMultipler", loot_multiplier);
+			return config_.getInt("loot.multipler", loot_multiplier);
 		}
 	 public int getCreeperMultiplier(){
-		 return config_.getInt("LootMultiplyer.Creeper",creeper_multiplier);
+		 return config_.getInt("lootmultiplyer.creeper",creeper_multiplier);
 	 }
 	 public int getSpiderMultiplier(){
-		 return config_.getInt("LootMultiplier.Spider", spider_multiplier);
+		 return config_.getInt("lootmultiplier.spider", spider_multiplier);
 	 }
 	 public int getZombieMultiplier(){
-		 return config_.getInt("LootMultiplier.Zombie", zombie_multiplier);
+		 return config_.getInt("lootmultiplier.zombie", zombie_multiplier);
 	 }
 	 public int getSlimeMultiplier(){
-		 return config_.getInt("LootMultiplier.Slime", slime_multiplier);
+		 return config_.getInt("lootmultiplier.slime", slime_multiplier);
 	 }
 	 public int getGhastMultiplier(){
-		 return config_.getInt("LootMultiplier.Ghast", ghast_multiplier);
+		 return config_.getInt("lootmultiplier.ghast", ghast_multiplier);
 	 }
 	 public int getPigZombie(){
-		 return config_.getInt("LootMultiplier.PigZombie", pig_zombie_multiplier);
+		 return config_.getInt("lootmultiplier.pigzombie", pig_zombie_multiplier);
 	 }
 	 public int getEnderMan(){
-		 return config_.getInt("Multiplier.EnderMan", enderman_multiplier);
+		 return config_.getInt("multiplier.enderman", enderman_multiplier);
 	 }
 	 public int getCaveSpider(){
-		 return config_.getInt("Multiplier.CaveSpider", cave_spider_multiplier);
+		 return config_.getInt("multiplier.cavespider", cave_spider_multiplier);
 	 }
 	 public int getSilverFish(){
-		 return config_.getInt("Multiplier.SilverFish", silverfish_multiplier);
+		 return config_.getInt("multiplier.silverfish", silverfish_multiplier);
 	 }
 	 public int getBlaze(){
-		 return config_.getInt("Multiplier.Blaze", blaze_multiplier);
+		 return config_.getInt("multiplier.blaze", blaze_multiplier);
 	 }
 	 public int getMagmaCube(){
-		 return config_.getInt("Multiplier.MagmaCube", magma_cube_multiplier);
+		 return config_.getInt("multiplier.magmaCube", magma_cube_multiplier);
 	 }
 	 public int getWither(){
-		 return config_.getInt("Multiplier.Wither", wither_multiplier);
+		 return config_.getInt("multiplier.wither", wither_multiplier);
 	 }
 	 public int getPig(){
-		 return config_.getInt("Multiplier.Pig", pig_multiplier);
+		 return config_.getInt("multiplier.pig", pig_multiplier);
 	 }
 	 public int getSheep(){
-		 return config_.getInt("Multiplier.Sheep", sheep_multiplier);
+		 return config_.getInt("multiplier.sheep", sheep_multiplier);
 	 }
 	 public int getCow(){
-		 return config_.getInt("Multiplier.Cow", cow_multiplier);
+		 return config_.getInt("multiplier.cow", cow_multiplier);
 	 }
 	 public int getChicken(){
-		 return config_.getInt("Multiplier.Chicken", chicken_multiplier);
+		 return config_.getInt("multiplier.chicken", chicken_multiplier);
 	 }
 	 public int getSquid(){
-		 return config_.getInt("Multiplier.Squid", squid_multiplier);
+		 return config_.getInt("multiplier.squid", squid_multiplier);
 	 }
 	 public int getWolf(){
-		 return config_.getInt("Multiplier.Wolf", wolf_multiplier);
+		 return config_.getInt("multiplier.wolf", wolf_multiplier);
 	 }
 	 public int getMushroomCow(){
-		 return config_.getInt("Multiplier.MushroomCow", mushroom_cow_multiplier);
+		 return config_.getInt("multiplier.mushroomCow", mushroom_cow_multiplier);
 	 }
 	 public int getSnowman(){
-		 return config_.getInt("Multiplier.Snowman", snowman_multiplier);
+		 return config_.getInt("multiplier.snowman", snowman_multiplier);
 	 }
 	 public int getIronGolem(){
-		 return config_.getInt("Multiplier.IronGolem", iron_golem_multiplier);
+		 return config_.getInt("multiplier.ironGolem", iron_golem_multiplier);
 	 }
 	 public int getSkeleton(){
-		 return config_.getInt("Multiplier.Skeleton", skeleton_multiplier);
+		 return config_.getInt("multiplier.skeleton", skeleton_multiplier);
 	 }
   public void setAnvilEnabled(boolean value) {
     config_.set("anvil", value);
