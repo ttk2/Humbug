@@ -762,7 +762,7 @@ public class Humbug extends JavaPlugin implements Listener {
     damage = Math.max(damage - damage_adjustment, 0);
     event.setDamage(damage);
   }
-  
+  //drop multiplier
   public void MobItemDrop(EntityDeathEvent event){
 	  Entity mob= event.getEntity();
 	  if (mob instanceof Player){
@@ -770,13 +770,18 @@ public class Humbug extends JavaPlugin implements Listener {
 	  }
 	  List<ItemStack> drops;
 	  drops= event.getDrops();
+	  int multiplier= config_.getLootMultiplier();
+	  if (multiplier!=1){
+		  
+	  // overall multiplier, applies to all mobs
 	  for(ItemStack item: drops){
 		  int amount=0;
 		  amount=item.getAmount();   
-		  int multiplier= config_.getLootMultiplier();
+		  
 		  multiplier=amount*multiplier;
 		  drops.set(multiplier, item);
 	  }  
+	  }
 	  
 	  EntityType entity= event.getEntityType();
 	  int dropamount, dropmultiplier = 0;
@@ -854,13 +859,16 @@ public class Humbug extends JavaPlugin implements Listener {
 	  		  break;
 	  		  
 	default:
-		break;
+		return;
 	  }
+	  // individual multipliers
+	  if (dropmultiplier!=1){
 	  for(ItemStack item: drops){
 		  
 		  dropamount=item.getAmount();   
 		  dropmultiplier= dropmultiplier*dropamount;
 		  drops.set(dropmultiplier, item);
+	  }
 	  }
   }
 
