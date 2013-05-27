@@ -1,6 +1,7 @@
 package com.untamedears.humbug;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.logging.Logger;
 
 import net.minecraft.server.v1_5_R3.Item;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -775,6 +777,91 @@ public class Humbug extends JavaPlugin implements Listener {
 		  multiplier=amount*multiplier;
 		  drops.set(multiplier, item);
 	  }  
+	  
+	  EntityType entity= event.getEntityType();
+	  int dropamount, dropmultiplier = 0;
+	  
+	  switch(entity){
+	  	  case CREEPER:
+	  		  dropmultiplier=config_.getCreeperMultiplier();
+	  		  break;
+	  	  case SKELETON:
+	  		  dropmultiplier= config_.getSkeleton();
+	  		  break;
+	  	  case SPIDER:
+	  		  dropmultiplier= config_.getSpiderMultiplier();
+	  		  break;
+	  	  case ZOMBIE:
+	  		  dropmultiplier= config_.getZombieMultiplier();
+	  		  break;
+	  	  case SLIME:
+	  		  dropmultiplier= config_.getSlimeMultiplier();
+	  		  break;
+	  	  case GHAST:
+	  		  dropmultiplier= config_.getGhastMultiplier();
+	  		  break;
+	  	  case PIG_ZOMBIE:
+	  		  dropmultiplier= config_.getPigZombie();
+	  		  break;
+	  	  case ENDERMAN:
+	  		  if (mob.getWorld()== Bukkit.getWorld("world_the_end")){
+	  			  dropmultiplier= 1;
+	  		  }
+	  		  else{
+	  		  dropmultiplier= config_.getEnderMan();}
+	  		  break;
+	  	  case CAVE_SPIDER:
+	  		  dropmultiplier= config_.getCaveSpider();
+	  		  break;
+	  	  case SILVERFISH:
+	  		  dropmultiplier= config_.getSilverFish();
+	  		  break;
+	  	  case BLAZE:
+	  		  dropmultiplier= config_.getBlaze();
+	  		  break;
+	  	  case MAGMA_CUBE:
+	  		  dropmultiplier= config_.getMagmaCube();
+	  		  break;
+	  	  case WITHER:
+	  		  dropmultiplier= config_.getWither();
+	  		  break;
+	  	  case PIG:
+	  		  dropmultiplier= config_.getPig();
+	  		  break;
+	  	  case SHEEP:
+	  		  dropmultiplier= config_.getSheep();
+	  		  break;
+	  	  case COW:
+	  		  dropmultiplier= config_.getCow();
+	  		  break;
+	  	  case CHICKEN:
+	  		  dropmultiplier= config_.getChicken();
+	  		  break;
+	  	  case SQUID:
+	  		  dropmultiplier= config_.getSquid();
+	  		  break;
+	  	  case WOLF:
+	  		  dropmultiplier= config_.getWolf();
+	  		  break;
+	  	  case MUSHROOM_COW:
+	  		  dropmultiplier= config_.getMushroomCow();
+	  		  break;
+	  	  case SNOWMAN:
+	  		  dropmultiplier= config_.getSnowman();
+	  		  break;
+	  	  case IRON_GOLEM:
+	  		  dropmultiplier= config_.getIronGolem();
+	  		  break;
+	  		  
+	default:
+		break;
+	  }
+	  for(ItemStack item: drops){
+		  
+		  dropamount=item.getAmount();   
+		  dropmultiplier= dropmultiplier*dropamount;
+		  drops.set(dropmultiplier, item);
+	  }
   }
 
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
