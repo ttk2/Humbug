@@ -60,6 +60,30 @@ public class Config {
   private static final String book_author="dydomite";
   private static final String book_text="         §oWhat is CivCraft?“Civcraft is an experiment for communities & political ideologies […] to worktogether to createand shape civilizationor to watch it fall”§r-Ttk2, server owner                                                                      §oWhat is CivCraft?§r§lNOT just survival §rAdmins are hands-offand only handle glitches and hackers §r§lNOT just chaos §rMods allow players and towns to enforce their own rules §r§lNOT just roleplay §rNobody pretends – conflict is genuine &heated                  §oBasic Mechanics §r-The world is a circle -Stretches 15k blocks-500 block chat range-Respawn in random area unless you sleep-Food grows slowly-Mobs spawn sparsely-No Nether portals-Nether biomes instead-No XP from killing-Less spawners      §oCivCraft Mods §r§lCitadel: §rReinforces things so it takes numerous breaks to destroy them. Locks some things too. §lMore Info: §r§oVisual Guide: §rimgur.com/BnlL2 §oWiki Page: §rtinyurl.com/citadelmod §oType “/help citadel” in chat to get commands             §r§lPrison Pearl: §rEnder Pearls trap players in the end. Others can steal back your pearl and free you – you always know where it is so they cannot hide it §r§lMore Info: §r§oVisual Guide: §rimgur.com/XbhkK §oWiki Page: §rtinyurl.com/prisperl            §r§lPrecious Stones: §rCreates ‘snitch’ blocks that record player activity in radius. If you steal, grief, or trespass – people will know about it & put a bounty for you to be pearled. §r§lMore Info: §r§oWiki Page: §rtinyurl.com/snitchblock                §r§lMineral Vein: §rChange in ore distribution. Harder to find ore, but when you do, there’s a lot of it. Some parts of the map have normal ore distribution. §r§lMore Info: §r§oGuide on Reddit: §rtinyurl.com/mineralvein §oWiki Page: §rtinyurl.com/veinwiki §r§lMusterCull: §rKills some of your farm animals when there’s too many to decrease lag. Mob spawners stop spawning if there are too many mobs around – grinders must be cleared a lot. §r§lMore Info: §r§oWiki Page: §rtinyurl.com/mustercull                    §r§lPhysical Shop: §rAllows automated stores. Hit a sign with it’s designated ‘currency’ to buy. Currencies are commodities and free markets dictate their worth – no fixed prices §r§lMore Info: §r§oWiki Page: §rtinyurl.com/storemod                       §r§lHumbug: §rDisables some features of minecraft – see wiki for short list. Please read it to ensure you don’t waste resources on a useless block. §r§lMore Info: §r§oWiki Page: §rtinyurl.com/humbugwiki                                                        §r§lFactory Mod: §rFactories are hard to create but can mass produce goods for cheaper.Gives groups gear advantages over lone wolves. Trading may be cheaper than crafting due to this. §r§lMore Info: §r§oGithub Wiki: §rtinyurl.com/factorymod               §r§lRealistic Biomes: §rBiomes are huge, crops grow different in different biomes. Hit ground with seed to see growth rate. Farms need sunlight. Crops grow with nobody around. §r§lMore Info: §r§oGithub Wiki: §rtinyurl.com/realbiome                        §r§oFurther Info §rVisit our subreddit at: §oreddit.com/r/civcraft §rVisit the unofficial wiki: §oCivCraft.org §rBoth have player made guides on other mods, towns, & general tips"; 
   private static final int loot_multiplier=1;
+  private static final int creeper_multiplier=2;
+  private static final int spider_multiplier=2;
+  private static final int zombie_multiplier=2;
+  private static final int slime_multiplier=2;
+  private static final int ghast_multiplier=3;
+  private static final int pig_zombie_multiplier=1;
+  private static final int enderman_multiplier=3;
+  private static final int cave_spider_multiplier=1;
+  private static final int silverfish_multiplier=1;
+  private static final int blaze_multiplier=1;
+  private static final int magma_cube_multiplier=1;
+  private static final int wither_multiplier=1;
+  private static final int pig_multiplier=1;
+  private static final int sheep_multiplier=1;
+  private static final int cow_multiplier=1;
+  private static final int chicken_multiplier=1;
+  private static final int squid_multiplier=1;
+  private static final int wolf_multiplier=1;
+  private static final int mushroom_cow_multiplier=1;
+  private static final int snowman_multiplier=1;
+  private static final int iron_golem_multiplier=1;
+  private static final int skeleton_multiplier=1;
+  
+  
 
   public static Config initialize(Plugin plugin) {
     if (global_instance_ == null) {
@@ -125,6 +149,72 @@ public class Config {
 	 public int getLootMultiplier(){
 			return config_.getInt("LootMultipler", loot_multiplier);
 		}
+	 public int getCreeperMultiplier(){
+		 return config_.getInt("LootMultiplyer.Creeper",creeper_multiplier);
+	 }
+	 public int getSpiderMultiplier(){
+		 return config_.getInt("LootMultiplier.Spider", spider_multiplier);
+	 }
+	 public int getZombieMultiplier(){
+		 return config_.getInt("LootMultiplier.Zombie", zombie_multiplier);
+	 }
+	 public int getSlimeMultiplier(){
+		 return config_.getInt("LootMultiplier.Slime", slime_multiplier);
+	 }
+	 public int getGhastMultiplier(){
+		 return config_.getInt("LootMultiplier.Ghast", ghast_multiplier);
+	 }
+	 public int getPigZombie(){
+		 return config_.getInt("LootMultiplier.PigZombie", pig_zombie_multiplier);
+	 }
+	 public int getEnderMan(){
+		 return config_.getInt("Multiplier.EnderMan", enderman_multiplier);
+	 }
+	 public int getCaveSpider(){
+		 return config_.getInt("Multiplier.CaveSpider", cave_spider_multiplier);
+	 }
+	 public int getSilverFish(){
+		 return config_.getInt("Multiplier.SilverFish", silverfish_multiplier);
+	 }
+	 public int getBlaze(){
+		 return config_.getInt("Multiplier.Blaze", blaze_multiplier);
+	 }
+	 public int getMagmaCube(){
+		 return config_.getInt("Multiplier.MagmaCube", magma_cube_multiplier);
+	 }
+	 public int getWither(){
+		 return config_.getInt("Multiplier.Wither", wither_multiplier);
+	 }
+	 public int getPig(){
+		 return config_.getInt("Multiplier.Pig", pig_multiplier);
+	 }
+	 public int getSheep(){
+		 return config_.getInt("Multiplier.Sheep", sheep_multiplier);
+	 }
+	 public int getCow(){
+		 return config_.getInt("Multiplier.Cow", cow_multiplier);
+	 }
+	 public int getChicken(){
+		 return config_.getInt("Multiplier.Chicken", chicken_multiplier);
+	 }
+	 public int getSquid(){
+		 return config_.getInt("Multiplier.Squid", squid_multiplier);
+	 }
+	 public int getWolf(){
+		 return config_.getInt("Multiplier.Wolf", wolf_multiplier);
+	 }
+	 public int getMushroomCow(){
+		 return config_.getInt("Multiplier.MushroomCow", mushroom_cow_multiplier);
+	 }
+	 public int getSnowman(){
+		 return config_.getInt("Multiplier.Snowman", snowman_multiplier);
+	 }
+	 public int getIronGolem(){
+		 return config_.getInt("Multiplier.IronGolem", iron_golem_multiplier);
+	 }
+	 public int getSkeleton(){
+		 return config_.getInt("Multiplier.Skeleton", skeleton_multiplier);
+	 }
   public void setAnvilEnabled(boolean value) {
     config_.set("anvil", value);
   }
