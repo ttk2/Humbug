@@ -1,6 +1,7 @@
 package com.untamedears.humbug;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -524,12 +525,20 @@ public class Humbug extends JavaPlugin implements Listener {
     drops.add(item);
   }
 
+  // ================================================
+  // Generic mob drop rate adjustment
+
   public void adjustMobItemDrops(EntityDeathEvent event){
     Entity mob = event.getEntity();
     if (mob instanceof Player){
       return;
     }
-    int multiplier = config_.getLootMultiplier();
+    // Try specific multiplier, if that doesn't exist use generic
+    EntityType mob_type = mob.getType();
+    int multiplier = config_.getLootMultiplier(mob_type.toString());
+    if (multiplier == 1) {
+      multiplier = config_.getLootMultiplier("generic");
+    }
     for (ItemStack item : event.getDrops()) {
       int amount = item.getAmount() * multiplier;   
       item.setAmount(amount);
@@ -772,7 +781,7 @@ public class Humbug extends JavaPlugin implements Listener {
     damage = Math.max(damage - damage_adjustment, 0);
     event.setDamage(damage);
   }
-  
+
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
   public void onPlayerJoinEvent(PlayerJoinEvent event) {
     Player player = event.getPlayer();
@@ -1369,10 +1378,17 @@ public class Humbug extends JavaPlugin implements Listener {
       }
       msg = String.format("wither_skull_drop_rate = %d", config_.getWitherSkullDropRate());
     } else if (option.equals("loot_multiplier")) {
-      if (set) {
-        config_.setLootMultiplier(toInt(value, config_.getLootMultiplier()));
+      String entity_type = "generic";
+      if (set && subvalue_set) {
+        entity_type = value;
+        value = subvalue;
       }
-      msg = String.format("loot_multiplier = %d", config_.getLootMultiplier());
+      if (set) {
+        config_.setLootMultiplier(
+                entity_type, toInt(value, config_.getLootMultiplier(entity_type)));
+      }
+      msg = String.format(
+          "loot_multiplier(%s) = %d", entity_type, config_.getLootMultiplier(entity_type));
     } else if (option.equals("player_max_health")) {
       if (set) {
         config_.setMaxHealth(toInt(value, config_.getMaxHealth()));

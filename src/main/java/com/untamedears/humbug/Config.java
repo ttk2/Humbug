@@ -57,9 +57,9 @@ public class Config {
   private static final int projectile_slow_chance_ = 30;
   private static final int projectile_slow_ticks_ = 100;
   private static final int loot_multiplier_ = 1;
-  private static final String book_name = "A Guide to Civcraft";
-  private static final String book_author = "dydomite";
-  private static final String book_text =
+  private static final String book_name_ = "A Guide to Civcraft";
+  private static final String book_author_ = "dydomite";
+  private static final String book_text_ =
       "    {|oWhat is CivCraft?\n"
       + "\"Civcraft is an experiment for communities & political ideologies [...] to work together to create and shape civilization or to watch it fall\"{|r\n"
       + "-Ttk2, server owner\n}|"
@@ -99,7 +99,8 @@ public class Config {
       + "Visit our subreddit at: {|oreddit.com/r/civcraft{|r\n"
       + "Visit the unofficial wiki: {|oCivCraft.org{|r\n"
       + "Both have player made guides on other mods, towns, and general tips";
-  private static final Iterable<String> compiled_book_text = Splitter.on("}|").split(book_text.replaceAll("\\{\\|", "\u00A7"));
+  private static final Iterable<String> compiled_book_text_ =
+      Splitter.on("}|").split(book_text_.replaceAll("\\{\\|", "\u00A7"));
 
 
   public static Config initialize(Plugin plugin) {
@@ -144,33 +145,33 @@ public class Config {
   }
 
   public String getTitle(){
-      return config_.getString("noobbook.name", book_name);
+    return config_.getString("noobbook.name", book_name_);
   }
 
   public String getAuthor(){
-      return config_.getString("noobbook.author", book_author);
+    return config_.getString("noobbook.author", book_author_);
   }
 
   public List<String> getPages(){
-      List<String> book_pages = new LinkedList<String>();
-      for(final String text: compiled_book_text){
-          book_pages.add(text);
-      }
-      return book_pages;
+    List<String> book_pages = new LinkedList<String>();
+    for(final String text: compiled_book_text_){
+      book_pages.add(text);
+    }
+    return book_pages;
   }
 
-  public int getLootMultiplier(){
-    return config_.getInt("loot_multiplier", loot_multiplier_);
+  public int getLootMultiplier(String entity_type){
+    return config_.getInt("loot_multiplier." + entity_type.toLowerCase(), loot_multiplier_);
   }
 
-  public void setLootMultiplier(int value){
-    config_.set("loot_multiplier", value);
+  public void setLootMultiplier(String entity_type, int value){
+    config_.set("loot_multiplier." + entity_type.toLowerCase(), value);
   }
 
   public boolean getAnvilEnabled() {
     return config_.getBoolean("anvil", anvil_enabled_);
   }
-  
+
   public void setAnvilEnabled(boolean value) {
     config_.set("anvil", value);
   }
