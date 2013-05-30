@@ -36,6 +36,7 @@ Minecraft server plug-in: Simply toggles various functionality
 - Disables water usage in main world hell biomes
 - Give projectiles a slow debuff on hit
 - Multiplies mob death loot item count
+- Disables experience except from XP bottles
 
 The 'humbug' console command can be used to get or set any of the configuration file settings while the server is running. Also available are 'humbug save' and 'humbug reload'.
 
@@ -78,6 +79,8 @@ Config file settings:
 - projectile_slow_chance: Integer between 1 and 100 or out of bounds to disable, percentage chance of a projectile shot causing a slow debuff
 - projectile_slow_ticks: Integer, number of server ticks a projectile shot's slow debuff will last
 - loot_drop: Integer, multiplier to apply to mob death item counts
+- disable_experience: Boolean, disables all vanilla experience but XP bottles
+- xp_per_bottle: Integer, sets the amount of XP given to a player by an XP bottle
 
 Default configuration (biased for CivCraft):
 - debug: false
@@ -118,3 +121,5 @@ Default configuration (biased for CivCraft):
 - projectile_slow_chance: 30
 - projectile_slow_ticks: 100
 - loot_drop: 1
+- disable_experience: true
+- xp_per_bottle: 10
