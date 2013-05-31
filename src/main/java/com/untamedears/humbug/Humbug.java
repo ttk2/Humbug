@@ -1152,30 +1152,28 @@ public class Humbug extends JavaPlugin implements Listener {
     pearl_teleport_info_.put(player_name, teleport_info);
   }
 
-  //Changes the yield from an XP bottle
+  // ================================================
+  // BottleO refugees
+
+  // Changes the yield from an XP bottle
   @EventHandler(priority=EventPriority.HIGHEST)
-  public void onExpBottleEvent(ExpBottleEvent e) {
-    if(config_.getDisableExperience())
-    {
-      ((Player) e.getEntity().getShooter()).giveExp(config_.getXPPerBottle());
-      e.setExperience(0);
-    }
-    else
-    {
-      e.setExperience(config_.getXPPerBottle());
+  public void onExpBottleEvent(ExpBottleEvent event) {
+    if (config_.getDisableExperience()) {
+      ((Player) event.getEntity().getShooter()).giveExp(config_.getXPPerBottle());
+      event.setExperience(0);
+    } else {
+      event.setExperience(config_.getXPPerBottle());
     }
   }
-  //Diables all XP gain except when manually changed via code.
+
+  // Diables all XP gain except when manually changed via code.
   @EventHandler
-  public void onPlayerExpChangeEvent(PlayerExpChangeEvent j)
-  {
-    if(config_.getDisableExperience())
-    {
-      j.setAmount(0);			
+  public void onPlayerExpChangeEvent(PlayerExpChangeEvent event) {
+    if (config_.getDisableExperience()) {
+      event.setAmount(0);
     }
   }
-  
-  
+
   // ================================================
   // General
 
@@ -1415,6 +1413,16 @@ public class Humbug extends JavaPlugin implements Listener {
       }
       msg = String.format(
           "loot_multiplier(%s) = %d", entity_type, config_.getLootMultiplier(entity_type));
+    } else if (option.equals("disable_experience")) {
+      if (set) {
+        config_.setDisableExperience(toBool(value));
+      }
+      msg = String.format("disable_experience = %d", config_.getDisableExperience());
+    } else if (option.equals("xp_per_bottle")) {
+      if (set) {
+        config_.setXPPerBottle(toInt(value, config_.getXPPerBottle()));
+      }
+      msg = String.format("xp_per_bottle = %d", config_.getXPPerBottle());
     } else if (option.equals("player_max_health")) {
       if (set) {
         config_.setMaxHealth(toInt(value, config_.getMaxHealth()));

@@ -57,8 +57,8 @@ public class Config {
   private static final int projectile_slow_chance_ = 30;
   private static final int projectile_slow_ticks_ = 100;
   private static final int loot_multiplier_ = 1;
-  private static final boolean disable_experience=true;
-  private static final int xp_per_bottle=10;
+  private static final boolean disable_experience_ = true;
+  private static final int xp_per_bottle_ = 10;
   private static final String book_name_ = "A Guide to Civcraft";
   private static final String book_author_ = "dydomite";
   private static final String book_text_ =
@@ -472,12 +472,20 @@ public class Config {
     return ticks;
   }
   
-  public boolean getDisableExperience(){
-    return config_.getBoolean("disable_experience", disable_experience);
+  public boolean getDisableExperience() {
+    return config_.getBoolean("disable_experience", disable_experience_);
   }
   
-  public int getXPPerBottle(){
-    return config_.getInt("xp_per_bottle", xp_per_bottle);
+  public void setDisableExperience(boolean value) {
+    config_.set("disable_experience", value);
+  }
+
+  public int getXPPerBottle() {
+    return config_.getInt("xp_per_bottle", xp_per_bottle_);
+  }
+
+  public void setXPPerBottle(int value) {
+    config_.set("xp_per_bottle", value);
   }
 
   public void setProjectileSlowTicks(int value) {
