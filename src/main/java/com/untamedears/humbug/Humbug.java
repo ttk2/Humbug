@@ -50,11 +50,13 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.ExpBottleEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.entity.SheepDyeWoolEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
+import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -1150,6 +1152,30 @@ public class Humbug extends JavaPlugin implements Listener {
     pearl_teleport_info_.put(player_name, teleport_info);
   }
 
+  //Changes the yield from an XP bottle
+  @EventHandler(priority=EventPriority.HIGHEST)
+  public void onExpBottleEvent(ExpBottleEvent e) {
+    if(config_.getDisableExperience())
+    {
+      ((Player) e.getEntity().getShooter()).giveExp(config_.getXPPerBottle());
+      e.setExperience(0);
+    }
+    else
+    {
+      e.setExperience(config_.getXPPerBottle());
+    }
+  }
+  //Diables all XP gain except when manually changed via code.
+  @EventHandler
+  public void onPlayerExpChangeEvent(PlayerExpChangeEvent j)
+  {
+    if(config_.getDisableExperience())
+    {
+      j.setAmount(0);			
+    }
+  }
+  
+  
   // ================================================
   // General
 
