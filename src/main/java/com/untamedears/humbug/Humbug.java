@@ -535,6 +535,9 @@ public class Humbug extends JavaPlugin implements Listener {
     if (mob instanceof Player){
       return;
     }
+    if (mob.getWorld() == Bukkit.getWorld("world_the_end")) {
+      return;
+    }
     // Try specific multiplier, if that doesn't exist use generic
     EntityType mob_type = mob.getType();
     int multiplier = config_.getLootMultiplier(mob_type.toString());
