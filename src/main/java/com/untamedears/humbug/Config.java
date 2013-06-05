@@ -54,6 +54,7 @@ public class Config {
   private static final boolean disallow_record_playing_ = true;
   private static final boolean allow_dye_sheep_ = true;
   private static final boolean allow_water_in_nether_ = false;
+  private static final boolean indestructible_end_portals_ = true;
   private static final int projectile_slow_chance_ = 30;
   private static final int projectile_slow_ticks_ = 100;
   private static final int loot_multiplier_ = 1;
@@ -454,6 +455,14 @@ public class Config {
 
   public void setAllowWaterInNether(boolean value) {
     config_.set("allow_water_in_nether", value);
+  }
+
+  public boolean getIndestructibleEndPortals() {
+    return config_.getBoolean("indestructible_end_portals", indestructible_end_portals_);
+  }
+
+  public void setIndestructibleEndPortals(boolean value) {
+    config_.set("indestructible_end_portals", value);
   }
 
   public int getProjectileSlowChance() {

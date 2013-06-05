@@ -291,7 +291,8 @@ public class Humbug extends JavaPlugin implements Listener {
 
   @EventHandler(ignoreCancelled=true)
   public void onEnderChestPlace(BlockPlaceEvent e) {
-    if (!config_.getEnderChestsPlaceable() && e.getBlock().getType() == Material.ENDER_CHEST) {
+    Material material = e.getBlock().getType();
+    if (!config_.getEnderChestsPlaceable() && material == Material.ENDER_CHEST) {
       e.setCancelled(true);
     }
   }
@@ -993,6 +994,14 @@ public class Humbug extends JavaPlugin implements Listener {
         e.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.WATER_BREATHING, 5, 1));
       }
     }
+    if (config_.getIndestructibleEndPortals()) {
+      Block baseBlock = e.getBlockClicked();
+      BlockFace face = e.getBlockFace();
+      Block block = baseBlock.getRelative(face);
+      if (block.getType() == Material.ENDER_PORTAL) {
+          e.setCancelled(true);
+      }
+    }
   }
 
   @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -1003,6 +1012,11 @@ public class Humbug extends JavaPlugin implements Listener {
             || ( e.getBlock().getType() == Material.STATIONARY_WATER ) ) {
           e.setCancelled(true);
         }
+      }
+    }
+    if (config_.getIndestructibleEndPortals()) {
+      if (e.getToBlock().getType() == Material.ENDER_PORTAL) {
+          e.setCancelled(true);
       }
     }
   }
@@ -1461,6 +1475,16 @@ public class Humbug extends JavaPlugin implements Listener {
         config_.setAllowDyeSheep(toBool(value));
       }
       msg = String.format("allow_dye_sheep = %s", config_.getAllowDyeSheep());
+    } else if (option.equals("allow_water_in_nether")) {
+      if (set) {
+        config_.setAllowWaterInNether(toBool(value));
+      }
+      msg = String.format("allow_water_in_nether = %s", config_.getAllowWaterInNether());
+    } else if (option.equals("indestructible_end_portals")) {
+      if (set) {
+        config_.setIndestructibleEndPortals(toBool(value));
+      }
+      msg = String.format("indestructible_end_portals = %s", config_.getIndestructibleEndPortals());
     } else if (option.equals("projectile_slow_chance")) {
       if (set) {
         config_.setProjectileSlowChance(toInt(value, config_.getProjectileSlowChance()));

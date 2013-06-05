@@ -34,6 +34,7 @@ Minecraft server plug-in: Simply toggles various functionality
 - Prevents records from playing in jukeboxes
 - Disabled dying sheep
 - Disables water usage in main world hell biomes
+- Prevents end portal tiles from being destroyed
 - Give projectiles a slow debuff on hit
 - Multiplies mob death loot item count
 - Disables experience except from XP bottles
@@ -76,6 +77,7 @@ Config file settings:
 - disallow_record_playing: Boolean, Disables the ability for records to play in jukeboxes
 - allow_dye_sheep: Boolean, defaults to true. Allows sheep to be dyed directly (rather than dyeing each bit of wool).
 - allow_water_in_nether: Boolean, enables water use in hell biomes
+- indestructible_end_portals: Boolean, makes end portal tiles indestructible
 - projectile_slow_chance: Integer between 1 and 100 or out of bounds to disable, percentage chance of a projectile shot causing a slow debuff
 - projectile_slow_ticks: Integer, number of server ticks a projectile shot's slow debuff will last
 - loot_drop: Integer, multiplier to apply to mob death item counts
@@ -118,6 +120,7 @@ Default configuration (biased for CivCraft):
 - disallow_record_playing: true
 - allow_dye_sheep: true
 - allow_water_in_nether: false
+- indestructible_end_portals: true
 - projectile_slow_chance: 30
 - projectile_slow_ticks: 100
 - loot_drop: 1
