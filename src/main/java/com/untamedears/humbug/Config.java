@@ -43,6 +43,7 @@ public class Config {
   private static final boolean fix_rail_dup_bug_ = true;
   private static final boolean fix_vehicle_logout_bug_ = true;
   private static final int wither_skull_drop_rate_ = -1;
+  private static final int extra_wither_skele_spawn_rate_ = -1;
   private static final int player_max_health_ = 20;
   private static final boolean ender_pearl_teleportation_enabled_ = true;
   private static final boolean ender_pearl_teleportation_throttled_ = true;
@@ -55,6 +56,7 @@ public class Config {
   private static final boolean allow_dye_sheep_ = true;
   private static final boolean allow_water_in_nether_ = false;
   private static final boolean indestructible_end_portals_ = true;
+  private static final String find_end_portals_ = null;
   private static final int projectile_slow_chance_ = 30;
   private static final int projectile_slow_ticks_ = 100;
   private static final int loot_multiplier_ = 1;
@@ -465,12 +467,28 @@ public class Config {
     config_.set("indestructible_end_portals", value);
   }
 
+  public String getFindEndPortals() {
+    return config_.getString("find_end_portals", find_end_portals_);
+  }
+
+  public void setFindEndPortals(String value) {
+    config_.set("find_end_portals", value);
+  }
+
   public int getProjectileSlowChance() {
     return config_.getInt("projectile_slow_chance", projectile_slow_chance_);
   }
 
   public void setProjectileSlowChance(int value) {
     config_.set("projectile_slow_chance", value);
+  }
+
+  public int getExtraWitherSkeleSpawnRate() {
+    return config_.getInt("extra_wither_skele_spawn_rate", extra_wither_skele_spawn_rate_);
+  }
+
+  public void setExtraWitherSkeleSpawnRate(int value) {
+    config_.set("extra_wither_skele_spawn_rate", value);
   }
 
   public int getProjectileSlowTicks() {

@@ -9,10 +9,12 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -64,6 +66,7 @@ import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
+import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -486,6 +489,30 @@ public class Humbug extends JavaPlugin implements Listener {
         drops.remove(i);
       }
       --i;
+    }
+  }
+
+  // ================================================
+  // Spawn more Wither Skeletons
+
+  @EventHandler(ignoreCancelled=true)
+  public void spawnMoreWitherSkeles(CreatureSpawnEvent e) {
+    if (config_.getExtraWitherSkeleSpawnRate() <= 0) {
+      return;
+    }
+    if (e.getEntityType() == EntityType.PIG_ZOMBIE) {
+      if(prng_.nextInt(1000000) < config_.getExtraWitherSkeleSpawnRate()) {
+        e.setCancelled(true);
+        Location loc = e.getLocation();
+        World world = loc.getWorld();
+        world.spawnEntity(loc, EntityType.SKELETON);
+      }
+    } else if (e.getEntityType() == EntityType.SKELETON
+        && e.getSpawnReason() == CreatureSpawnEvent.SpawnReason.CUSTOM) {
+      Entity entity = e.getEntity();
+      if (entity instanceof Skeleton) {
+        ((Skeleton)entity).setSkeletonType(SkeletonType.WITHER);
+      }
     }
   }
 
@@ -1192,6 +1219,62 @@ public class Humbug extends JavaPlugin implements Listener {
   }
 
   // ================================================
+  // Find the end portals
+
+  public static final int ender_portal_id_ = Material.ENDER_PORTAL.getId();
+  public static final int ender_portal_frame_id_ = Material.ENDER_PORTAL_FRAME.getId();
+  private Set<Long> end_portal_scanned_chunks_ = new TreeSet<Long>();
+
+  @EventHandler
+  public void onFindEndPortals(ChunkLoadEvent event) {
+    if (config_.getFindEndPortals() == null) {
+      return;
+    }
+    World world = event.getWorld();
+    if (!world.getName().equalsIgnoreCase(config_.getFindEndPortals())) {
+      return;
+    }
+    Chunk chunk = event.getChunk();
+    long chunk_id = (long)chunk.getX() << 32L + (long)chunk.getZ();
+    if (end_portal_scanned_chunks_.contains(chunk_id)) {
+      return;
+    }
+    end_portal_scanned_chunks_.add(chunk_id);
+    int chunk_x = chunk.getX() * 16;
+    int chunk_end_x = chunk_x + 16;
+    int chunk_z = chunk.getZ() * 16;
+    int chunk_end_z = chunk_z + 16;
+    int max_height = 0;
+    for (int x = chunk_x; x < chunk_end_x; x += 3) {
+      for (int z = chunk_z; z < chunk_end_z; ++z) {
+        int height = world.getHighestBlockYAt(x, z);
+        if (height > max_height) {
+          max_height = height;
+        }
+      }
+    }
+    for (int y = 1; y <= max_height; ++y) {
+      int z_adj = 0;
+      for (int x = chunk_x; x < chunk_end_x; ++x) {
+        for (int z = chunk_z + z_adj; z < chunk_end_z; z += 3) {
+          int block_type = world.getBlockTypeIdAt(x, y, z);
+          if (block_type == ender_portal_id_ || block_type == ender_portal_frame_id_) {
+            info(String.format("End portal found at %d,%d", x, z));
+            return;
+          }
+        }
+        // This funkiness results in only searching 48 of the 256 blocks on
+        //  each y-level. 81.25% fewer blocks checked.
+        ++z_adj;
+        if (z_adj >= 3) {
+          z_adj = 0;
+          x += 2;
+        }
+      }
+    }
+  }
+
+  // ================================================
   // General
 
   public void onEnable() {
@@ -1418,6 +1501,11 @@ public class Humbug extends JavaPlugin implements Listener {
         config_.setWitherSkullDropRate(toInt(value, config_.getWitherSkullDropRate()));
       }
       msg = String.format("wither_skull_drop_rate = %d", config_.getWitherSkullDropRate());
+    } else if (option.equals("extra_wither_skele_spawn_rate")) {
+      if (set) {
+        config_.setExtraWitherSkeleSpawnRate(toInt(value, config_.getExtraWitherSkeleSpawnRate()));
+      }
+      msg = String.format("extra_wither_skele_spawn_rate = %d", config_.getExtraWitherSkeleSpawnRate());
     } else if (option.equals("loot_multiplier")) {
       String entity_type = "generic";
       if (set && subvalue_set) {
@@ -1485,6 +1573,11 @@ public class Humbug extends JavaPlugin implements Listener {
         config_.setIndestructibleEndPortals(toBool(value));
       }
       msg = String.format("indestructible_end_portals = %s", config_.getIndestructibleEndPortals());
+    } else if (option.equals("find_end_portals")) {
+      if (set) {
+        config_.setFindEndPortals(value);
+      }
+      msg = String.format("find_end_portals = %s", config_.getFindEndPortals());
     } else if (option.equals("projectile_slow_chance")) {
       if (set) {
         config_.setProjectileSlowChance(toInt(value, config_.getProjectileSlowChance()));

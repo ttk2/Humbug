@@ -38,6 +38,8 @@ Minecraft server plug-in: Simply toggles various functionality
 - Give projectiles a slow debuff on hit
 - Multiplies mob death loot item count
 - Disables experience except from XP bottles
+- Finds End Portals in a world.
+- Swaps Wither Skeletons in for Zombie Pigmen to raise Wither Skeleton spawn rate.
 
 The 'humbug' console command can be used to get or set any of the configuration file settings while the server is running. Also available are 'humbug save' and 'humbug reload'.
 
@@ -73,6 +75,7 @@ Config file settings:
 - ench_gold_app_edible: Boolean, Allows players to eat Enchanted Golden Apples. If false, Enchanted Golden Apples are converted to normal Golden Apples
 - ench_gold_app_craftable: Boolean, Allows the Enchanted Golden Apple recipe to be used
 - wither_skull_drop_rate: Integer between -1 and 1000000, -1 is standard behavior. If a random number [0, 1000000) is less then this value, a wither skull drops. For example, 200000 is a 20% drop rate.
+- extra_wither_skele_spawn_rate: Integer between -1 and 1000000, -1 is standard behavior. If a random number [0, 1000000) is less then this value, a wither skeleton is spawned in the place of a zombie pigman. For example, 200000 is a 20% spawn rate.
 - remove_mob_drops: List<Integer>, a list of item IDs to remove from the dropped items when mobs are killed. The in-game command can also accept Material names.
 - disallow_record_playing: Boolean, Disables the ability for records to play in jukeboxes
 - allow_dye_sheep: Boolean, defaults to true. Allows sheep to be dyed directly (rather than dyeing each bit of wool).
@@ -83,6 +86,7 @@ Config file settings:
 - loot_drop: Integer, multiplier to apply to mob death item counts
 - disable_experience: Boolean, disables all vanilla experience but XP bottles
 - xp_per_bottle: Integer, sets the amount of XP given to a player by an XP bottle
+- find_end_portals: String, name of the world in which to search for end portals
 
 Default configuration (biased for CivCraft):
 - debug: false
@@ -116,6 +120,7 @@ Default configuration (biased for CivCraft):
 - ench_gold_app_edible: false
 - ench_gold_app_craftable: false
 - wither_skull_drop_rate: -1
+- extra_wither_skele_spawn_rate: -1
 - remove_mob_drops:
 - disallow_record_playing: true
 - allow_dye_sheep: true
@@ -126,3 +131,4 @@ Default configuration (biased for CivCraft):
 - loot_drop: 1
 - disable_experience: true
 - xp_per_bottle: 10
+- find_end_portals:
