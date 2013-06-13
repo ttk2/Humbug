@@ -56,6 +56,7 @@ public class Config {
   private static final boolean allow_dye_sheep_ = true;
   private static final boolean allow_water_in_nether_ = false;
   private static final boolean indestructible_end_portals_ = true;
+  private static final boolean prevent_vehicle_inventory_open_ = true;
   private static final String find_end_portals_ = null;
   private static final int projectile_slow_chance_ = 30;
   private static final int projectile_slow_ticks_ = 100;
@@ -465,6 +466,14 @@ public class Config {
 
   public void setIndestructibleEndPortals(boolean value) {
     config_.set("indestructible_end_portals", value);
+  }
+
+  public boolean getPreventVehicleInventoryOpen() {
+    return config_.getBoolean("prevent_vehicle_inventory_open", prevent_vehicle_inventory_open_);
+  }
+
+  public void setPreventVehicleInventoryOpen(boolean value) {
+    config_.set("prevent_vehicle_inventory_open", value);
   }
 
   public String getFindEndPortals() {

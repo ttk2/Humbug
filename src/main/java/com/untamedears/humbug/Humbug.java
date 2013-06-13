@@ -30,6 +30,7 @@ import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.Enderman;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Skeleton.SkeletonType;
@@ -57,6 +58,7 @@ import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.entity.SheepDyeWoolEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -69,6 +71,7 @@ import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.Recipe;
@@ -1275,6 +1278,28 @@ public class Humbug extends JavaPlugin implements Listener {
   }
 
   // ================================================
+  // Prevent inventory access while in a vehicle, unless it's the Player's
+
+  @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+  public void onPreventVehicleInvOpen(InventoryOpenEvent event) {
+    if (!config_.getPreventVehicleInventoryOpen()) {
+      return;
+    }
+    HumanEntity human = event.getPlayer();
+    if (!(human instanceof Player)) {
+      return;
+    }
+    if (!human.isInsideVehicle()) {
+      return;
+    }
+    InventoryHolder holder = event.getInventory().getHolder();
+    if (holder == human) {
+        return;
+    }
+    event.setCancelled(true);
+  }
+
+  // ================================================
   // General
 
   public void onEnable() {
@@ -1573,6 +1598,11 @@ public class Humbug extends JavaPlugin implements Listener {
         config_.setIndestructibleEndPortals(toBool(value));
       }
       msg = String.format("indestructible_end_portals = %s", config_.getIndestructibleEndPortals());
+    } else if (option.equals("prevent_vehicle_inventory_open")) {
+      if (set) {
+        config_.setPreventVehicleInventoryOpen(toBool(value));
+      }
+      msg = String.format("prevent_vehicle_inventory_open = %s", config_.getPreventVehicleInventoryOpen());
     } else if (option.equals("find_end_portals")) {
       if (set) {
         config_.setFindEndPortals(value);
