@@ -36,6 +36,7 @@ Minecraft server plug-in: Simply toggles various functionality
 - Disables water usage in main world hell biomes
 - Prevents end portal tiles from being destroyed
 - Prevents inventories, not your own, from being opened while in vehicles
+- Prevents container carts from being opened
 - Give projectiles a slow debuff on hit
 - Multiplies mob death loot item count
 - Disables experience except from XP bottles
@@ -83,6 +84,7 @@ Config file settings:
 - allow_water_in_nether: Boolean, enables water use in hell biomes
 - indestructible_end_portals: Boolean, makes end portal tiles indestructible
 - prevent_vehicle_inventory_open: Boolean, prevent players in vehicles from opening inventories
+- prevent_opening_container_carts: Boolean, prevent inventory minecarts from being opened
 - projectile_slow_chance: Integer between 1 and 100 or out of bounds to disable, percentage chance of a projectile shot causing a slow debuff
 - projectile_slow_ticks: Integer, number of server ticks a projectile shot's slow debuff will last
 - loot_drop: Integer, multiplier to apply to mob death item counts
@@ -129,6 +131,7 @@ Default configuration (biased for CivCraft):
 - allow_water_in_nether: false
 - indestructible_end_portals: true
 - prevent_vehicle_inventory_open: true
+- prevent_opening_container_carts: true
 - projectile_slow_chance: 30
 - projectile_slow_ticks: 100
 - loot_drop: 1

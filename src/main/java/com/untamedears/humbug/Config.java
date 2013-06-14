@@ -57,6 +57,7 @@ public class Config {
   private static final boolean allow_water_in_nether_ = false;
   private static final boolean indestructible_end_portals_ = true;
   private static final boolean prevent_vehicle_inventory_open_ = true;
+  private static final boolean prevent_opening_container_carts_ = true;
   private static final String find_end_portals_ = null;
   private static final int projectile_slow_chance_ = 30;
   private static final int projectile_slow_ticks_ = 100;
@@ -474,6 +475,14 @@ public class Config {
 
   public void setPreventVehicleInventoryOpen(boolean value) {
     config_.set("prevent_vehicle_inventory_open", value);
+  }
+
+  public boolean getPreventOpeningContainerCarts() {
+    return config_.getBoolean("prevent_opening_container_carts", prevent_opening_container_carts_);
+  }
+
+  public void setPreventOpeningContainerCarts(boolean value) {
+    config_.set("prevent_opening_container_carts", value);
   }
 
   public String getFindEndPortals() {

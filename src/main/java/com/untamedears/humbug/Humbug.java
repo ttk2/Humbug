@@ -34,6 +34,8 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Skeleton.SkeletonType;
+import org.bukkit.entity.minecart.HopperMinecart;
+import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -1282,21 +1284,28 @@ public class Humbug extends JavaPlugin implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
   public void onPreventVehicleInvOpen(InventoryOpenEvent event) {
-    if (!config_.getPreventVehicleInventoryOpen()) {
-      return;
+    // Cheap break-able conditional statement
+    while (config_.getPreventVehicleInventoryOpen()) {
+      HumanEntity human = event.getPlayer();
+      if (!(human instanceof Player)) {
+        break;
+      }
+      if (!human.isInsideVehicle()) {
+        break;
+      }
+      InventoryHolder holder = event.getInventory().getHolder();
+      if (holder == human) {
+        break;
+      }
+      event.setCancelled(true);
+      break;
     }
-    HumanEntity human = event.getPlayer();
-    if (!(human instanceof Player)) {
-      return;
+    if (config_.getPreventOpeningContainerCarts() && !event.isCancelled()) {
+      InventoryHolder holder = event.getInventory().getHolder();
+      if (holder instanceof StorageMinecart || holder instanceof HopperMinecart) {
+        event.setCancelled(true);
+      }
     }
-    if (!human.isInsideVehicle()) {
-      return;
-    }
-    InventoryHolder holder = event.getInventory().getHolder();
-    if (holder == human) {
-        return;
-    }
-    event.setCancelled(true);
   }
 
   // ================================================
@@ -1603,6 +1612,11 @@ public class Humbug extends JavaPlugin implements Listener {
         config_.setPreventVehicleInventoryOpen(toBool(value));
       }
       msg = String.format("prevent_vehicle_inventory_open = %s", config_.getPreventVehicleInventoryOpen());
+    } else if (option.equals("prevent_opening_container_carts")) {
+      if (set) {
+        config_.setPreventOpeningContainerCarts(toBool(value));
+      }
+      msg = String.format("prevent_opening_container_carts = %s", config_.getPreventOpeningContainerCarts());
     } else if (option.equals("find_end_portals")) {
       if (set) {
         config_.setFindEndPortals(value);
