@@ -44,6 +44,7 @@ public class Config {
   private static final boolean fix_vehicle_logout_bug_ = true;
   private static final int wither_skull_drop_rate_ = -1;
   private static final int extra_wither_skele_spawn_rate_ = -1;
+  private static final int extra_ghast_spawn_rate_ = -1;
   private static final int player_max_health_ = 20;
   private static final boolean ender_pearl_teleportation_enabled_ = true;
   private static final boolean ender_pearl_teleportation_throttled_ = true;
@@ -507,6 +508,14 @@ public class Config {
 
   public void setExtraWitherSkeleSpawnRate(int value) {
     config_.set("extra_wither_skele_spawn_rate", value);
+  }
+
+  public int getExtraGhastSpawnRate() {
+    return config_.getInt("extra_ghast_spawn_rate", extra_ghast_spawn_rate_);
+  }
+
+  public void setExtraGhastSpawnRate(int value) {
+    config_.set("extra_ghast_spawn_rate", value);
   }
 
   public int getProjectileSlowTicks() {

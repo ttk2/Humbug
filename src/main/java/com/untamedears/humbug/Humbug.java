@@ -72,6 +72,7 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.PortalCreateEvent;
+import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -498,11 +499,12 @@ public class Humbug extends JavaPlugin implements Listener {
   }
 
   // ================================================
-  // Spawn more Wither Skeletons
+  // Spawn more Wither Skeletons and Ghasts
 
   @EventHandler(ignoreCancelled=true)
-  public void spawnMoreWitherSkeles(CreatureSpawnEvent e) {
-    if (config_.getExtraWitherSkeleSpawnRate() <= 0) {
+  public void spawnMoreHellMonsters(CreatureSpawnEvent e) {
+    if (config_.getExtraWitherSkeleSpawnRate() <= 0
+        && config_.getExtraGhastSpawnRate() <= 0) {
       return;
     }
     if (e.getEntityType() == EntityType.PIG_ZOMBIE) {
@@ -511,12 +513,43 @@ public class Humbug extends JavaPlugin implements Listener {
         Location loc = e.getLocation();
         World world = loc.getWorld();
         world.spawnEntity(loc, EntityType.SKELETON);
+      } else if(prng_.nextInt(1000000) < config_.getExtraGhastSpawnRate()) {
+        e.setCancelled(true);
+        Location loc = e.getLocation();
+        int x = loc.getBlockX();
+        int z = loc.getBlockZ();
+        World world = loc.getWorld();
+        List<Integer> heights = new ArrayList<Integer>(16);
+        int lastBlockHeight = 2;
+        int emptyCount = 0;
+        int maxHeight = world.getHighestBlockYAt(x, z);
+        for (int y = 2; y < maxHeight; ++y) {
+          Block block = world.getBlockAt(x, y, z);
+          if (block.isEmpty()) {
+            ++emptyCount;
+            if (emptyCount == 11) {
+              heights.add(lastBlockHeight + 2);
+            }
+          } else {
+            lastBlockHeight = y;
+            emptyCount = 0;
+          }
+        }
+        if (heights.size() <= 0) {
+          return;
+        }
+        loc.setY(heights.get(prng_.nextInt(heights.size())));
+        world.spawnEntity(loc, EntityType.GHAST);
       }
     } else if (e.getEntityType() == EntityType.SKELETON
         && e.getSpawnReason() == CreatureSpawnEvent.SpawnReason.CUSTOM) {
       Entity entity = e.getEntity();
       if (entity instanceof Skeleton) {
-        ((Skeleton)entity).setSkeletonType(SkeletonType.WITHER);
+        Skeleton skele = (Skeleton)entity;
+        skele.setSkeletonType(SkeletonType.WITHER);
+        EntityEquipment entity_equip = skele.getEquipment();
+        entity_equip.setItemInHand(new ItemStack(Material.STONE_SWORD));
+        entity_equip.setItemInHandDropChance(0.0F);
       }
     }
   }
@@ -1540,6 +1573,11 @@ public class Humbug extends JavaPlugin implements Listener {
         config_.setExtraWitherSkeleSpawnRate(toInt(value, config_.getExtraWitherSkeleSpawnRate()));
       }
       msg = String.format("extra_wither_skele_spawn_rate = %d", config_.getExtraWitherSkeleSpawnRate());
+    } else if (option.equals("extra_ghast_spawn_rate")) {
+      if (set) {
+        config_.setExtraGhastSpawnRate(toInt(value, config_.getExtraGhastSpawnRate()));
+      }
+      msg = String.format("extra_ghast_spawn_rate = %d", config_.getExtraGhastSpawnRate());
     } else if (option.equals("loot_multiplier")) {
       String entity_type = "generic";
       if (set && subvalue_set) {
