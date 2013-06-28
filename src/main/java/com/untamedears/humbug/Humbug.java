@@ -559,7 +559,7 @@ public class Humbug extends JavaPlugin implements Listener {
         List<Integer> heights = new ArrayList<Integer>(16);
         int lastBlockHeight = 2;
         int emptyCount = 0;
-        int maxHeight = world.getHighestBlockYAt(x, z);
+        int maxHeight = world.getMaxHeight();
         for (int y = 2; y < maxHeight; ++y) {
           Block block = world.getBlockAt(x, y, z);
           if (block.isEmpty()) {
