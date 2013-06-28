@@ -84,6 +84,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import com.untamedears.humbug.annotations.BahHumbug;
+import com.untamedears.humbug.annotations.BahHumbugs;
+import com.untamedears.humbug.annotations.ConfigOption;
+import com.untamedears.humbug.annotations.OptType;
+
 public class Humbug extends JavaPlugin implements Listener {
   public static void severe(String message) {
     log_.severe("[Humbug] " + message);
@@ -147,9 +152,10 @@ public class Humbug extends JavaPlugin implements Listener {
   // ================================================
   // Stops people from dying sheep
 
+  @BahHumbug(opt="allow_dye_sheep", def="true")
   @EventHandler
   public void onDyeWool(SheepDyeWoolEvent event) {
-    if (!config_.getAllowDyeSheep()) {
+    if (!config_.get("allow_dye_sheep").getBool()) {
       event.setCancelled(true);
     }
   }
@@ -159,16 +165,21 @@ public class Humbug extends JavaPlugin implements Listener {
   // ** and **
   // Ender Pearl Teleportation disabling
 
+  @BahHumbugs({
+    @BahHumbug(opt="ender_pearl_teleportation", def="true"),
+    @BahHumbug(opt="ender_pearl_teleportation_throttled", def="true"),
+    @BahHumbug(opt="fix_teleport_glitch", def="true")
+  })
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
   public void onTeleport(PlayerTeleportEvent event) {
     TeleportCause cause = event.getCause();
     if (cause != TeleportCause.ENDER_PEARL) {
         return;
-    } else if (!config_.getEnderPearlTeleportationEnabled()) {
+    } else if (!config_.get("ender_pearl_teleportation").getBool()) {
       event.setCancelled(true);
       return;
     }
-    if (!config_.getTeleportFixEnabled()) {
+    if (!config_.get("fix_teleport_glitch").getBool()) {
       return;
     }
     Location to = event.getTo();
@@ -262,9 +273,10 @@ public class Humbug extends JavaPlugin implements Listener {
   // ================================================
   // Villager Trading
 
+  @BahHumbug(opt="villager_trades")
   @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
   public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
-    if (config_.getVillagerTradesEnabled()) {
+    if (config_.get("villager_trades").getBool()) {
       return;
     }
     Entity npc = event.getRightClicked();
@@ -280,17 +292,20 @@ public class Humbug extends JavaPlugin implements Listener {
   // Anvil and Ender Chest usage
 
   // EventHandler registered in onPlayerInteract
+  @BahHumbugs({
+    @BahHumbug(opt="anvil"),
+    @BahHumbug(opt="ender_chest")
+  })
   public void onAnvilOrEnderChestUse(PlayerInteractEvent event) {
-    if (config_.getAnvilEnabled() &&
-        config_.getEnderChestEnabled()) {
+    if (config_.get("anvil").getBool() && config_.get("ender_chest").getBool()) {
       return;
     }
     Action action = event.getAction();
     Material material = event.getClickedBlock().getType();
-    boolean anvil = !config_.getAnvilEnabled() &&
+    boolean anvil = !config_.get("anvil").getBool() &&
                     action == Action.RIGHT_CLICK_BLOCK &&
                     material.equals(Material.ANVIL);
-    boolean ender_chest = !config_.getEnderChestEnabled() &&
+    boolean ender_chest = !config_.get("ender_chest").getBool() &&
                           action == Action.RIGHT_CLICK_BLOCK &&
                           material.equals(Material.ENDER_CHEST);
     if (anvil || ender_chest) {
@@ -298,10 +313,11 @@ public class Humbug extends JavaPlugin implements Listener {
     }
   }
 
+  @BahHumbug(opt="ender_chests_placeable", def="true")
   @EventHandler(ignoreCancelled=true)
   public void onEnderChestPlace(BlockPlaceEvent e) {
     Material material = e.getBlock().getType();
-    if (!config_.getEnderChestsPlaceable() && material == Material.ENDER_CHEST) {
+    if (!config_.get("ender_chests_placeable").getBool() && material == Material.ENDER_CHEST) {
       e.setCancelled(true);
     }
   }
@@ -310,8 +326,9 @@ public class Humbug extends JavaPlugin implements Listener {
   // Unlimited Cauldron water
 
   // EventHandler registered in onPlayerInteract
+  @BahHumbug(opt="unlimitedcauldron")
   public void onCauldronInteract(PlayerInteractEvent e) {
-    if (!config_.getUnlimitedCauldronEnabled()) {
+    if (!config_.get("unlimitedcauldron").getBool()) {
       return;
     }
 
@@ -329,13 +346,15 @@ public class Humbug extends JavaPlugin implements Listener {
   // ================================================
   // Quartz from Gravel
 
+  @BahHumbug(opt="quartz_gravel_percentage", type=OptType.Int)
   @EventHandler(ignoreCancelled=true, priority = EventPriority.HIGHEST)
   public void onGravelBreak(BlockBreakEvent e) {
-    if(e.getBlock().getType() != Material.GRAVEL || config_.getQuartzGravelPercentage() == 0) {
+    if(e.getBlock().getType() != Material.GRAVEL
+        || config_.get("quartz_gravel_percentage").getInt() <= 0) {
       return;
     }
 
-    if(prng_.nextInt(100) < config_.getQuartzGravelPercentage())
+    if(prng_.nextInt(100) < config_.get("quartz_gravel_percentage").getInt())
     {
       e.setCancelled(true);
       e.getBlock().setType(Material.AIR);
@@ -346,16 +365,17 @@ public class Humbug extends JavaPlugin implements Listener {
   // ================================================
   // Portals
 
+  @BahHumbug(opt="portalcreate", def="true")
   @EventHandler(ignoreCancelled=true)
   public void onPortalCreate(PortalCreateEvent e) {
-    if (!config_.getPortalCreateEnabled()) {
+    if (!config_.get("portalcreate").getBool()) {
       e.setCancelled(true);
     }
   }
 
   @EventHandler(ignoreCancelled=true)
   public void onEntityPortalCreate(EntityCreatePortalEvent e) {
-    if (!config_.getPortalCreateEnabled()) {
+    if (!config_.get("portalcreate").getBool()) {
       e.setCancelled(true);
     }
   }
@@ -363,9 +383,11 @@ public class Humbug extends JavaPlugin implements Listener {
   // ================================================
   // EnderDragon
 
+  @BahHumbug(opt="enderdragon", def="true")
   @EventHandler(ignoreCancelled=true)
   public void onDragonSpawn(CreatureSpawnEvent e) {
-    if (e.getEntityType() == EntityType.ENDER_DRAGON && !config_.getEnderDragonEnabled()) {
+    if (e.getEntityType() == EntityType.ENDER_DRAGON
+        && !config_.get("enderdragon").getBool()) {
       e.setCancelled(true);
     }
   }
@@ -373,34 +395,40 @@ public class Humbug extends JavaPlugin implements Listener {
   // ================================================
   // Join/Quit/Kick messages
 
+  @BahHumbug(opt="joinquitkick", def="true")
   @EventHandler(priority=EventPriority.HIGHEST)
   public void onJoin(PlayerJoinEvent e) {
-    if (!config_.getJoinQuitKickEnabled()) {
+    if (!config_.get("joinquitkick").getBool()) {
       e.setJoinMessage(null);
     }
   }
 
   @EventHandler(priority=EventPriority.HIGHEST)
   public void onQuit(PlayerQuitEvent e) {
-    if (!config_.getJoinQuitKickEnabled()) {
+    if (!config_.get("joinquitkick").getBool()) {
       e.setQuitMessage(null);
     }
   }
 
   @EventHandler(priority=EventPriority.HIGHEST)
   public void onKick(PlayerKickEvent e) {
-    if (!config_.getJoinQuitKickEnabled()) {
+    if (!config_.get("joinquitkick").getBool()) {
       e.setLeaveMessage(null);
     }
   }
 
   // ================================================
   // Death Messages
-
+  @BahHumbugs({
+    @BahHumbug(opt="deathannounce", def="true"),
+    @BahHumbug(opt="deathlog"),
+    @BahHumbug(opt="deathpersonal"),
+    @BahHumbug(opt="deathred")
+  })
   @EventHandler(priority=EventPriority.HIGHEST)
   public void onDeath(PlayerDeathEvent e) {
-    boolean log_msg = config_.getDeathLoggingEnabled();
-    boolean send_personal = config_.getDeathMessagePersonalEnabled();
+    boolean log_msg = config_.get("deathlog").getBool();
+    boolean send_personal = config_.get("deathpersonal").getBool();
     if (log_msg || send_personal) {
       Location location = e.getEntity().getLocation();
       String msg = String.format(
@@ -413,19 +441,21 @@ public class Humbug extends JavaPlugin implements Listener {
         e.getEntity().sendMessage(ChatColor.RED + msg);
       }
     }
-    if (!config_.getDeathAnnounceEnabled()) {
+    if (!config_.get("deathannounce").getBool()) {
       e.setDeathMessage(null);
-    } else if (config_.getDeathMessageRedEnabled()) {
+    } else if (config_.get("deathred").getBool()) {
       e.setDeathMessage(ChatColor.RED + e.getDeathMessage());
     }
   }
 
   // ================================================
   // Endermen Griefing
+
+  @BahHumbug(opt="endergrief", def="true")
   @EventHandler(ignoreCancelled=true)
   public void onEndermanGrief(EntityChangeBlockEvent e)
   {
-    if (!config_.getEndermenGriefEnabled() && e.getEntity() instanceof Enderman) {
+    if (!config_.get("endergrief").getBool() && e.getEntity() instanceof Enderman) {
       e.setCancelled(true);
     }
   }
@@ -433,9 +463,10 @@ public class Humbug extends JavaPlugin implements Listener {
   // ================================================
   // Wither Insta-breaking and Explosions
 
+  @BahHumbug(opt="wither_insta_break")
   @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
   public void onEntityChangeBlock(EntityChangeBlockEvent event) {
-    if (config_.getWitherInstaBreakEnabled()) {
+    if (config_.get("wither_insta_break").getBool()) {
       return;
     }
     Entity npc = event.getEntity();
@@ -448,9 +479,10 @@ public class Humbug extends JavaPlugin implements Listener {
     }
   }
 
+  @BahHumbug(opt="wither_explosions")
   @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
   public void onEntityExplode(EntityExplodeEvent event) {
-    if (config_.getWitherExplosionsEnabled()) {
+    if (config_.get("wither_explosions").getBool()) {
       return;
     }
     Entity npc = event.getEntity();
@@ -464,9 +496,10 @@ public class Humbug extends JavaPlugin implements Listener {
     }
   }
 
+  @BahHumbug(opt="wither", def="true")
   @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
   public void onWitherSpawn(CreatureSpawnEvent event) {
-    if (config_.getWitherEnabled()) {
+    if (config_.get("wither").getBool()) {
       return;
     }
     if (!event.getEntityType().equals(EntityType.WITHER)) {
@@ -501,19 +534,23 @@ public class Humbug extends JavaPlugin implements Listener {
   // ================================================
   // Spawn more Wither Skeletons and Ghasts
 
+  @BahHumbugs ({
+    @BahHumbug(opt="extra_ghast_spawn_rate", type=OptType.Int),
+    @BahHumbug(opt="extra_wither_skele_spawn_rate", type=OptType.Int)
+  })
   @EventHandler(ignoreCancelled=true)
   public void spawnMoreHellMonsters(CreatureSpawnEvent e) {
-    if (config_.getExtraWitherSkeleSpawnRate() <= 0
-        && config_.getExtraGhastSpawnRate() <= 0) {
+    if (config_.get("extra_wither_skele_spawn_rate").getInt() <= 0
+        && config_.get("extra_ghast_spawn_rate").getInt() <= 0) {
       return;
     }
     if (e.getEntityType() == EntityType.PIG_ZOMBIE) {
-      if(prng_.nextInt(1000000) < config_.getExtraWitherSkeleSpawnRate()) {
+      if(prng_.nextInt(1000000) < config_.get("extra_wither_skele_spawn_rate").getInt()) {
         e.setCancelled(true);
         Location loc = e.getLocation();
         World world = loc.getWorld();
         world.spawnEntity(loc, EntityType.SKELETON);
-      } else if(prng_.nextInt(1000000) < config_.getExtraGhastSpawnRate()) {
+      } else if(prng_.nextInt(1000000) < config_.get("extra_ghast_spawn_rate").getInt()) {
         e.setCancelled(true);
         Location loc = e.getLocation();
         int x = loc.getBlockX();
@@ -560,12 +597,13 @@ public class Humbug extends JavaPlugin implements Listener {
   public static final int skull_id_ = Material.SKULL_ITEM.getId();
   public static final byte wither_skull_data_ = 1;
 
+  @BahHumbug(opt="wither_skull_drop_rate", type=OptType.Int)
   public void adjustWitherSkulls(EntityDeathEvent event) {
     Entity entity = event.getEntity();
     if (!(entity instanceof Skeleton)) {
       return;
     }
-    int rate = config_.getWitherSkullDropRate();
+    int rate = config_.get("wither_skull_drop_rate").getInt();
     if (rate < 0 || rate > 1000000) {
       return;
     }
@@ -655,8 +693,9 @@ public class Humbug extends JavaPlugin implements Listener {
     item.setAmount(stack_size);
   }
 
+  @BahHumbug(opt="ench_gold_app_craftable")
   public void removeRecipies() {
-    if (config_.getEnchGoldAppleCraftable()) {
+    if (config_.get("ench_gold_app_craftable").getBool()) {
       return;
     }
     Iterator<Recipe> it = getServer().recipeIterator();
@@ -672,10 +711,11 @@ public class Humbug extends JavaPlugin implements Listener {
   }
 
   // EventHandler registered in onPlayerInteractAll
+  @BahHumbug(opt="ench_gold_app_edible")
   public void onPlayerEatGoldenApple(PlayerInteractEvent event) {
     // The event when eating is cancelled before even LOWEST fires when the
     //  player clicks on AIR.
-    if (config_.getEnchGoldAppleEdible()) {
+    if (config_.get("ench_gold_app_edible").getBool()) {
       return;
     }
     Player player = event.getPlayer();
@@ -696,9 +736,10 @@ public class Humbug extends JavaPlugin implements Listener {
     return material.equals(Material.BOOK);
   }
 
+  @BahHumbug(opt="ench_book_craftable")
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
   public void onPrepareItemEnchantEvent(PrepareItemEnchantEvent event) {
-    if (config_.getEnchBookCraftable()) {
+    if (config_.get("ench_book_craftable").getBool()) {
         return;
     }
     ItemStack item = event.getItem();
@@ -709,7 +750,7 @@ public class Humbug extends JavaPlugin implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
   public void onEnchantItemEvent(EnchantItemEvent event) {
-    if (config_.getEnchBookCraftable()) {
+    if (config_.get("ench_book_craftable").getBool()) {
         return;
     }
     ItemStack item = event.getItem();
@@ -799,21 +840,26 @@ public class Humbug extends JavaPlugin implements Listener {
     }
   }
 
+  @BahHumbugs ({
+    @BahHumbug(opt="cobble_from_lava"),
+    @BahHumbug(opt="cobble_from_lava_scan_radius", type=OptType.Int, def="0")
+  })
   @EventHandler(priority = EventPriority.LOWEST)
   public void onBlockPhysicsEvent(BlockPhysicsEvent event) {
-    if (config_.getCobbleFromLavaEnabled()) {
+    if (config_.get("cobble_from_lava").getBool()) {
       return;
     }
     Block block = event.getBlock();
-    LavaAreaCheck(block, config_.getCobbleFromLavaScanRadius());
+    LavaAreaCheck(block, config_.get("cobble_from_lava_scan_radius").getInt());
   }
 
   // ================================================
   // Counteract 1.4.6 protection enchant nerf
 
+  @BahHumbug(opt="scale_protection_enchant", def="true")
   @EventHandler(priority = EventPriority.LOWEST) // ignoreCancelled=false
   public void onEntityDamageByEntityEvent(EntityDamageByEntityEvent event) {
-    if (!config_.getScaleProtectionEnchant()) {
+    if (!config_.get("scale_protection_enchant").getBool()) {
         return;
     }
     int damage = event.getDamage();
@@ -853,19 +899,21 @@ public class Humbug extends JavaPlugin implements Listener {
     event.setDamage(damage);
   }
 
+  @BahHumbug(opt="player_max_health", type=OptType.Int, def="20")
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
   public void onPlayerJoinEvent(PlayerJoinEvent event) {
     Player player = event.getPlayer();
-    player.setMaxHealth(config_.getMaxHealth());
+    player.setMaxHealth(config_.get("player_max_health").getInt());
   }
 
   // ================================================
   // Prevent entity dup bug
   // From https://github.com/intangir/EventBlocker
 
+  @BahHumbug(opt="fix_rail_dup_bug", def="true")
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
   public void onPistonPushRail(BlockPistonExtendEvent e) {
-    if (!config_.getFixRailDupBug()) {
+    if (!config_.get("fix_rail_dup_bug").getBool()) {
       return;
     }
     for (Block b : e.getBlocks()) {
@@ -881,7 +929,7 @@ public class Humbug extends JavaPlugin implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
   public void onRailPlace(BlockPlaceEvent e) {
-    if (!config_.getFixRailDupBug()) {
+    if (!config_.get("fix_rail_dup_bug").getBool()) {
       return;
     }
     Block b = e.getBlock();
@@ -934,9 +982,10 @@ public class Humbug extends JavaPlugin implements Listener {
 
   private static final int air_material_id_ = Material.AIR.getId();
 
+  @BahHumbug(opt="fix_vehicle_logout_bug", def="true")
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
   public void onDisallowVehicleLogout(PlayerQuitEvent event) {
-    if (!config_.getFixVehicleLogoutBug()) {
+    if (!config_.get("fix_vehicle_logout_bug").getBool()) {
       return;
     }
     Player player = event.getPlayer();
@@ -1032,8 +1081,9 @@ public class Humbug extends JavaPlugin implements Listener {
   // Playing records in jukeboxen? Gone
 
   // EventHandler registered in onPlayerInteract
+  @BahHumbug(opt="disallow_record_playing", def="true")
   public void onRecordInJukebox(PlayerInteractEvent event) {
-    if (!config_.getDisallowRecordPlaying()) {
+    if (!config_.get("disallow_record_playing").getBool()) {
       return;
     }
     Block cb = event.getClickedBlock();
@@ -1049,9 +1099,13 @@ public class Humbug extends JavaPlugin implements Listener {
   //=================================================
   // Water in the nether? Nope.
 
+  @BahHumbugs ({
+    @BahHumbug(opt="allow_water_in_nether"),
+    @BahHumbug(opt="indestructible_end_portals", def="true")
+  })
   @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
   public void onPlayerBucketEmptyEvent(PlayerBucketEmptyEvent e) {
-    if(!config_.getAllowWaterInNether()) {
+    if(!config_.get("allow_water_in_nether").getBool()) {
       if( ( e.getBlockClicked().getBiome() == Biome.HELL )
           && ( e.getBucket() == Material.WATER_BUCKET ) ) {
         e.setCancelled(true);
@@ -1059,7 +1113,7 @@ public class Humbug extends JavaPlugin implements Listener {
         e.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.WATER_BREATHING, 5, 1));
       }
     }
-    if (config_.getIndestructibleEndPortals()) {
+    if (config_.get("indestructible_end_portals").getBool()) {
       Block baseBlock = e.getBlockClicked();
       BlockFace face = e.getBlockFace();
       Block block = baseBlock.getRelative(face);
@@ -1071,7 +1125,7 @@ public class Humbug extends JavaPlugin implements Listener {
 
   @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
   public void onBlockFromToEvent(BlockFromToEvent e) {
-    if(!config_.getAllowWaterInNether()) {
+    if(!config_.get("allow_water_in_nether").getBool()) {
       if( e.getToBlock().getBiome() == Biome.HELL ) {
         if( ( e.getBlock().getType() == Material.WATER )
             || ( e.getBlock().getType() == Material.STATIONARY_WATER ) ) {
@@ -1079,7 +1133,7 @@ public class Humbug extends JavaPlugin implements Listener {
         }
       }
     }
-    if (config_.getIndestructibleEndPortals()) {
+    if (config_.get("indestructible_end_portals").getBool()) {
       if (e.getToBlock().getType() == Material.ENDER_PORTAL) {
           e.setCancelled(true);
       }
@@ -1089,9 +1143,13 @@ public class Humbug extends JavaPlugin implements Listener {
   //=================================================
   // Bow shots cause slow debuff
 
+  @BahHumbugs ({
+    @BahHumbug(opt="projectile_slow_chance", type=OptType.Int, def="30"),
+    @BahHumbug(opt="projectile_slow_ticks", type=OptType.Int, def="100")
+  })
   @EventHandler
   public void onEDBE(EntityDamageByEntityEvent event) {
-    int rate = config_.getProjectileSlowChance();
+    int rate = config_.get("projectile_slow_chance").getInt();
     if (rate <= 0 || rate > 100) {
       return;
     }
@@ -1126,7 +1184,7 @@ public class Humbug extends JavaPlugin implements Listener {
     rate += chance_scaling * 5;
     int percent = prng_.nextInt(100);
     if (percent < rate){
-      int ticks = config_.getProjectileSlowTicks();
+      int ticks = config_.get("projectile_slow_ticks").getInt();
       Player player = (Player)event.getEntity();
       player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, ticks, 1, false));
     }
@@ -1162,13 +1220,14 @@ public class Humbug extends JavaPlugin implements Listener {
   // ================================================
   // Change ender pearl velocity!
   
+  @BahHumbug(opt="ender_pearl_launch_velocity", type=OptType.Double, def="1.0000001")
   @EventHandler
   public void onEnderPearlThrow(ProjectileLaunchEvent event) {
     Entity entity = (Entity)event.getEntity();
     if (!(entity instanceof EnderPearl)) {
       return;
     }
-    double adjustment = config_.getEnderPearlLaunchVelocity();
+    double adjustment = config_.get("ender_pearl_launch_velocity").getInt();
     if (adjustment < 1.00001 && adjustment > 0.99999) {
       return;
     }
@@ -1189,7 +1248,7 @@ public class Humbug extends JavaPlugin implements Listener {
 
   // EventHandler registered in onPlayerInteractAll
   public void onPlayerPearlTeleport(PlayerInteractEvent event) {
-    if (!config_.getThrottlePearlTeleport()) {
+    if (!config_.get("ender_pearl_teleportation_throttled").getBool()) {
       return;
     }
     if (event.getItem() == null || !event.getItem().getType().equals(Material.ENDER_PEARL)) {
@@ -1238,20 +1297,25 @@ public class Humbug extends JavaPlugin implements Listener {
   // BottleO refugees
 
   // Changes the yield from an XP bottle
+  @BahHumbugs ({
+    @BahHumbug(opt="disable_experience", def="true"),
+    @BahHumbug(opt="xp_per_bottle", type=OptType.Int, def="10")
+  })
   @EventHandler(priority=EventPriority.HIGHEST)
   public void onExpBottleEvent(ExpBottleEvent event) {
-    if (config_.getDisableExperience()) {
-      ((Player) event.getEntity().getShooter()).giveExp(config_.getXPPerBottle());
+    final int bottle_xp = config_.get("xp_per_bottle").getInt();
+    if (config_.get("disable_experience").getBool()) {
+      ((Player) event.getEntity().getShooter()).giveExp(bottle_xp);
       event.setExperience(0);
     } else {
-      event.setExperience(config_.getXPPerBottle());
+      event.setExperience(bottle_xp);
     }
   }
 
   // Diables all XP gain except when manually changed via code.
   @EventHandler
   public void onPlayerExpChangeEvent(PlayerExpChangeEvent event) {
-    if (config_.getDisableExperience()) {
+    if (config_.get("disable_experience").getBool()) {
       event.setAmount(0);
     }
   }
@@ -1263,13 +1327,15 @@ public class Humbug extends JavaPlugin implements Listener {
   public static final int ender_portal_frame_id_ = Material.ENDER_PORTAL_FRAME.getId();
   private Set<Long> end_portal_scanned_chunks_ = new TreeSet<Long>();
 
+  @BahHumbug(opt="find_end_portals", type=OptType.String)
   @EventHandler
   public void onFindEndPortals(ChunkLoadEvent event) {
-    if (config_.getFindEndPortals() == null) {
+    String scanWorld = config_.get("find_end_portals").getString();
+    if (scanWorld.isEmpty()) {
       return;
     }
     World world = event.getWorld();
-    if (!world.getName().equalsIgnoreCase(config_.getFindEndPortals())) {
+    if (!world.getName().equalsIgnoreCase(scanWorld)) {
       return;
     }
     Chunk chunk = event.getChunk();
@@ -1315,10 +1381,14 @@ public class Humbug extends JavaPlugin implements Listener {
   // ================================================
   // Prevent inventory access while in a vehicle, unless it's the Player's
 
+  @BahHumbugs ({
+    @BahHumbug(opt="prevent_opening_container_carts", def="true"),
+    @BahHumbug(opt="prevent_vehicle_inventory_open", def="true")
+  })
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
   public void onPreventVehicleInvOpen(InventoryOpenEvent event) {
     // Cheap break-able conditional statement
-    while (config_.getPreventVehicleInventoryOpen()) {
+    while (config_.get("prevent_vehicle_inventory_open").getBool()) {
       HumanEntity human = event.getPlayer();
       if (!(human instanceof Player)) {
         break;
@@ -1333,7 +1403,7 @@ public class Humbug extends JavaPlugin implements Listener {
       event.setCancelled(true);
       break;
     }
-    if (config_.getPreventOpeningContainerCarts() && !event.isCancelled()) {
+    if (config_.get("prevent_opening_container_carts").getBool() && !event.isCancelled()) {
       InventoryHolder holder = event.getInventory().getHolder();
       if (holder instanceof StorageMinecart || holder instanceof HopperMinecart) {
         event.setCancelled(true);
@@ -1428,156 +1498,17 @@ public class Humbug extends JavaPlugin implements Listener {
       subvalue = args[2];
       subvalue_set = true;
     }
-    if (option.equals("debug")) {
+    ConfigOption opt = config_.get(option);
+    if (opt != null) {
+      if (set) {
+        opt.set(value);
+      }
+      msg = String.format("%s = %s", option, opt.getString());
+    } else if (option.equals("debug")) {
       if (set) {
         config_.setDebug(toBool(value));
       }
       msg = String.format("debug = %s", config_.getDebug());
-    } else if (option.equals("anvil")) {
-      if (set) {
-        config_.setAnvilEnabled(toBool(value));
-      }
-      msg = String.format("anvil = %s", config_.getAnvilEnabled());
-    } else if (option.equals("ender_chest")) {
-      if (set) {
-        config_.setEnderChestEnabled(toBool(value));
-      }
-      msg = String.format("ender_chest = %s", config_.getEnderChestEnabled());
-    } else if (option.equals("ender_chests_placeable")) {
-      if (set) {
-        config_.setEnderChestsPlaceable(toBool(value));
-      }
-      msg = String.format("ender_chests_placeable = %s", config_.getEnderChestsPlaceable());
-    } else if (option.equals("villager_trades")) {
-      if (set) {
-        config_.setVillagerTradesEnabled(toBool(value));
-      }
-      msg = String.format("villager_trades = %s", config_.getVillagerTradesEnabled());
-    } else if (option.equals("portalcreate")) {
-      if (set) {
-        config_.setPortalCreateEnabled(toBool(value));
-      }
-      msg = String.format("portalcreate = %s", config_.getPortalCreateEnabled());
-    } else if (option.equals("enderdragon")) {
-      if (set) {
-        config_.setEnderDragonEnabled(toBool(value));
-      }
-      msg = String.format("enderdragon = %s", config_.getEnderDragonEnabled());
-    } else if (option.equals("joinquitkick")) {
-      if (set) {
-        config_.setJoinQuitKickEnabled(toBool(value));
-      }
-      msg = String.format("joinquitkick = %s", config_.getJoinQuitKickEnabled());
-    } else if (option.equals("deathpersonal")) {
-      if (set) {
-        config_.setDeathMessagePersonalEnabled(toBool(value));
-      }
-      msg = String.format("deathpersonal = %s", config_.getDeathMessagePersonalEnabled());
-    } else if (option.equals("deathannounce")) {
-      if (set) {
-        config_.setDeathAnnounceEnabled(toBool(value));
-      }
-      msg = String.format("deathannounce = %s", config_.getDeathAnnounceEnabled());
-    } else if (option.equals("deathred")) {
-      if (set) {
-        config_.setDeathMessageRedEnabled(toBool(value));
-      }
-      msg = String.format("deathred = %s", config_.getDeathMessageRedEnabled());
-    } else if (option.equals("deathlog")) {
-      if (set) {
-        config_.setDeathLoggingEnabled(toBool(value));
-      }
-      msg = String.format("deathlog = %s", config_.getDeathLoggingEnabled());
-    } else if (option.equals("endergrief")) {
-      if (set) {
-        config_.setEndermenGriefEnabled(toBool(value));
-      }
-      msg = String.format("endergrief = %s", config_.getEndermenGriefEnabled());
-    } else if (option.equals("unlimitedcauldron")) {
-      if (set) {
-        config_.setUnlimitedCauldronEnabled(toBool(value));
-      }
-      msg = String.format("unlimitedcauldron = %s", config_.getUnlimitedCauldronEnabled());
-    } else if (option.equals("quartz_gravel_percentage")) {
-      if (set) {
-        config_.setQuartzGravelPercentage(toInt(value, config_.getQuartzGravelPercentage()));
-      }
-      msg = String.format("quartz_gravel_percentage = %d", config_.getQuartzGravelPercentage());
-    } else if (option.equals("wither")) {
-      if (set) {
-        config_.setWitherEnabled(toBool(value));
-      }
-      msg = String.format("wither = %s", config_.getWitherEnabled());
-    } else if (option.equals("wither_explosions")) {
-      if (set) {
-        config_.setWitherExplosionsEnabled(toBool(value));
-      }
-      msg = String.format(
-          "wither_explosions = %s", config_.getWitherExplosionsEnabled());
-    } else if (option.equals("wither_insta_break")) {
-      if (set) {
-        config_.setWitherInstaBreakEnabled(toBool(value));
-      }
-      msg = String.format(
-          "wither_insta_break = %s", config_.getWitherInstaBreakEnabled());
-    } else if (option.equals("ench_gold_app_edible")) {
-      if (set) {
-        config_.setEnchGoldAppleEdible(toBool(value));
-      }
-      msg = String.format(
-          "ench_gold_app_edible = %s", config_.getEnchGoldAppleEdible());
-    } else if (option.equals("ench_gold_app_craftable")) {
-      if (set) {
-        config_.setEnchGoldAppleCraftable(toBool(value));
-      }
-      msg = String.format(
-          "ench_gold_app_craftable = %s", config_.getEnchGoldAppleCraftable());
-    } else if (option.equals("cobble_from_lava")) {
-      if (set) {
-        config_.setCobbleFromLavaEnabled(toBool(value));
-      }
-      msg = String.format("cobble_from_lava = %s", config_.getCobbleFromLavaEnabled());
-    } else if (option.equals("cobble_from_lava_scan_radius")) {
-      if (set) {
-        config_.setCobbleFromLavaScanRadius(toInt(value, config_.getCobbleFromLavaScanRadius()));
-      }
-      msg = String.format("cobble_from_lava_scan_radius = %d", config_.getCobbleFromLavaScanRadius());
-    } else if (option.equals("ench_book_craftable")) {
-      if (set) {
-        config_.setEnchBookCraftable(toBool(value));
-      }
-      msg = String.format("ench_book_craftable = %s", config_.getEnchBookCraftable());
-    } else if (option.equals("scale_protection_enchant")) {
-      if (set) {
-        config_.setScaleProtectionEnchant(toBool(value));
-      }
-      msg = String.format(
-          "scale_protection_enchant = %s", config_.getScaleProtectionEnchant());
-    } else if (option.equals("fix_rail_dup_bug")) {
-      if (set) {
-        config_.setFixRailDupBug(toBool(value));
-      }
-      msg = String.format("fix_rail_dup_bug = %s", config_.getFixRailDupBug());
-    } else if (option.equals("fix_vehicle_logout_bug")) {
-      if (set) {
-        config_.setFixVehicleLogoutBug(toBool(value));
-      }
-      msg = String.format("fix_vehicle_logout_bug = %s", config_.getFixVehicleLogoutBug());
-    } else if (option.equals("wither_skull_drop_rate")) {
-      if (set) {
-        config_.setWitherSkullDropRate(toInt(value, config_.getWitherSkullDropRate()));
-      }
-      msg = String.format("wither_skull_drop_rate = %d", config_.getWitherSkullDropRate());
-    } else if (option.equals("extra_wither_skele_spawn_rate")) {
-      if (set) {
-        config_.setExtraWitherSkeleSpawnRate(toInt(value, config_.getExtraWitherSkeleSpawnRate()));
-      }
-      msg = String.format("extra_wither_skele_spawn_rate = %d", config_.getExtraWitherSkeleSpawnRate());
-    } else if (option.equals("extra_ghast_spawn_rate")) {
-      if (set) {
-        config_.setExtraGhastSpawnRate(toInt(value, config_.getExtraGhastSpawnRate()));
-      }
-      msg = String.format("extra_ghast_spawn_rate = %d", config_.getExtraGhastSpawnRate());
     } else if (option.equals("loot_multiplier")) {
       String entity_type = "generic";
       if (set && subvalue_set) {
@@ -1590,86 +1521,6 @@ public class Humbug extends JavaPlugin implements Listener {
       }
       msg = String.format(
           "loot_multiplier(%s) = %d", entity_type, config_.getLootMultiplier(entity_type));
-    } else if (option.equals("disable_experience")) {
-      if (set) {
-        config_.setDisableExperience(toBool(value));
-      }
-      msg = String.format("disable_experience = %d", config_.getDisableExperience());
-    } else if (option.equals("xp_per_bottle")) {
-      if (set) {
-        config_.setXPPerBottle(toInt(value, config_.getXPPerBottle()));
-      }
-      msg = String.format("xp_per_bottle = %d", config_.getXPPerBottle());
-    } else if (option.equals("player_max_health")) {
-      if (set) {
-        config_.setMaxHealth(toInt(value, config_.getMaxHealth()));
-      }
-      msg = String.format("player_max_health = %d", config_.getMaxHealth());
-    } else if (option.equals("fix_teleport_glitch")) {
-      if (set) {
-        config_.setTeleportFixEnabled(toBool(value));
-      }
-      msg = String.format("fix_teleport_glitch = %s", config_.getTeleportFixEnabled());
-    } else if (option.equals("ender_pearl_teleportation")) {
-      if (set) {
-        config_.setEnderPearlTeleportationEnabled(toBool(value));
-      }
-      msg = String.format("ender_pearl_teleportation = %s", config_.getEnderPearlTeleportationEnabled());
-    } else if (option.equals("ender_pearl_teleportation_throttled")) {
-      if (set) {
-        config_.setThrottlePearlTeleport(toBool(value));
-      }
-      msg = String.format("ender_pearl_teleportation_throttled = %s", config_.getThrottlePearlTeleport());
-    } else if (option.equals("ender_pearl_launch_velocity")) {
-      if (set) {
-        config_.setEnderPearlLaunchVelocity(toDouble(value, 1.0000));
-      }
-      msg = String.format("ender_pearl_launch_velocity = %s", config_.getEnderPearlLaunchVelocity());
-    } else if (option.equals("disallow_record_playing")) {
-      if (set) {
-        config_.setDisallowRecordPlaying(toBool(value));
-      }
-      msg = String.format("disallow_record_playing = %s", config_.getDisallowRecordPlaying());
-    } else if (option.equals("allow_dye_sheep")) {
-      if (set) {
-        config_.setAllowDyeSheep(toBool(value));
-      }
-      msg = String.format("allow_dye_sheep = %s", config_.getAllowDyeSheep());
-    } else if (option.equals("allow_water_in_nether")) {
-      if (set) {
-        config_.setAllowWaterInNether(toBool(value));
-      }
-      msg = String.format("allow_water_in_nether = %s", config_.getAllowWaterInNether());
-    } else if (option.equals("indestructible_end_portals")) {
-      if (set) {
-        config_.setIndestructibleEndPortals(toBool(value));
-      }
-      msg = String.format("indestructible_end_portals = %s", config_.getIndestructibleEndPortals());
-    } else if (option.equals("prevent_vehicle_inventory_open")) {
-      if (set) {
-        config_.setPreventVehicleInventoryOpen(toBool(value));
-      }
-      msg = String.format("prevent_vehicle_inventory_open = %s", config_.getPreventVehicleInventoryOpen());
-    } else if (option.equals("prevent_opening_container_carts")) {
-      if (set) {
-        config_.setPreventOpeningContainerCarts(toBool(value));
-      }
-      msg = String.format("prevent_opening_container_carts = %s", config_.getPreventOpeningContainerCarts());
-    } else if (option.equals("find_end_portals")) {
-      if (set) {
-        config_.setFindEndPortals(value);
-      }
-      msg = String.format("find_end_portals = %s", config_.getFindEndPortals());
-    } else if (option.equals("projectile_slow_chance")) {
-      if (set) {
-        config_.setProjectileSlowChance(toInt(value, config_.getProjectileSlowChance()));
-      }
-      msg = String.format("projectile_slow_chance = %d", config_.getProjectileSlowChance());
-    } else if (option.equals("projectile_slow_ticks")) {
-      if (set) {
-        config_.setProjectileSlowTicks(toInt(value, config_.getProjectileSlowTicks()));
-      }
-      msg = String.format("projectile_slow_ticks = %d", config_.getProjectileSlowTicks());
     } else if (option.equals("remove_mob_drops")) {
       if (set && subvalue_set) {
         if (value.equals("add")) {

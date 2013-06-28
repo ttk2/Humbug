@@ -1,17 +1,25 @@
 package com.untamedears.humbug;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.Plugin;
 
 import com.google.common.base.Splitter;
 import com.untamedears.humbug.Humbug;
+import com.untamedears.humbug.annotations.BahHumbug;
+import com.untamedears.humbug.annotations.BahHumbugs;
+import com.untamedears.humbug.annotations.ConfigOption;
 
 public class Config {
   private static Config global_instance_ = null;
@@ -19,52 +27,11 @@ public class Config {
   // ================================================
   // Configuration defaults
   private static final boolean debug_log_ = false;
-  private static final boolean anvil_enabled_ = false;
-  private static final boolean ender_chest_enabled_ = false;
-  private static final boolean ender_chests_placeable_ = true;
-  private static final boolean villager_trades_enabled_ = false;
-  private static final boolean unlimited_cauldron_enabled_ = false;
   private static final int quartz_gravel_percentage_ = 0;
-  private static final boolean portalcreate_enabled_ = true;
-  private static final boolean enderdragon_enabled_ = true;
-  private static final boolean joinquitkick_enabled_ = true;
-  private static final boolean deathpersonal_enabled_ = false;
-  private static final boolean deathannounce_enabled_ = true;
-  private static final boolean deathred_enabled_ = false;
-  private static final boolean deathlog_enabled_ = false;
-  private static final boolean endergrief_enabled_ = true;
-  private static final boolean wither_enabled_ = true;
-  private static final boolean wither_explosions_enabled_ = false;
-  private static final boolean wither_insta_break_enabled_ = false;
-  private static final boolean cobble_from_lava_enabled_ = false;
   private static final int cobble_from_lava_scan_radius_ = 0;
-  private static final boolean ench_book_craftable_ = false;
-  private static final boolean scale_protection_enchant_ = true;
-  private static final boolean fix_rail_dup_bug_ = true;
-  private static final boolean fix_vehicle_logout_bug_ = true;
-  private static final int wither_skull_drop_rate_ = -1;
-  private static final int extra_wither_skele_spawn_rate_ = -1;
-  private static final int extra_ghast_spawn_rate_ = -1;
-  private static final int player_max_health_ = 20;
-  private static final boolean ender_pearl_teleportation_enabled_ = true;
-  private static final boolean ender_pearl_teleportation_throttled_ = true;
-  private static final double ender_pearl_launch_velocity_ = 1.0F;
-  private static final boolean ench_gold_app_edible_ = false;
-  private static final boolean ench_gold_app_craftable_ = false;
-  // For fixing the teleport glitch
-  private static final boolean fix_teleport_glitch_ = true;
-  private static final boolean disallow_record_playing_ = true;
-  private static final boolean allow_dye_sheep_ = true;
-  private static final boolean allow_water_in_nether_ = false;
-  private static final boolean indestructible_end_portals_ = true;
-  private static final boolean prevent_vehicle_inventory_open_ = true;
-  private static final boolean prevent_opening_container_carts_ = true;
   private static final String find_end_portals_ = null;
-  private static final int projectile_slow_chance_ = 30;
   private static final int projectile_slow_ticks_ = 100;
   private static final int loot_multiplier_ = 1;
-  private static final boolean disable_experience_ = true;
-  private static final int xp_per_bottle_ = 10;
   private static final String book_name_ = "A Guide to Civcraft";
   private static final String book_author_ = "dydomite";
   private static final String book_text_ =
@@ -111,27 +78,63 @@ public class Config {
       Splitter.on("}|").split(book_text_.replaceAll("\\{\\|", "\u00A7"));
 
 
-  public static Config initialize(Plugin plugin) {
+  private static FileConfiguration config_ = null;
+
+  public static Config initialize(Humbug plugin) {
     if (global_instance_ == null) {
+      plugin.reloadConfig();
+      config_ = plugin.getConfig();
+      config_.options().copyDefaults(true);
       global_instance_ = new Config(plugin);
       global_instance_.load();
     }
     return global_instance_;
   }
 
-  private FileConfiguration config_ = null;
-  private Plugin plugin_ = null;
+  public static ConfigurationSection getStorage() {
+    return config_;
+  }
+
+  private Humbug plugin_ = null;
   private Set<Integer> remove_item_drops_ = null;
 
-  public Config(Plugin plugin) {
+  public Config(Humbug plugin) {
     plugin_ = plugin;
+    scanAnnotations();
+  }
+
+  private Map<String, ConfigOption> dynamicOptions_ = new TreeMap<String, ConfigOption>();
+
+  private void addToConfig(BahHumbug bug) {
+    if (dynamicOptions_.containsKey(bug.opt())) {
+      Humbug.info("Duplicate configuration option detected: " + bug.opt());
+      return;
+    }
+    dynamicOptions_.put(bug.opt(), new ConfigOption(bug));
+  }
+
+  private void scanAnnotations() {
+    try {
+      for (Method method : Humbug.class.getMethods()) {
+        BahHumbug bug = method.getAnnotation(BahHumbug.class);
+        if (bug != null) {
+          addToConfig(bug);
+          continue;
+        }
+        BahHumbugs bugs = method.getAnnotation(BahHumbugs.class);
+        if (bugs != null) {
+          for (BahHumbug drone : bugs.value()) {
+            addToConfig(drone);
+          }
+          continue;
+        }
+      }
+    } catch(Exception ex) {
+      Humbug.info(ex.toString());
+    }
   }
 
   public void load() {
-    plugin_.reloadConfig();
-    FileConfiguration config = plugin_.getConfig();
-    config.options().copyDefaults(true);
-    config_ = config;
     // Setting specific initialization
     loadRemoveItemDrops();
   }
@@ -142,6 +145,19 @@ public class Config {
 
   public void save() {
     plugin_.saveConfig();
+  }
+
+  public ConfigOption get(String optionName) {
+    return dynamicOptions_.get(optionName);
+  }
+
+  public boolean set(String optionName, String value) {
+    ConfigOption opt = dynamicOptions_.get(optionName);
+    if (opt != null) {
+      opt.setString(value);
+      return true;
+    }
+    return false;
   }
 
   public boolean getDebug() {
@@ -176,61 +192,6 @@ public class Config {
     config_.set("loot_multiplier." + entity_type.toLowerCase(), value);
   }
 
-  public boolean getAnvilEnabled() {
-    return config_.getBoolean("anvil", anvil_enabled_);
-  }
-
-  public void setAnvilEnabled(boolean value) {
-    config_.set("anvil", value);
-  }
-
-  public boolean getEnderChestEnabled() {
-    return config_.getBoolean("ender_chest", ender_chest_enabled_);
-  }
-
-  public void setEnderChestEnabled(boolean value) {
-    config_.set("ender_chest", value);
-  }
-
-  public boolean getEnderChestsPlaceable() {
-    return config_.getBoolean("ender_chests_placeable", ender_chests_placeable_);
-  }
-
-  public void setEnderChestsPlaceable(boolean value) {
-    config_.set("ender_chests_placeable", value);
-  }
-
-  public boolean getVillagerTradesEnabled() {
-    return config_.getBoolean("villager_trades", villager_trades_enabled_);
-  }
-
-  public void setVillagerTradesEnabled(boolean value) {
-    config_.set("villager_trades", value);
-  }
-
-  public boolean getPortalCreateEnabled() {
-    return config_.getBoolean("portalcreate", portalcreate_enabled_);
-  }
-
-  public void setPortalCreateEnabled(boolean value) {
-    config_.set("portalcreate", value);
-  }
-
-  public boolean getEnderDragonEnabled() {
-    return config_.getBoolean("enderdragon", enderdragon_enabled_);
-  }
-
-  public void setEnderDragonEnabled(boolean value) {
-    config_.set("enderdragon", value);
-  }
-
-  public boolean getUnlimitedCauldronEnabled() {
-    return config_.getBoolean("unlimitedcauldron", unlimited_cauldron_enabled_);
-  }
-
-  public void setUnlimitedCauldronEnabled(boolean value) {
-    config_.set("unlimitedcauldron", value);
-  }
 
   public int getQuartzGravelPercentage() {
     return config_.getInt("quartz_gravel_percentage", quartz_gravel_percentage_);
@@ -247,101 +208,6 @@ public class Config {
     config_.set("quartz_gravel_percentage", value);
   }
 
-  public boolean getJoinQuitKickEnabled() {
-    return config_.getBoolean("joinquitkick", joinquitkick_enabled_);
-  }
-
-  public void setJoinQuitKickEnabled(boolean value) {
-    config_.set("joinquitkick", value);
-  }
-
-  public boolean getDeathMessagePersonalEnabled() {
-    return config_.getBoolean("deathpersonal", deathpersonal_enabled_);
-  }
-
-  public void setDeathMessagePersonalEnabled(boolean value) {
-    config_.set("deathpersonal", value);
-  }
-
-  public boolean getDeathAnnounceEnabled() {
-    return config_.getBoolean("deathannounce", deathannounce_enabled_);
-  }
-
-  public void setDeathAnnounceEnabled(boolean value) {
-    config_.set("deathannounce", value);
-  }
-
-  public boolean getDeathMessageRedEnabled() {
-    return config_.getBoolean("deathred", deathred_enabled_);
-  }
-
-  public void setDeathMessageRedEnabled(boolean value) {
-    config_.set("deathred", value);
-  }
-
-  public boolean getDeathLoggingEnabled() {
-    return config_.getBoolean("deathlog", deathlog_enabled_);
-  }
-
-  public void setDeathLoggingEnabled(boolean value) {
-    config_.set("deathlog", value);
-  }
-
-  public boolean getEndermenGriefEnabled() {
-    return config_.getBoolean("endergrief", endergrief_enabled_);
-  }
-
-  public void setEndermenGriefEnabled(boolean value) {
-    config_.set("endergrief", value);
-  }
-
-  public boolean getWitherEnabled() {
-    return config_.getBoolean("wither", wither_enabled_);
-  }
-
-  public void setWitherEnabled(boolean value) {
-    config_.set("wither", value);
-  }
-
-  public boolean getWitherExplosionsEnabled() {
-    return config_.getBoolean("wither_explosions", wither_explosions_enabled_);
-  }
-
-  public void setWitherExplosionsEnabled(boolean value) {
-    config_.set("wither_explosions", value);
-  }
-
-  public boolean getWitherInstaBreakEnabled() {
-    return config_.getBoolean("wither_insta_break", wither_insta_break_enabled_);
-  }
-
-  public void setWitherInstaBreakEnabled(boolean value) {
-    config_.set("wither_insta_break", value);
-  }
-
-  public boolean getEnchGoldAppleEdible() {
-    return config_.getBoolean("ench_gold_app_edible", ench_gold_app_edible_);
-  }
-
-  public void setEnchGoldAppleEdible(boolean value) {
-    config_.set("ench_gold_app_edible", value);
-  }
-
-  public boolean getEnchGoldAppleCraftable() {
-    return config_.getBoolean("ench_gold_app_craftable", ench_gold_app_craftable_);
-  }
-
-  public void setEnchGoldAppleCraftable(boolean value) {
-    config_.set("ench_gold_app_craftable", value);
-  }
-
-  public boolean getCobbleFromLavaEnabled() {
-    return config_.getBoolean("cobble_from_lava", cobble_from_lava_enabled_);
-  }
-
-  public void setCobbleFromLavaEnabled(boolean value) {
-    config_.set("cobble_from_lava", value);
-  }
 
   public int getCobbleFromLavaScanRadius() {
     return config_.getInt("cobble_from_lava_scan_radius", cobble_from_lava_scan_radius_);
@@ -358,165 +224,6 @@ public class Config {
     config_.set("cobble_from_lava_scan_radius", value);
   }
 
-  public boolean getEnchBookCraftable() {
-    return config_.getBoolean("ench_book_craftable", ench_book_craftable_);
-  }
-
-  public void setEnchBookCraftable(boolean value) {
-    config_.set("ench_book_craftable", value);
-  }
-
-  public boolean getScaleProtectionEnchant() {
-    return config_.getBoolean("scale_protection_enchant", scale_protection_enchant_);
-  }
-
-  public void setScaleProtectionEnchant(boolean value) {
-    config_.set("scale_protection_enchant", value);
-  }
-
-  public boolean getFixRailDupBug() {
-    return config_.getBoolean("fix_rail_dup_bug", fix_rail_dup_bug_);
-  }
-
-  public void setFixRailDupBug(boolean value) {
-    config_.set("fix_rail_dup_bug", value);
-  }
-
-  public boolean getFixVehicleLogoutBug() {
-    return config_.getBoolean("fix_vehicle_logout_bug", fix_vehicle_logout_bug_);
-  }
-
-  public void setFixVehicleLogoutBug(boolean value) {
-    config_.set("fix_vehicle_logout_bug", value);
-  }
-
-  public int getWitherSkullDropRate() {
-    return config_.getInt("wither_skull_drop_rate", wither_skull_drop_rate_);
-  }
-
-  public void setWitherSkullDropRate(int value) {
-    config_.set("wither_skull_drop_rate", value);
-  }
-
-  public int getMaxHealth() {
-    return config_.getInt("player_max_health", player_max_health_);
-  }
-
-  public void setMaxHealth(int value) {
-    config_.set("player_max_health", value);
-  }
-
-  public boolean getTeleportFixEnabled() {
-    return config_.getBoolean("fix_teleport_glitch", fix_teleport_glitch_);
-  }
-
-  public void setTeleportFixEnabled(boolean value) {
-    config_.set("fix_teleport_glitch", value);
-  }
-
-  public boolean getEnderPearlTeleportationEnabled() {
-    return config_.getBoolean("ender_pearl_teleportation", ender_pearl_teleportation_enabled_);
-  }
-
-  public void setEnderPearlTeleportationEnabled(boolean value) {
-    config_.set("ender_pearl_teleportation", value);
-  }
-
-  public boolean getThrottlePearlTeleport() {
-    return config_.getBoolean("ender_pearl_teleportation_throttled", ender_pearl_teleportation_throttled_);
-  }
-
-  public void setThrottlePearlTeleport(boolean value) {
-    config_.set("ender_pearl_teleportation_throttled", value);
-  }
-
-  public double getEnderPearlLaunchVelocity() {
-    return config_.getDouble("ender_pearl_launch_velocity", ender_pearl_launch_velocity_);
-  }
-  
-  public void setEnderPearlLaunchVelocity(double value) {
-    config_.set("ender_pearl_launch_velocity", value);
-  }
-
-  public boolean getDisallowRecordPlaying() {
-    return config_.getBoolean("disallow_record_playing", disallow_record_playing_);
-  }
-
-  public void setDisallowRecordPlaying(boolean value) {
-    config_.set("disallow_record_playing", value);
-  }
-
-  public boolean getAllowDyeSheep() {
-    return config_.getBoolean("allow_dye_sheep", allow_dye_sheep_);
-  }
-
-  public void setAllowDyeSheep(boolean value) {
-    config_.set("allow_dye_sheep", value);
-  }
-
-  public boolean getAllowWaterInNether() {
-    return config_.getBoolean("allow_water_in_nether", allow_water_in_nether_);
-  }
-
-  public void setAllowWaterInNether(boolean value) {
-    config_.set("allow_water_in_nether", value);
-  }
-
-  public boolean getIndestructibleEndPortals() {
-    return config_.getBoolean("indestructible_end_portals", indestructible_end_portals_);
-  }
-
-  public void setIndestructibleEndPortals(boolean value) {
-    config_.set("indestructible_end_portals", value);
-  }
-
-  public boolean getPreventVehicleInventoryOpen() {
-    return config_.getBoolean("prevent_vehicle_inventory_open", prevent_vehicle_inventory_open_);
-  }
-
-  public void setPreventVehicleInventoryOpen(boolean value) {
-    config_.set("prevent_vehicle_inventory_open", value);
-  }
-
-  public boolean getPreventOpeningContainerCarts() {
-    return config_.getBoolean("prevent_opening_container_carts", prevent_opening_container_carts_);
-  }
-
-  public void setPreventOpeningContainerCarts(boolean value) {
-    config_.set("prevent_opening_container_carts", value);
-  }
-
-  public String getFindEndPortals() {
-    return config_.getString("find_end_portals", find_end_portals_);
-  }
-
-  public void setFindEndPortals(String value) {
-    config_.set("find_end_portals", value);
-  }
-
-  public int getProjectileSlowChance() {
-    return config_.getInt("projectile_slow_chance", projectile_slow_chance_);
-  }
-
-  public void setProjectileSlowChance(int value) {
-    config_.set("projectile_slow_chance", value);
-  }
-
-  public int getExtraWitherSkeleSpawnRate() {
-    return config_.getInt("extra_wither_skele_spawn_rate", extra_wither_skele_spawn_rate_);
-  }
-
-  public void setExtraWitherSkeleSpawnRate(int value) {
-    config_.set("extra_wither_skele_spawn_rate", value);
-  }
-
-  public int getExtraGhastSpawnRate() {
-    return config_.getInt("extra_ghast_spawn_rate", extra_ghast_spawn_rate_);
-  }
-
-  public void setExtraGhastSpawnRate(int value) {
-    config_.set("extra_ghast_spawn_rate", value);
-  }
 
   public int getProjectileSlowTicks() {
     int ticks = config_.getInt("projectile_slow_ticks", projectile_slow_ticks_);
@@ -526,25 +233,6 @@ public class Config {
     return ticks;
   }
   
-  public boolean getDisableExperience() {
-    return config_.getBoolean("disable_experience", disable_experience_);
-  }
-  
-  public void setDisableExperience(boolean value) {
-    config_.set("disable_experience", value);
-  }
-
-  public int getXPPerBottle() {
-    return config_.getInt("xp_per_bottle", xp_per_bottle_);
-  }
-
-  public void setXPPerBottle(int value) {
-    config_.set("xp_per_bottle", value);
-  }
-
-  public void setProjectileSlowTicks(int value) {
-    config_.set("projectile_slow_ticks", value);
-  }
 
   private void loadRemoveItemDrops() {
     if (!config_.isSet("remove_mob_drops")) {
