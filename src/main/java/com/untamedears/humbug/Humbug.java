@@ -536,51 +536,46 @@ public class Humbug extends JavaPlugin implements Listener {
 
   @BahHumbugs ({
     @BahHumbug(opt="extra_ghast_spawn_rate", type=OptType.Int),
-    @BahHumbug(opt="portal_extra_ghast_spawn_rate", type=OptType.Int),
     @BahHumbug(opt="extra_wither_skele_spawn_rate", type=OptType.Int),
+    @BahHumbug(opt="portal_extra_ghast_spawn_rate", type=OptType.Int),
     @BahHumbug(opt="portal_extra_wither_skele_spawn_rate", type=OptType.Int),
     @BahHumbug(opt="portal_pig_spawn_multiplier", type=OptType.Int)
   })
   @EventHandler(ignoreCancelled=true)
   public void spawnMoreHellMonsters(CreatureSpawnEvent e) {
+    final Location loc = e.getLocation();
+    final World world = loc.getWorld();
+    boolean portalSpawn = false;
+    final int blockType = world.getBlockTypeIdAt(loc);
+    if (blockType == 90 || blockType == 49) {
+      // >= because we are preventing instead of spawning
+      if(prng_.nextInt(1000000) >= config_.get("portal_pig_spawn_multiplier").getInt()) {
+        e.setCancelled(true);
+        return;
+      }
+      portalSpawn = true;
+    }
     if (config_.get("extra_wither_skele_spawn_rate").getInt() <= 0
         && config_.get("extra_ghast_spawn_rate").getInt() <= 0) {
       return;
     }
-    int nat = 1;
-    int portal = 0;
-    Location loc = e.getLocation();
-    World wo = loc.getWorld();
-
-    if (wo.getBlockTypeIdAt(loc)==90){
-      portal = 1;
-      nat = 0;
-    }
-    if (wo.getBlockTypeIdAt(loc)==49){
-      portal = 1;
-      nat = 0;
-    }
-    if (portal == 1){
-      if(prng_.nextInt(1000000) > config_.get("portal_pig_spawn_multiplier").getInt()){
-        e.setCancelled(true);
-        return;
-      }
-    }
-
-
     if (e.getEntityType() == EntityType.PIG_ZOMBIE) {
-      int adjustedwither = (config_.get("extra_wither_skele_spawn_rate").getInt()*nat)+(config_.get("portal_extra_wither_skele_spawn_rate").getInt()*portal);
-      int adjustedghast = (config_.get("extra_ghast_spawn_rate").getInt()*nat)+(config_.get("portal_extra_ghast_spawn_rate").getInt()*portal);
-      
+      int adjustedwither;
+      int adjustedghast;
+      if (portalSpawn) {
+        adjustedwither = config_.get("portal_extra_wither_skele_spawn_rate").getInt();
+        adjustedghast = config_.get("portal_extra_ghast_spawn_rate").getInt();
+      } else {
+        adjustedwither = config_.get("extra_wither_skele_spawn_rate").getInt();
+        adjustedghast = config_.get("extra_ghast_spawn_rate").getInt();
+      }
       if(prng_.nextInt(1000000) < adjustedwither) {
         e.setCancelled(true);
-        World world = loc.getWorld();
         world.spawnEntity(loc, EntityType.SKELETON);
       } else if(prng_.nextInt(1000000) < adjustedghast) {
         e.setCancelled(true);
         int x = loc.getBlockX();
         int z = loc.getBlockZ();
-        World world = loc.getWorld();
         List<Integer> heights = new ArrayList<Integer>(16);
         int lastBlockHeight = 2;
         int emptyCount = 0;
