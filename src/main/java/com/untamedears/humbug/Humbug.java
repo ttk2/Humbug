@@ -174,7 +174,7 @@ public class Humbug extends JavaPlugin implements Listener {
   public void onTeleport(PlayerTeleportEvent event) {
     TeleportCause cause = event.getCause();
     if (cause != TeleportCause.ENDER_PEARL) {
-        return;
+      return;
     } else if (!config_.get("ender_pearl_teleportation").getBool()) {
       event.setCancelled(true);
       return;
@@ -1247,7 +1247,7 @@ public class Humbug extends JavaPlugin implements Listener {
     if (!(entity instanceof EnderPearl)) {
       return;
     }
-    double adjustment = config_.get("ender_pearl_launch_velocity").getInt();
+    double adjustment = config_.get("ender_pearl_launch_velocity").getDouble();
     if (adjustment < 1.00001 && adjustment > 0.99999) {
       return;
     }
