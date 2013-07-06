@@ -322,6 +322,26 @@ public class Humbug extends JavaPlugin implements Listener {
     }
   }
 
+  public void EmptyEnderChest(HumanEntity human) {
+    if (config_.get("ender_backpacks").getBool()) {
+      dropInventory(human.getLocation(), human.getEnderChest());
+    }
+  }
+
+  public void dropInventory(Location loc, Inventory inv) {
+    final World world = loc.getWorld();
+    final int end = inv.getSize();
+    for (int i = 0; i < end; ++i) {
+      try {
+        final ItemStack item = inv.getItem(i);
+        if (item != null) {
+          world.dropItemNaturally(loc, item);
+          inv.clear(i);
+        }
+      } catch (Exception ex) {}
+    }
+  }
+
   // ================================================
   // Unlimited Cauldron water
 
@@ -405,6 +425,7 @@ public class Humbug extends JavaPlugin implements Listener {
 
   @EventHandler(priority=EventPriority.HIGHEST)
   public void onQuit(PlayerQuitEvent e) {
+    EmptyEnderChest(e.getPlayer());
     if (!config_.get("joinquitkick").getBool()) {
       e.setQuitMessage(null);
     }
@@ -412,6 +433,7 @@ public class Humbug extends JavaPlugin implements Listener {
 
   @EventHandler(priority=EventPriority.HIGHEST)
   public void onKick(PlayerKickEvent e) {
+    EmptyEnderChest(e.getPlayer());
     if (!config_.get("joinquitkick").getBool()) {
       e.setLeaveMessage(null);
     }
@@ -423,21 +445,24 @@ public class Humbug extends JavaPlugin implements Listener {
     @BahHumbug(opt="deathannounce", def="true"),
     @BahHumbug(opt="deathlog"),
     @BahHumbug(opt="deathpersonal"),
-    @BahHumbug(opt="deathred")
+    @BahHumbug(opt="deathred"),
+    @BahHumbug(opt="ender_backpacks")
   })
   @EventHandler(priority=EventPriority.HIGHEST)
   public void onDeath(PlayerDeathEvent e) {
-    boolean log_msg = config_.get("deathlog").getBool();
-    boolean send_personal = config_.get("deathpersonal").getBool();
-    if (log_msg || send_personal) {
-      Location location = e.getEntity().getLocation();
+    final boolean logMsg = config_.get("deathlog").getBool();
+    final boolean sendPersonal = config_.get("deathpersonal").getBool();
+    final Player player = (Player)e.getEntity();
+    EmptyEnderChest(player);
+    if (logMsg || sendPersonal) {
+      Location location = player.getLocation();
       String msg = String.format(
           "%s ([%s] %d, %d, %d)", e.getDeathMessage(), location.getWorld().getName(),
           location.getBlockX(), location.getBlockY(), location.getBlockZ());
-      if (log_msg) {
+      if (logMsg) {
         info(msg);
       }
-      if (send_personal) {
+      if (sendPersonal) {
         e.getEntity().sendMessage(ChatColor.RED + msg);
       }
     }
