@@ -60,6 +60,7 @@ import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.entity.SheepDyeWoolEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
@@ -271,6 +272,28 @@ public class Humbug extends JavaPlugin implements Listener {
   }
 
   // ================================================
+  // Admins can view player inventories
+
+  @SuppressWarnings("deprecation")
+public void onInvseeCommand(String name, String player){
+    Player checker= Bukkit.getPlayerExact(player);
+	  Player admin= Bukkit.getPlayerExact(name);
+	  if (checker!=null){
+		  Inventory x= Bukkit.createInventory(null, 36, ("Player inventory: "+checker.getName()));
+		  for (int i=0; i<36;i++){
+			  ItemStack it= checker.getInventory().getItem(i);
+			  x.setItem(i, it);
+			  
+		  }
+		  
+		  admin.openInventory(x);
+		  admin.updateInventory();
+	  }
+	  else{
+		  admin.sendMessage("That Player is not online or you spelt the name incorrectly.");
+	  }
+  }
+  // ========================================================
   // Villager Trading
 
   @BahHumbug(opt="villager_trades")
@@ -1512,6 +1535,16 @@ public class Humbug extends JavaPlugin implements Listener {
       Command command,
       String label,
       String[] args) {
+	  if(sender instanceof Player && command.getName().equals("invsee")){
+	    	String admin=sender.getName();
+	    	if (args.length<1){
+	    		sender.sendMessage("Provide a name");
+	    		return true;
+	    	}
+	    	String player=args[0];
+	    	onInvseeCommand(admin, player);
+	    	return true;
+	  	}
     if (sender instanceof Player
         && command.getName().equals("introbook")) {
       Player sendBookTo = (Player)sender;
@@ -1566,7 +1599,7 @@ public class Humbug extends JavaPlugin implements Listener {
       }
       msg = String.format(
           "loot_multiplier(%s) = %d", entity_type, config_.getLootMultiplier(entity_type));
-    } else if (option.equals("remove_mob_drops")) {
+    }else if (option.equals("remove_mob_drops")) {
       if (set && subvalue_set) {
         if (value.equals("add")) {
           config_.addRemoveItemDrop(toMaterialId(subvalue, -1));
