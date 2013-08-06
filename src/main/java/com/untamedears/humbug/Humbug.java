@@ -908,7 +908,7 @@ public class Humbug extends JavaPlugin implements Listener {
     if (!config_.get("scale_protection_enchant").getBool()) {
         return;
     }
-    int damage = event.getDamage();
+    int damage = (int)event.getDamage();
     if (damage <= 0) {
       return;
     }
@@ -1204,7 +1204,6 @@ public class Humbug extends JavaPlugin implements Listener {
          if (Effect.getType().equals(PotionEffectType.INCREASE_DAMAGE))
         {
             double DamagePercentage = (Effect.getAmplifier() + 1) * 1.3D + 1.0D;
-            int NewDamage;
             int NewDamage;
             if (event.getDamage() / DamagePercentage <= 1.0D)
             {
