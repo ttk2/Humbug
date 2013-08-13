@@ -32,10 +32,12 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.ThrownPotion;
 import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Skeleton.SkeletonType;
 import org.bukkit.entity.minecart.HopperMinecart;
 import org.bukkit.entity.minecart.StorageMinecart;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -60,6 +62,7 @@ import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.entity.SheepDyeWoolEvent;
+import org.bukkit.event.entity.PotionSplashEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
@@ -1220,6 +1223,34 @@ public class Humbug extends JavaPlugin implements Listener {
       }
     }
   }
+
+  //=================================================
+  // Buffs health splash to pre-1.6 levels
+
+
+  @EventHandler
+  public void onPotionSplash(PotionSplashEvent event) {
+    ThrownPotion p = event.getPotion();
+    for(PotionEffect effect : event.getEntity().getEffects()) {
+        if(!(effect.getType().getName().equalsIgnoreCase("heal"))) { // Splash potion of poison
+            return;
+        }
+    }
+
+    for(LivingEntity entity : event.getAffectedEntities()) {
+        if(entity instanceof Player) {
+ 
+            double intensity = event.getIntensity(entity);
+            event.setIntensity(entity, intensity+1);
+        }
+    }
+
+
+
+    
+    //event.setIntensity(event.getPotion(),intensity+1);
+  }
+
 
 
 
