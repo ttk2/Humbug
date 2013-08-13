@@ -38,6 +38,7 @@ import org.bukkit.entity.Skeleton.SkeletonType;
 import org.bukkit.entity.minecart.HopperMinecart;
 import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Damageable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -1240,15 +1241,9 @@ public class Humbug extends JavaPlugin implements Listener {
     for(LivingEntity entity : event.getAffectedEntities()) {
         if(entity instanceof Player) {
  
-            double intensity = event.getIntensity(entity);
-            event.setIntensity(entity, intensity+1);
+            entity.setHealth(entity.getHealth()+4);
         }
     }
-
-
-
-    
-    //event.setIntensity(event.getPotion(),intensity+1);
   }
 
 
