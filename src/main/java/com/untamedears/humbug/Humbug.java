@@ -1194,9 +1194,15 @@ public class Humbug extends JavaPlugin implements Listener {
   //=================================================
   // Nerfs Strength Potions to Pre-1.6 Levels
 
-
+  @BahHumbugs ({
+    @BahHumbug(opt="nerf_strength", def="true")
+  })
   @EventHandler
   public void onPlayerDamage(EntityDamageByEntityEvent event) {
+    if(!config_.get("nerf_strength").getBool()) {
+        return;
+    }
+
     if (!(event.getDamager() instanceof Player)) {
         return;
     }
@@ -1228,9 +1234,14 @@ public class Humbug extends JavaPlugin implements Listener {
   //=================================================
   // Buffs health splash to pre-1.6 levels
 
-
+  @BahHumbugs ({
+    @BahHumbug(opt="buff_health", def="true")
+  })
   @EventHandler
   public void onPotionSplash(PotionSplashEvent event) {
+    if(!config_.get("nerf_strength").getBool()) {
+        return;
+    }
     ThrownPotion p = event.getPotion();
     for(PotionEffect effect : event.getEntity().getEffects()) {
         if(!(effect.getType().getName().equalsIgnoreCase("heal"))) { // Splash potion of poison
