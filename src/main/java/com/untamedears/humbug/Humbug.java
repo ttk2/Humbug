@@ -271,7 +271,7 @@ public class Humbug extends JavaPlugin implements Listener {
     }
   }
 
-  // ========================================================
+  // ================================================
   // Villager Trading
 
   @BahHumbug(opt="villager_trades")
@@ -453,7 +453,7 @@ public class Humbug extends JavaPlugin implements Listener {
   public void onDeath(PlayerDeathEvent e) {
     final boolean logMsg = config_.get("deathlog").getBool();
     final boolean sendPersonal = config_.get("deathpersonal").getBool();
-    final Player player = (Player)e.getEntity();
+    final Player player = e.getEntity();
     EmptyEnderChest(player);
     if (logMsg || sendPersonal) {
       Location location = player.getLocation();
@@ -908,8 +908,8 @@ public class Humbug extends JavaPlugin implements Listener {
     if (!config_.get("scale_protection_enchant").getBool()) {
         return;
     }
-    int damage = event.getDamage();
-    if (damage <= 0) {
+    double damage = event.getDamage();
+    if (damage <= 0.0000001D) {
       return;
     }
     DamageCause cause = event.getCause();
@@ -941,7 +941,7 @@ public class Humbug extends JavaPlugin implements Listener {
       // 2 to 4
       damage_adjustment = prng_.nextInt(3) + 2;
     }
-    damage = Math.max(damage - damage_adjustment, 0);
+    damage = Math.max(damage - (double)damage_adjustment, 0.0D);
     event.setDamage(damage);
   }
 
@@ -949,7 +949,7 @@ public class Humbug extends JavaPlugin implements Listener {
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
   public void onPlayerJoinEvent(PlayerJoinEvent event) {
     Player player = event.getPlayer();
-    player.setMaxHealth(config_.get("player_max_health").getInt());
+    player.setMaxHealth((double)config_.get("player_max_health").getInt());
   }
 
   // ================================================
@@ -1120,7 +1120,7 @@ public class Humbug extends JavaPlugin implements Listener {
     Humbug.info(String.format(
         "Vehicle logout [%s]: No space for teleport, killed",
         player.getName()));
-    player.setHealth(0);
+    player.setHealth(0.0D);
   }
 
   // ================================================

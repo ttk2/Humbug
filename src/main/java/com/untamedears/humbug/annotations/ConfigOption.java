@@ -116,7 +116,7 @@ public class ConfigOption {
   }
 
   public void setString(String value) {
-    value_ = (Object)convert(value, value_);
+    value_ = convert(value, value_);
     Config.getStorage().set(name_, value_);
   }
 
