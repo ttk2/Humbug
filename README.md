@@ -42,6 +42,7 @@ Minecraft server plug-in: Simply toggles various functionality
 - Disables experience except from XP bottles
 - Finds End Portals in a world.
 - Swaps Wither Skeletons or Ghasts in for Zombie Pigmen to raise their spawn rate.
+- Adjust strength and health pots to pre-1.6 power levels
 
 The 'humbug' console command can be used to get or set any of the configuration file settings while the server is running. Also available are 'humbug save' and 'humbug reload'.
 
@@ -92,6 +93,8 @@ Config file settings:
 - disable_experience: Boolean, disables all vanilla experience but XP bottles
 - xp_per_bottle: Integer, sets the amount of XP given to a player by an XP bottle
 - find_end_portals: String, name of the world in which to search for end portals
+- nerf_strength: Boolean, Nerfs the strength potion back to pre-1.5 mechanics
+- buff_health_pots: Boolean, Buffs the health potion back to pre-1.5 mechanics
 
 Default configuration (biased for CivCraft):
 - debug: false
@@ -140,3 +143,5 @@ Default configuration (biased for CivCraft):
 - disable_experience: true
 - xp_per_bottle: 10
 - find_end_portals:
+- nerf_strength: true
+- buff_health_pots: true
