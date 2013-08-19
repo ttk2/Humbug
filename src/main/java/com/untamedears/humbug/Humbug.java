@@ -271,28 +271,6 @@ public class Humbug extends JavaPlugin implements Listener {
     }
   }
 
-  // ================================================
-  // Admins can view player inventories
-
-  @SuppressWarnings("deprecation")
-public void onInvseeCommand(String name, String player){
-    Player checker= Bukkit.getPlayerExact(player);
-	  Player admin= Bukkit.getPlayerExact(name);
-	  if (checker!=null){
-		  Inventory x= Bukkit.createInventory(null, 36, ("Player inventory: "+checker.getName()));
-		  for (int i=0; i<36;i++){
-			  ItemStack it= checker.getInventory().getItem(i);
-			  x.setItem(i, it);
-			  
-		  }
-		  
-		  admin.openInventory(x);
-		  admin.updateInventory();
-	  }
-	  else{
-		  admin.sendMessage("That Player is not online or you spelt the name incorrectly.");
-	  }
-  }
   // ========================================================
   // Villager Trading
 
@@ -1480,6 +1458,27 @@ public void onInvseeCommand(String name, String player){
   }
 
   // ================================================
+  // Admins can view player inventories
+
+  @SuppressWarnings("deprecation")
+  public void onInvseeCommand(Player admin, String playerName) {
+    final Player player = Bukkit.getPlayerExact(playerName);
+    if (player == null) {
+      admin.sendMessage("Player not found");
+      return;
+    }
+    final Inventory pl_inv = player.getInventory();
+    final Inventory inv = Bukkit.createInventory(
+        admin, 36, "Player inventory: " + playerName);
+    for (int slot = 0; slot < 36; slot++) {
+      final ItemStack it = pl_inv.getItem(slot);
+      inv.setItem(slot, it);
+    }
+    admin.openInventory(inv);
+    admin.updateInventory();
+  }
+
+  // ================================================
   // General
 
   public void onEnable() {
@@ -1535,16 +1534,14 @@ public void onInvseeCommand(String name, String player){
       Command command,
       String label,
       String[] args) {
-	  if(sender instanceof Player && command.getName().equals("invsee")){
-	    	String admin=sender.getName();
-	    	if (args.length<1){
-	    		sender.sendMessage("Provide a name");
-	    		return true;
-	    	}
-	    	String player=args[0];
-	    	onInvseeCommand(admin, player);
-	    	return true;
-	  	}
+    if (sender instanceof Player && command.getName().equals("invsee")) {
+      if (args.length < 1) {
+        sender.sendMessage("Provide a name");
+        return false;
+      }
+      onInvseeCommand((Player)sender, args[0]);
+      return true;
+    }
     if (sender instanceof Player
         && command.getName().equals("introbook")) {
       Player sendBookTo = (Player)sender;
@@ -1599,7 +1596,7 @@ public void onInvseeCommand(String name, String player){
       }
       msg = String.format(
           "loot_multiplier(%s) = %d", entity_type, config_.getLootMultiplier(entity_type));
-    }else if (option.equals("remove_mob_drops")) {
+    } else if (option.equals("remove_mob_drops")) {
       if (set && subvalue_set) {
         if (value.equals("add")) {
           config_.addRemoveItemDrop(toMaterialId(subvalue, -1));
