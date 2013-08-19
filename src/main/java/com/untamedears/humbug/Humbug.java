@@ -32,10 +32,13 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.ThrownPotion;
 import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Skeleton.SkeletonType;
 import org.bukkit.entity.minecart.HopperMinecart;
 import org.bukkit.entity.minecart.StorageMinecart;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Damageable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -61,6 +64,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.entity.SheepDyeWoolEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.entity.PotionSplashEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
@@ -84,6 +88,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.Server;
 
 import com.untamedears.humbug.annotations.BahHumbug;
 import com.untamedears.humbug.annotations.BahHumbugs;
@@ -1185,6 +1190,76 @@ public class Humbug extends JavaPlugin implements Listener {
       }
     }
   }
+
+
+  //=================================================
+  // Nerfs Strength Potions to Pre-1.6 Levels
+
+  @BahHumbugs ({
+    @BahHumbug(opt="nerf_strength", def="true")
+  })
+  @EventHandler
+  public void onPlayerDamage(EntityDamageByEntityEvent event) {
+    if(!config_.get("nerf_strength").getBool()) {
+        return;
+    }
+
+    if (!(event.getDamager() instanceof Player)) {
+        return;
+    }
+    Player player = (Player)event.getDamager();
+    if (player.hasPotionEffect(PotionEffectType.INCREASE_DAMAGE))
+    {
+      for (PotionEffect Effect : player.getActivePotionEffects())
+      {
+         if (Effect.getType().equals(PotionEffectType.INCREASE_DAMAGE))
+        {
+            double DamagePercentage = (Effect.getAmplifier() + 1) * 1.3D + 1.0D;
+            int NewDamage;
+            if (event.getDamage() / DamagePercentage <= 1.0D)
+            {
+              NewDamage = (Effect.getAmplifier() + 1) * 3 + 1;
+            }
+            else
+            {
+              NewDamage = (int)(event.getDamage() / DamagePercentage) + (Effect.getAmplifier() + 1) * 3;
+            }
+            event.setDamage(NewDamage);
+            break;
+          
+        }
+      }
+    }
+  }
+
+  //=================================================
+  // Buffs health splash to pre-1.6 levels
+
+  @BahHumbugs ({
+    @BahHumbug(opt="buff_health", def="true")
+  })
+  @EventHandler
+  public void onPotionSplash(PotionSplashEvent event) {
+    if(!config_.get("nerf_strength").getBool()) {
+        return;
+    }
+    ThrownPotion p = event.getPotion();
+    for(PotionEffect effect : event.getEntity().getEffects()) {
+        if(!(effect.getType().getName().equalsIgnoreCase("heal"))) { // Splash potion of poison
+            return;
+        }
+    }
+
+    for(LivingEntity entity : event.getAffectedEntities()) {
+        if(entity instanceof Player) {
+ 
+            entity.setHealth(entity.getHealth()+4);
+        }
+    }
+  }
+
+
+
 
   //=================================================
   // Bow shots cause slow debuff
