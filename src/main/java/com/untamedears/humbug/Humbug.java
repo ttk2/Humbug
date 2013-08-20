@@ -30,11 +30,13 @@ import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.Enderman;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Horse;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Skeleton.SkeletonType;
+import org.bukkit.entity.Vehicle;
 import org.bukkit.entity.minecart.HopperMinecart;
 import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.event.EventHandler;
@@ -73,6 +75,7 @@ import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
+import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.inventory.EntityEquipment;
@@ -87,6 +90,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import com.untamedears.humbug.Versioned;
 import com.untamedears.humbug.annotations.BahHumbug;
 import com.untamedears.humbug.annotations.BahHumbugs;
 import com.untamedears.humbug.annotations.ConfigOption;
@@ -1508,6 +1512,20 @@ public class Humbug extends JavaPlugin implements Listener {
         event.setCancelled(true);
       }
     }
+  }
+
+  // ================================================
+  // Adjust horse speeds
+
+  @BahHumbug(opt="horse_speed", type=OptType.Double, def="0.170000")
+  @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+  public void onVehicleEnter(VehicleEnterEvent event) {
+    // 0.17 is just a tad slower than minecarts
+    Vehicle vehicle = event.getVehicle();
+    if (!(vehicle instanceof Horse)) {
+      return;
+    }
+    Versioned.setHorseSpeed((Entity)vehicle, config_.get("horse_speed").getDouble());
   }
 
   // ================================================
