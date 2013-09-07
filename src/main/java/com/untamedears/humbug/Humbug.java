@@ -90,6 +90,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import com.untamedears.humbug.CustomNMSEnderChest;
 import com.untamedears.humbug.Versioned;
 import com.untamedears.humbug.annotations.BahHumbug;
 import com.untamedears.humbug.annotations.BahHumbugs;
@@ -1551,6 +1552,16 @@ public class Humbug extends JavaPlugin implements Listener {
   }
 
   // ================================================
+  // Convert Ender chests to be normal chests
+
+  @BahHumbug(opt="convert_ender_chests")
+  public void loadCustomEnderChest() {
+    if (config_.get("convert_ender_chests").getBool()) {
+      CustomNMSEnderChest.InstallCustomEnderChest();
+    }
+  }
+
+  // ================================================
   // General
 
   public void onEnable() {
@@ -1558,6 +1569,7 @@ public class Humbug extends JavaPlugin implements Listener {
     registerCommands();
     loadConfiguration();
     removeRecipies();
+    loadCustomEnderChest();
     global_instance_ = this;
     info("Enabled");
   }
