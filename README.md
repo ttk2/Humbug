@@ -44,7 +44,7 @@ Minecraft server plug-in: Simply toggles various functionality
 - Swaps Wither Skeletons or Ghasts in for Zombie Pigmen to raise their spawn rate.
 - Adjust strength and health pots to pre-1.6 power levels
 - Sets the base movement speed for all mounted horses
-- Attempts to prevent players from dying by falling through the world
+- Fixes a bug where players in destroyed minecarts fall through the block below
 
 The 'humbug' console command can be used to get or set any of the configuration file settings while the server is running. Also available are 'humbug save' and 'humbug reload'.
 
@@ -98,7 +98,7 @@ Config file settings:
 - nerf_strength: Boolean, Nerfs the strength potion back to pre-1.5 mechanics
 - buff_health_pots: Boolean, Buffs the health potion back to pre-1.5 mechanics
 - horse_speed: Double, Sets the base movement speed of all mounted horses. This is MineCraft's adjustment ratio. The default 0.17 is just slower than a minecart.
-- keep_players_from_falling: Boolean, Attempts to prevent players from dying by falling through the world, this setting only takes effect on server start
+- fix_minecart_reenter_bug: Boolean, Fixes the minecart re-enter bug where players in a destroyed minecart could fall through the world
 
 Default configuration (biased for CivCraft):
 - debug: false
@@ -150,4 +150,4 @@ Default configuration (biased for CivCraft):
 - nerf_strength: true
 - buff_health_pots: true
 - horse_speed: 0.17
-- keep_players_from_falling: false
+- fix_minecart_reenter_bug: true

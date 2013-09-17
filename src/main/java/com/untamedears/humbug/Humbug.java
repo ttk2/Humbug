@@ -75,6 +75,7 @@ import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
+import org.bukkit.event.vehicle.VehicleDestroyEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.PortalCreateEvent;
@@ -89,6 +90,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.Vector;
 
 import com.untamedears.humbug.Versioned;
 import com.untamedears.humbug.annotations.BahHumbug;
@@ -1553,116 +1555,107 @@ public class Humbug extends JavaPlugin implements Listener {
   // ================================================
   // Prevent people from falling out of the world
 
-  public class KeepPlayersFromFalling implements Runnable {
-    @Override
-    public void run() {
-      for (final Player player : Bukkit.getOnlinePlayers()) {
-        final Location loc = player.getLocation();
-        if (loc.getY() < 0.0000001D) {
-          fixPlayer(player);
-        }
-      }
+  public boolean checkForTeleportSpace(Location loc) {
+    final Block block = loc.getBlock();
+    final Material below_mat = block.getRelative(BlockFace.DOWN).getType();
+    if (!below_mat.isSolid()) {
+      return false;
     }
-
-    public boolean checkRail(Location loc) {
-      final Block block = loc.getBlock();
-      final Material below_mat = block.getRelative(BlockFace.DOWN).getType();
-      if (!below_mat.isSolid()) {
-        return false;
-      }
-      final Material mat = block.getType();
-      if (!mat.equals(Material.ACTIVATOR_RAIL) && !mat.equals(Material.DETECTOR_RAIL)
-          && !mat.equals(Material.POWERED_RAIL) && !mat.equals(Material.RAILS)) {
-        return false;
-      }
-      final Block above1 = block.getRelative(BlockFace.UP);
-      if (above1.getType().isSolid()) {
-        return false;
-      }
-      final Block above2 = block.getRelative(BlockFace.UP);
-      if (above2.getType().isSolid()) {
-        return false;
-      }
-      return true;
+    final Material mat = block.getType();
+    if (mat.isSolid()) {
+      return false;
     }
-
-    public void fixPlayer(Player player) {
-      Location loc = player.getLocation();
-      loc.setX(Math.floor(loc.getX()) + 0.500000D);
-      loc.setY(1.000000D);
-      loc.setZ(Math.floor(loc.getZ()) + 0.500000D);
-      final Location base_loc = loc.clone();
-      final World world = base_loc.getWorld();
-      // Check if there's a rail at bedrock
-      if (checkRail(loc)) {
-        player.teleport(loc);
-        Humbug.info(String.format(
-            "Player below world [%s]: Teleported to %s",
-            player.getName(), loc.toString()));
-        return;
-      }
-      loc.setY(2.000000D);
-      if (checkRail(loc)) {
-        player.teleport(loc);
-        Humbug.info(String.format(
-            "Player below world [%s]: Teleported to %s",
-            player.getName(), loc.toString()));
-        return;
-      }
-      // Create a sliding window of block types and track how many of those
-      //  are solid. Keep fetching the block below the current block to move down.
-      loc = base_loc.clone();
-      int air_count = 0;
-      LinkedList<Material> air_window = new LinkedList<Material>();
-      loc.setY((float)world.getMaxHeight() - 2);
-      Block block = world.getBlockAt(loc);
-      for (int i = 0; i < 4; ++i) {
-        Material block_mat = block.getType();
-        if (!block_mat.isSolid()) {
-          ++air_count;
-        }
-        air_window.addLast(block_mat);
-        block = block.getRelative(BlockFace.DOWN);
-      }
-      // Now that the window is prepared, scan down the Y-axis.
-      // 3 to prevent bedrock pocket access
-      while (block.getY() > 3) {
-        Material block_mat = block.getType();
-        if (block_mat.isSolid()) {
-          if (air_count == 4) {
-            loc = block.getLocation();
-            loc.setY(loc.getY() + 1.0000);
-            player.teleport(loc);
-            Humbug.info(String.format(
-                "Player below world [%s]: Teleported to %s",
-                player.getName(), loc.toString()));
-            return;
-          }
-        } else { // !block_mat.isSolid()
-          ++air_count;
-        }
-        air_window.addLast(block_mat);
-        if (!air_window.removeFirst().isSolid()) {
-          --air_count;
-        }
-        block = block.getRelative(BlockFace.DOWN);
-      }
-      // Couldn't fix the player. Let them fall.
-      // Degenerate case, the player is falling and we can't fix them so we
-      //  fail to find a new position each scan. Let's just kill the player
-      //  and be done.
-      Humbug.info(String.format(
-        "Player below world [%s]: No space found for teleport, killed",
-        player.getName()));
-      player.setHealth(0.000000D);
+    final Block above = block.getRelative(BlockFace.UP);
+    if (above.getType().isSolid()) {
+      return false;
     }
+    return true;
   }
 
-  @BahHumbug(opt="keep_players_from_falling")
-  public void scheduleKeepPlayersFromFalling() {
-    if (config_.get("keep_players_from_falling").getBool()) {
-      Bukkit.getScheduler().runTaskTimer(this, new KeepPlayersFromFalling(), 10, 10);
+  public boolean tryToTeleport(Player player, Location location, String reason) {
+    Location loc = location.clone();
+    loc.setX(Math.floor(loc.getX()) + 0.500000D);
+    loc.setY(Math.floor(loc.getY()) + 0.02D);
+    loc.setZ(Math.floor(loc.getZ()) + 0.500000D);
+    final Location baseLoc = loc.clone();
+    final World world = baseLoc.getWorld();
+    // Check if teleportation here is viable
+    if (checkForTeleportSpace(loc)) {
+      player.setVelocity(new Vector());
+      player.teleport(loc);
+      Humbug.info(String.format(
+          "Player '%s' %s: Teleported to %s",
+          player.getName(), reason, loc.toString()));
+      return true;
     }
+    // Create a sliding window of block types and track how many of those
+    //  are solid. Keep fetching the block below the current block to move down.
+    int air_count = 0;
+    LinkedList<Material> air_window = new LinkedList<Material>();
+    loc.setY((float)world.getMaxHeight() - 2);
+    Block block = world.getBlockAt(loc);
+    for (int i = 0; i < 4; ++i) {
+      Material block_mat = block.getType();
+      if (!block_mat.isSolid()) {
+        ++air_count;
+      }
+      air_window.addLast(block_mat);
+      block = block.getRelative(BlockFace.DOWN);
+    }
+    // Now that the window is prepared, scan down the Y-axis.
+    // 3 to prevent bedrock pocket access
+    while (block.getY() > 3) {
+      Material block_mat = block.getType();
+      if (block_mat.isSolid()) {
+        if (air_count == 4) {
+          player.setVelocity(new Vector());
+          loc = block.getLocation();
+          loc.setX(Math.floor(loc.getX()) + 0.500000D);
+          loc.setY(loc.getY() + 1.02D);
+          loc.setZ(Math.floor(loc.getZ()) + 0.500000D);
+          player.teleport(loc);
+          Humbug.info(String.format(
+              "Player '%s' %s: Teleported to %s",
+              player.getName(), reason, loc.toString()));
+          return true;
+        }
+      } else { // !block_mat.isSolid()
+        ++air_count;
+      }
+      air_window.addLast(block_mat);
+      if (!air_window.removeFirst().isSolid()) {
+        --air_count;
+      }
+      block = block.getRelative(BlockFace.DOWN);
+    }
+    return false;
+  }
+
+  @BahHumbug(opt="fix_minecart_reenter_bug", def="true")
+  @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+  public void onFixMinecartReenterBug(VehicleDestroyEvent event) {
+    if (!config_.get("fix_minecart_reenter_bug").getBool()) {
+      return;
+    }
+    final Vehicle vehicle = event.getVehicle();
+    final Entity passengerEntity = vehicle.getPassenger();
+    if (!(passengerEntity instanceof Player)) {
+      return;
+    }
+    // Must delay the teleport 2 ticks or else the player's mis-managed
+    //  movement still occurs. With 1 tick it could still occur.
+    final Player player = (Player)passengerEntity;
+    final Location vehicleLoc = vehicle.getLocation();
+    Bukkit.getScheduler().runTaskLater(this, new Runnable() {
+      @Override
+      public void run() {
+        if (!tryToTeleport(player, vehicleLoc, "in destroyed vehicle")) {
+          player.setHealth(0.000000D);
+          Humbug.info(String.format(
+              "Player '%s' in destroyed vehicle: Killed", player.getName()));
+        }
+      }
+    }, 2L);
   }
 
   // ================================================
@@ -1673,7 +1666,6 @@ public class Humbug extends JavaPlugin implements Listener {
     registerCommands();
     loadConfiguration();
     removeRecipies();
-    scheduleKeepPlayersFromFalling();
     global_instance_ = this;
     info("Enabled");
   }
