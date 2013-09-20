@@ -33,6 +33,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Horse;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Skeleton.SkeletonType;
@@ -1638,6 +1639,9 @@ public class Humbug extends JavaPlugin implements Listener {
       return;
     }
     final Vehicle vehicle = event.getVehicle();
+    if (!(vehicle instanceof Minecart)) {
+      return;
+    }
     final Entity passengerEntity = vehicle.getPassenger();
     if (!(passengerEntity instanceof Player)) {
       return;
