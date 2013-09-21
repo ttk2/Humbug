@@ -78,6 +78,7 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.event.vehicle.VehicleDestroyEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
+import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.inventory.EntityEquipment;
@@ -1634,16 +1635,45 @@ public class Humbug extends JavaPlugin implements Listener {
 
   @BahHumbug(opt="fix_minecart_reenter_bug", def="true")
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+  public void onFixMinecartReenterBug(VehicleExitEvent event) {
+    if (!config_.get("fix_minecart_reenter_bug").getBool()) {
+      return;
+    }
+    final Vehicle vehicle = event.getVehicle();
+    if (vehicle == null || !(vehicle instanceof Minecart)) {
+      return;
+    }
+    final Entity passengerEntity = event.getExited();
+    if (passengerEntity == null || !(passengerEntity instanceof Player)) {
+      return;
+    }
+    // Must delay the teleport 2 ticks or else the player's mis-managed
+    //  movement still occurs. With 1 tick it could still occur.
+    final Player player = (Player)passengerEntity;
+    final Location vehicleLoc = vehicle.getLocation();
+    Bukkit.getScheduler().runTaskLater(this, new Runnable() {
+      @Override
+      public void run() {
+        if (!tryToTeleport(player, vehicleLoc, "exiting vehicle")) {
+          player.setHealth(0.000000D);
+          Humbug.info(String.format(
+              "Player '%s' exiting vehicle: Killed", player.getName()));
+        }
+      }
+    }, 2L);
+  }
+
+  @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
   public void onFixMinecartReenterBug(VehicleDestroyEvent event) {
     if (!config_.get("fix_minecart_reenter_bug").getBool()) {
       return;
     }
     final Vehicle vehicle = event.getVehicle();
-    if (!(vehicle instanceof Minecart)) {
+    if (vehicle == null || !(vehicle instanceof Minecart)) {
       return;
     }
     final Entity passengerEntity = vehicle.getPassenger();
-    if (!(passengerEntity instanceof Player)) {
+    if (passengerEntity == null || !(passengerEntity instanceof Player)) {
       return;
     }
     // Must delay the teleport 2 ticks or else the player's mis-managed
