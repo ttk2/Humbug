@@ -1098,8 +1098,7 @@ public class Humbug extends JavaPlugin implements Listener {
     }
 
     // Now that the window is prepared, scan down the Y-axis.
-    // 3 to prevent bedrock pocket access
-    while (block.getY() > 3) {
+    while (block.getY() >= 1) {
       int block_type = block.getTypeId();
       if (block_type != air_material_id_) {
         if (air_count == 4) {
@@ -1605,8 +1604,7 @@ public class Humbug extends JavaPlugin implements Listener {
       block = block.getRelative(BlockFace.DOWN);
     }
     // Now that the window is prepared, scan down the Y-axis.
-    // 3 to prevent bedrock pocket access
-    while (block.getY() > 3) {
+    while (block.getY() >= 1) {
       Material block_mat = block.getType();
       if (block_mat.isSolid()) {
         if (air_count == 4) {
