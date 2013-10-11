@@ -1033,105 +1033,6 @@ public class Humbug extends JavaPlugin implements Listener {
     return book;
   }
 
-  //================================================
-  // Fix player in vehicle logout bug
-
-  private static final int air_material_id_ = Material.AIR.getId();
-
-  @BahHumbug(opt="fix_vehicle_logout_bug", def="true")
-  @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
-  public void onDisallowVehicleLogout(PlayerQuitEvent event) {
-    if (!config_.get("fix_vehicle_logout_bug").getBool()) {
-      return;
-    }
-    Player player = event.getPlayer();
-    Entity vehicle = player.getVehicle();
-    if (vehicle == null) {
-      return;
-    }
-    Location loc = vehicle.getLocation();
-    World world = loc.getWorld();
-    // Vehicle data has been cached, now safe to kick the player out
-    player.leaveVehicle();
-
-    // First attempt to place the player just above the vehicle
-    // Normalize the location. Add 1 to Y so it is just above the minecart
-    loc.setX(Math.floor(loc.getX()) + 0.5000);
-    loc.setY(Math.floor(loc.getY()) + 1.0000);
-    loc.setZ(Math.floor(loc.getZ()) + 0.5000);
-    Block block = world.getBlockAt(loc);
-    if (block.getTypeId() == air_material_id_) {
-      block = block.getRelative(BlockFace.UP);
-      if (block.getTypeId() == air_material_id_) {
-        player.teleport(loc);
-        Humbug.info(String.format(
-            "Vehicle logout [%s]: Teleported to %s",
-            player.getName(), loc.toString()));
-        return;
-      }
-    }
-
-    // The space above the cart was blocked. Scan from the top of the world down
-    //  and find 4 vertically contiguous AIR blocks resting above a non-AIR
-    //  block. The size is 4 to provide players a way to prevent griefers from
-    //  teleporting into small spaces (2 or 3 blocks high).
-    Environment world_type = world.getEnvironment();
-    int max_height;
-    if (world_type == Environment.NETHER) {
-      max_height = 126;
-    } else {
-      max_height = world.getMaxHeight() - 2;
-    }
-    // Create a sliding window of block types and track how many of those
-    //  are AIR. Keep fetching the block below the current block to move down.
-    int air_count = 0;
-    LinkedList<Integer> air_window = new LinkedList<Integer>();
-    loc.setY((float)max_height);
-    block = world.getBlockAt(loc);
-    for (int i = 0; i < 4; ++i) {
-      int block_type = block.getTypeId();
-      if (block_type == air_material_id_) {
-        ++air_count;
-      }
-      air_window.addLast(block_type);
-      block = block.getRelative(BlockFace.DOWN);
-    }
-
-    // Now that the window is prepared, scan down the Y-axis.
-    while (block.getY() >= 1) {
-      int block_type = block.getTypeId();
-      if (block_type != air_material_id_) {
-        if (air_count == 4) {
-          // Normalize the location on the block's center. Y+1 which is the
-          //  first AIR above this block.
-          loc = block.getLocation();
-          loc.setX(Math.floor(loc.getX()) + 0.5000);
-          loc.setY(Math.floor(loc.getY()) + 1.0000);
-          loc.setZ(Math.floor(loc.getZ()) + 0.5000);
-          player.teleport(loc);
-          Humbug.info(String.format(
-              "Vehicle logout [%s]: Teleported to %s",
-              player.getName(), loc.toString()));
-          return;
-        }
-      } else { // block_type == air_material_id_
-        ++air_count;
-      }
-      air_window.addLast(block_type);
-      if (air_window.removeFirst() == air_material_id_) {
-        --air_count;
-      }
-      block = block.getRelative(BlockFace.DOWN);
-    }
-
-    // No space in this (x,z) column to teleport the player. Feed them
-    //  to the lions.
-    Humbug.info(String.format(
-        "Vehicle logout [%s]: No space for teleport, killed",
-        player.getName()));
-    player.setHealth(0.0D);
-  }
-
   // ================================================
   // Playing records in jukeboxen? Gone
 
@@ -1554,14 +1455,10 @@ public class Humbug extends JavaPlugin implements Listener {
   }
 
   // ================================================
-  // Prevent people from falling out of the world
+  // Fix minecarts
 
   public boolean checkForTeleportSpace(Location loc) {
     final Block block = loc.getBlock();
-    final Material below_mat = block.getRelative(BlockFace.DOWN).getType();
-    if (!below_mat.isSolid()) {
-      return false;
-    }
     final Material mat = block.getType();
     if (mat.isSolid()) {
       return false;
@@ -1581,7 +1478,12 @@ public class Humbug extends JavaPlugin implements Listener {
     final Location baseLoc = loc.clone();
     final World world = baseLoc.getWorld();
     // Check if teleportation here is viable
-    if (checkForTeleportSpace(loc)) {
+    boolean performTeleport = checkForTeleportSpace(loc);
+    if (!performTeleport) {
+      loc.setY(loc.getY() + 1.000000D);
+      performTeleport = checkForTeleportSpace(loc);
+    }
+    if (performTeleport) {
       player.setVelocity(new Vector());
       player.teleport(loc);
       Humbug.info(String.format(
@@ -1589,6 +1491,7 @@ public class Humbug extends JavaPlugin implements Listener {
           player.getName(), reason, loc.toString()));
       return true;
     }
+    loc = baseLoc.clone();
     // Create a sliding window of block types and track how many of those
     //  are solid. Keep fetching the block below the current block to move down.
     int air_count = 0;
@@ -1629,6 +1532,27 @@ public class Humbug extends JavaPlugin implements Listener {
       block = block.getRelative(BlockFace.DOWN);
     }
     return false;
+  }
+
+  @BahHumbug(opt="fix_vehicle_logout_bug", def="true")
+  @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
+  public void onDisallowVehicleLogout(PlayerQuitEvent event) {
+    if (!config_.get("fix_vehicle_logout_bug").getBool()) {
+      return;
+    }
+    Player player = event.getPlayer();
+    Entity vehicle = player.getVehicle();
+    if (vehicle == null || !(vehicle instanceof Minecart)) {
+      return;
+    }
+    Location vehicleLoc = vehicle.getLocation();
+    // Vehicle data has been cached, now safe to kick the player out
+    player.leaveVehicle();
+    if (!tryToTeleport(player, vehicleLoc, "logged out")) {
+      player.setHealth(0.000000D);
+      Humbug.info(String.format(
+          "Player '%s' logged out in vehicle: Killed", player.getName()));
+    }
   }
 
   @BahHumbug(opt="fix_minecart_reenter_bug", def="true")
