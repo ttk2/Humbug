@@ -100,6 +100,9 @@ import com.untamedears.humbug.annotations.BahHumbugs;
 import com.untamedears.humbug.annotations.ConfigOption;
 import com.untamedears.humbug.annotations.OptType;
 
+import com.untamedears.humbug.Config;
+import com.untamedears.humbug.CustomNMSItemEnderPearl;
+
 public class Humbug extends JavaPlugin implements Listener {
   public static void severe(String message) {
     log_.severe("[Humbug] " + message);
@@ -1617,11 +1620,19 @@ public class Humbug extends JavaPlugin implements Listener {
   // ================================================
   // General
 
+  public void hookEnderPearls() {
+    net.minecraft.server.v1_5_R2.Item.ENDER_PEARL = (new CustomNMSItemEnderPearl(112)).b("enderPearl");
+  }
+
+  // ================================================
+  // General
+
   public void onEnable() {
     registerEvents();
     registerCommands();
     loadConfiguration();
     removeRecipies();
+    hookEnderPearls();
     global_instance_ = this;
     info("Enabled");
   }
