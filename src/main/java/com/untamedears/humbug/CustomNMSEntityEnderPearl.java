@@ -2,9 +2,9 @@ package com.untamedears.humbug;
 
 import java.util.logging.Logger;
 
-import net.minecraft.server.v1_5_R2.EntityEnderPearl;
-import net.minecraft.server.v1_5_R2.EntityLiving;
-import net.minecraft.server.v1_5_R2.World;
+import net.minecraft.server.v1_6_R3.EntityEnderPearl;
+import net.minecraft.server.v1_6_R3.EntityLiving;
+import net.minecraft.server.v1_6_R3.World;
 
 public class CustomNMSEntityEnderPearl extends EntityEnderPearl {
 

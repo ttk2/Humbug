@@ -1621,7 +1621,7 @@ public class Humbug extends JavaPlugin implements Listener {
   // General
 
   public void hookEnderPearls() {
-    net.minecraft.server.v1_5_R2.Item.ENDER_PEARL = (new CustomNMSItemEnderPearl(112)).b("enderPearl");
+    net.minecraft.server.v1_6_R3.Item.ENDER_PEARL = (new CustomNMSItemEnderPearl(112)).b("enderPearl");
   }
 
   // ================================================
