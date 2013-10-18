@@ -10,20 +10,17 @@ public class CustomNMSEntityEnderPearl extends EntityEnderPearl {
 
   public CustomNMSEntityEnderPearl(World world) {
     super(world);
+    y_adjust_ = 0.030000F;
   }
 
-  public CustomNMSEntityEnderPearl(World world, EntityLiving living) {
+  public CustomNMSEntityEnderPearl(World world, EntityLiving living, double gravity) {
     super(world, living);
+    y_adjust_ = gravity;
   }
 
-  public static final double multiplier_ = 0.90F;
-  public static final double y_adjust_ = 0.07F;
+  public final double y_adjust_;  // Default 0.03F
 
-  public void l_() {
-    super.l_();
-    this.motX *= multiplier_;
-    this.motY *= multiplier_;
-    this.motZ *= multiplier_;
-    this.motY -= y_adjust_;
+  protected float e() {
+    return (float)y_adjust_;
   }
 }

@@ -94,6 +94,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
+import com.untamedears.humbug.CombatTagManager;
 import com.untamedears.humbug.Versioned;
 import com.untamedears.humbug.annotations.BahHumbug;
 import com.untamedears.humbug.annotations.BahHumbugs;
@@ -139,6 +140,7 @@ public class Humbug extends JavaPlugin implements Listener {
   }
 
   private Random prng_ = new Random();
+  private CombatTagManager combatTag_ = new CombatTagManager();
 
   public Humbug() {}
 
@@ -1227,30 +1229,12 @@ public class Humbug extends JavaPlugin implements Listener {
         ((Player)event.getEntity()).getName(),
         ench_level);
   }
-  
-  // ================================================
-  // Change ender pearl velocity!
-  
-  @BahHumbug(opt="ender_pearl_launch_velocity", type=OptType.Double, def="1.0000001")
-  @EventHandler
-  public void onEnderPearlThrow(ProjectileLaunchEvent event) {
-    Entity entity = (Entity)event.getEntity();
-    if (!(entity instanceof EnderPearl)) {
-      return;
-    }
-    double adjustment = config_.get("ender_pearl_launch_velocity").getDouble();
-    if (adjustment < 1.00001 && adjustment > 0.99999) {
-      return;
-    }
-    entity.setVelocity(entity.getVelocity().multiply(adjustment));
-  }
 
   // ================================================
   // Ender pearl cooldown timer
 
   private class PearlTeleportInfo {
     public long last_teleport;
-    public long teleport_count;
     public boolean notified_player;
   }
 
@@ -1270,33 +1254,26 @@ public class Humbug extends JavaPlugin implements Listener {
       return;
     }
     long current_time = System.currentTimeMillis();
-    String player_name = event.getPlayer().getName();
+    final Player player = event.getPlayer();
+    final String player_name = player.getName();
+    combatTag_.tagPlayer(player);
     PearlTeleportInfo teleport_info = pearl_teleport_info_.get(player_name);
     if (teleport_info == null) {
       teleport_info = new PearlTeleportInfo();
-      teleport_info.teleport_count = 1;
       teleport_info.last_teleport = current_time;
       teleport_info.notified_player = false;
     } else {
-      long time_diff = current_time - teleport_info.last_teleport;
-      long block_window = teleport_info.teleport_count * 5000;
-      if (block_window > 60000) {
-        block_window = 60000;
-      }
+      final long time_diff = current_time - teleport_info.last_teleport;
+      final long block_window = 10000;
       if (block_window > time_diff) {
+        event.setCancelled(true);
         if (!teleport_info.notified_player) {
           event.getPlayer().sendMessage(String.format(
               "Pearl Teleport Cooldown: %ds",
               (block_window - time_diff + 500) / 1000));
           teleport_info.notified_player = true;
         }
-        event.setCancelled(true);
-      } else if (block_window + 10000 > time_diff) {
-        teleport_info.teleport_count++;
-        teleport_info.last_teleport = current_time;
-        teleport_info.notified_player = false;
       } else {
-        teleport_info.teleport_count = 1;
         teleport_info.last_teleport = current_time;
         teleport_info.notified_player = false;
       }
@@ -1618,10 +1595,12 @@ public class Humbug extends JavaPlugin implements Listener {
   }
 
   // ================================================
-  // General
+  // Adjust ender pearl gravity
 
+  @BahHumbug(opt="ender_pearl_gravity", type=OptType.Double, def="0.060000")
   public void hookEnderPearls() {
-    net.minecraft.server.v1_6_R3.Item.ENDER_PEARL = (new CustomNMSItemEnderPearl(112)).b("enderPearl");
+    net.minecraft.server.v1_6_R3.Item.byId[256 + 112] = null;
+    net.minecraft.server.v1_6_R3.Item.ENDER_PEARL = (new CustomNMSItemEnderPearl(112, config_)).b("enderPearl");
   }
 
   // ================================================

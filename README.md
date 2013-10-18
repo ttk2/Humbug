@@ -28,7 +28,7 @@ Minecraft server plug-in: Simply toggles various functionality
 - Converts Enchanted Golden Apples to normal Golden Apples if a Player attempts to eat them.
 - Disables Ender Pearl Teleportation
 - Throttles Ender Pearl Teleportation
-- Alters the initial velocity of Ender Pearls
+- Alters the downward acceleration of Ender Pearls
 - Alters the drop rate of wither skulls
 - Removes specific items from dropping when a mob is killed
 - Prevents records from playing in jukeboxes
@@ -76,7 +76,7 @@ Config file settings:
 - player_max_health: Integer, sets all Player maximum health
 - ender_pearl_teleportation: Boolean, Turns on Ender Pearl teleportation
 - ender_pearl_teleportation_throttled: Boolean, Activates a cooldown between Ender Pearl teleports
-- ender_pearl_launch_velocity: Double, Alters initial velocity of Ender Pearls
+- ender_pearl_gravity: Double, Alters the gravity which effects Ender Pearl -Y acceleration, default Minecraft value is 0.03
 - ench_gold_app_edible: Boolean, Allows players to eat Enchanted Golden Apples. If false, Enchanted Golden Apples are converted to normal Golden Apples
 - ench_gold_app_craftable: Boolean, Allows the Enchanted Golden Apple recipe to be used
 - wither_skull_drop_rate: Integer between -1 and 1000000, -1 is standard behavior. If a random number [0, 1000000) is less then this value, a wither skull drops. For example, 200000 is a 20% drop rate.
@@ -128,7 +128,7 @@ Default configuration (biased for CivCraft):
 - player_max_health: 20
 - ender_pearl_teleportation: true
 - ender_pearl_teleportation_throttled: true
-- ender_pearl_launch_velocity: 1.0
+- ender_pearl_gravity: 0.06
 - ench_gold_app_edible: false
 - ench_gold_app_craftable: false
 - wither_skull_drop_rate: -1
