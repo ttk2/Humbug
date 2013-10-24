@@ -74,6 +74,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.event.vehicle.VehicleDestroyEvent;
@@ -1014,12 +1015,45 @@ public class Humbug extends JavaPlugin implements Listener {
   //================================================
   // Give introduction book to n00bs
 
+  private Set<String> playersWithN00bBooks_ = new TreeSet<String>();
+
+  @EventHandler(priority=EventPriority.HIGHEST)
+  public void onPlayerDeathBookDrop(PlayerDeathEvent e) {
+    final String playerName = e.getEntity().getName();
+    List<ItemStack> dropList = e.getDrops();
+    for (int i = 0; i < dropList.size(); ++i) {
+      final ItemStack item = dropList.get(i);
+      if (item.getType().equals(Material.WRITTEN_BOOK)) {
+        final BookMeta bookMeta = (BookMeta)item.getItemMeta();
+        if (bookMeta.getTitle().equals(config_.getTitle())) {
+          playersWithN00bBooks_.add(playerName);
+          dropList.remove(i);
+          return;
+        }
+      }
+    }
+    playersWithN00bBooks_.remove(playerName);
+  }
+
   @EventHandler
-  public void OnPlayerFirstJoin(PlayerJoinEvent event){
-    Player player = event.getPlayer();
-    if (player.hasPlayedBefore()) {
+  public void onGiveBookOnRespawn(PlayerRespawnEvent event) {
+    final Player player = event.getPlayer();
+    final String playerName = player.getName();
+    if (!playersWithN00bBooks_.contains(playerName)) {
       return;
     }
+    playersWithN00bBooks_.remove(playerName);
+    giveN00bBook(player);
+  }
+
+  @EventHandler
+  public void onGiveBookOnJoin(PlayerJoinEvent event) {
+    final Player player = event.getPlayer();
+    final String playerName = player.getName();
+    if (player.hasPlayedBefore() && !playersWithN00bBooks_.contains(playerName)) {
+      return;
+    }
+    playersWithN00bBooks_.remove(playerName);
     giveN00bBook(player);
   }
 
