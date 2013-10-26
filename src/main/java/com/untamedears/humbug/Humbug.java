@@ -26,6 +26,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Boat;
 import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.Enderman;
 import org.bukkit.entity.Entity;
@@ -80,6 +81,7 @@ import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.event.vehicle.VehicleDestroyEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
+import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.inventory.EntityEquipment;
@@ -1466,6 +1468,65 @@ public class Humbug extends JavaPlugin implements Listener {
     }
     admin.openInventory(inv);
     admin.updateInventory();
+  }
+
+  // ================================================
+  // Fix boats
+
+  @BahHumbug(opt="prevent_self_boat_break", def="true")
+  @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+  public void onPreventLandBoats(VehicleDestroyEvent event) {
+    if (!config_.get("prevent_land_boats").getBool()) {
+      return;
+    }
+    final Vehicle vehicle = event.getVehicle();
+    if (vehicle == null || !(vehicle instanceof Boat)) {
+      return;
+    }
+    final Entity passenger = vehicle.getPassenger();
+    if (passenger == null || !(passenger instanceof Player)) {
+      return;
+    }
+    final Entity attacker = event.getAttacker();
+    if (attacker == null) {
+      return;
+    }
+    if (!attacker.getUniqueId().equals(passenger.getUniqueId())) {
+      return;
+    }
+    final Player player = (Player)passenger;
+    Humbug.info(String.format(
+        "Player '%s' kicked for self damaging boat at %s",
+        player.getName(), vehicle.getLocation().toString()));
+    vehicle.eject();
+    vehicle.remove();
+    ((Player)passenger).kickPlayer("Nope");
+  }
+
+  @BahHumbug(opt="prevent_land_boats", def="true")
+  @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+  public void onPreventLandBoats(VehicleMoveEvent event) {
+    if (!config_.get("prevent_land_boats").getBool()) {
+      return;
+    }
+    final Vehicle vehicle = event.getVehicle();
+    if (vehicle == null || !(vehicle instanceof Boat)) {
+      return;
+    }
+    final Entity passenger = vehicle.getPassenger();
+    if (passenger == null || !(passenger instanceof Player)) {
+      return;
+    }
+    final Location to = event.getTo();
+    final Material boatOn = to.getBlock().getRelative(BlockFace.DOWN).getType();
+    if (boatOn.equals(Material.STATIONARY_WATER) || boatOn.equals(Material.WATER)) {
+        return;
+    }
+    Humbug.info(String.format(
+        "Player '%s' removed from land-boat at %s",
+        ((Player)passenger).getName(), to.toString()));
+    vehicle.eject();
+    vehicle.remove();
   }
 
   // ================================================
