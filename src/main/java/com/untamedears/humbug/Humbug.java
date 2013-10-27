@@ -77,9 +77,12 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
+import org.bukkit.event.vehicle.VehicleCreateEvent;
 import org.bukkit.event.vehicle.VehicleDestroyEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
+import org.bukkit.event.vehicle.VehicleMoveEvent;
+import org.bukkit.event.vehicle.VehicleUpdateEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.inventory.EntityEquipment;
@@ -1636,7 +1639,37 @@ public class Humbug extends JavaPlugin implements Listener {
     net.minecraft.server.v1_6_R3.Item.byId[256 + 112] = null;
     net.minecraft.server.v1_6_R3.Item.ENDER_PEARL = (new CustomNMSItemEnderPearl(112, config_)).b("enderPearl");
   }
+  
+  // ================================================
+  // Adjust minecart velocity
 
+  	  @BahHumbugs({
+  		  @BahHumbug(opt="minecart_speed_multiplier", type=OptType.Double, def="1.60000"),
+	  	  @BahHumbug(opt="minecart_drag", type=OptType.Double, def="0.998")
+	  })
+	  @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+	  public void onVehicleCreate(VehicleCreateEvent event) {
+		  if (event.getVehicle() instanceof Minecart) {
+	          Minecart cart = (Minecart) event.getVehicle();
+	          cart.setMaxSpeed(0.4*config_.get("minecart_speed_multiplier").getDouble());
+		  }
+		  if (event.getVehicle() instanceof StorageMinecart) {
+	          Minecart cart = (Minecart) event.getVehicle();
+	          
+		  }  
+	  }
+  	  
+  	  @BahHumbug(opt="storage_cart_normal_speed", type=OptType.Bool, def="true")
+  	  public void hookMinecarts(){
+  		if(config_.get("storage_cart_normal_speed").getBool()){
+			net.minecraft.server.v1_6_R3.Item.STORAGE_MINECART = null;
+		    net.minecraft.server.v1_6_R3.Item.STORAGE_MINECART = new CustomItemMinecart(86, 1, config_);
+  		}
+	    net.minecraft.server.v1_6_R3.Item.MINECART = null;
+	    net.minecraft.server.v1_6_R3.Item.MINECART = new CustomItemMinecart(86, 0, config_);
+
+  	  }
+  	  
   // ================================================
   // General
 
@@ -1646,6 +1679,7 @@ public class Humbug extends JavaPlugin implements Listener {
     loadConfiguration();
     removeRecipies();
     hookEnderPearls();
+    hookMinecarts();
     global_instance_ = this;
     info("Enabled");
   }
