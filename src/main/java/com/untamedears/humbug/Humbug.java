@@ -1644,8 +1644,8 @@ public class Humbug extends JavaPlugin implements Listener {
   // Adjust minecart velocity
 
   	  @BahHumbugs({
-  		  @BahHumbug(opt="minecart_speed_multiplier", type=OptType.Double, def="1.60000"),
-	  	  @BahHumbug(opt="minecart_drag", type=OptType.Double, def="0.998")
+  		  @BahHumbug(opt="minecart_speed_multiplier", type=OptType.Double, def="1.50000"),
+	  	  @BahHumbug(opt="minecart_drag", type=OptType.Double, def="0.997") //default Minecart drag
 	  })
 	  @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	  public void onVehicleCreate(VehicleCreateEvent event) {
