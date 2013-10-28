@@ -45,9 +45,9 @@ Minecraft server plug-in: Simply toggles various functionality
 - Adjust strength and health pots to pre-1.6 power levels
 - Sets the base movement speed for all mounted horses
 - Fixes a bug where players in destroyed minecarts fall through the block below
-- Allows increase of max minecart speed.
-- Adjusts minecart chests to be the same speed as player-mounted minecarts.
-- Adjustable drag of minecarts.
+- Allows increase of max minecart speed
+- Adjusts minecart chests to be the same speed as player-mounted minecarts
+- Adjustable drag of minecarts
 
 The 'humbug' console command can be used to get or set any of the configuration file settings while the server is running. Also available are 'humbug save' and 'humbug reload'.
 
