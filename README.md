@@ -45,6 +45,9 @@ Minecraft server plug-in: Simply toggles various functionality
 - Adjust strength and health pots to pre-1.6 power levels
 - Sets the base movement speed for all mounted horses
 - Fixes a bug where players in destroyed minecarts fall through the block below
+- Allows increase of max minecart speed.
+- Adjusts minecart chests to be the same speed as player-mounted minecarts.
+- Adjustable drag of minecarts.
 
 The 'humbug' console command can be used to get or set any of the configuration file settings while the server is running. Also available are 'humbug save' and 'humbug reload'.
 
@@ -99,6 +102,9 @@ Config file settings:
 - buff_health_pots: Boolean, Buffs the health potion back to pre-1.5 mechanics
 - horse_speed: Double, Sets the base movement speed of all mounted horses. This is MineCraft's adjustment ratio. The default 0.17 is just slower than a minecart.
 - fix_minecart_reenter_bug: Boolean, Fixes the minecart re-enter bug where players in a destroyed minecart could fall through the world
+- minecart_speed_multiplier: Double, Multiplies the minecart speed by the given amount
+- minecart_drag: Double, Adjusts the negative acceleration of player-mounted and chest minecarts.  The velocity of the minecart is multiplied by this value each tick
+- storage_cart_normal_speed: Allows for all chest minecarts to move at the same rate as player-mounted minecarts
 
 Default configuration (biased for CivCraft):
 - debug: false
@@ -151,3 +157,6 @@ Default configuration (biased for CivCraft):
 - buff_health_pots: true
 - horse_speed: 0.17
 - fix_minecart_reenter_bug: true
+- minecart_speed_multiplier: 1.5
+- minecart_drag:  0.997
+- storage_cart_normal_speed: true
