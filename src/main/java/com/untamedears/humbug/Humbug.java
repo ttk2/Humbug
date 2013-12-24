@@ -1074,6 +1074,92 @@ public class Humbug extends JavaPlugin implements Listener {
     return book;
   }
 
+  public boolean checkForInventorySpace(Inventory inv, int emptySlots) {
+    int foundEmpty = 0;
+    final int end = inv.getSize();
+    for (int slot = 0; slot < end; ++slot) {
+      ItemStack item = inv.getItem(slot);
+      if (item == null) {
+        ++foundEmpty;
+      } else if (item.getType().equals(Material.AIR)) {
+        ++foundEmpty;
+      }
+    }
+    return foundEmpty >= emptySlots;
+  }
+
+  public void giveHolidayPackage(Player player) {
+    Inventory inv = player.getInventory();
+    while (checkForInventorySpace(inv, 4)) {
+        inv.addItem(createHolidayBook());
+        inv.addItem(createFruitcake());
+        inv.addItem(createTurkey());
+        inv.addItem(createCoal());
+    }
+  }
+
+  public ItemStack createHolidayBook() {
+    ItemStack book = new ItemStack(Material.WRITTEN_BOOK);
+    BookMeta sbook = (BookMeta)book.getItemMeta();
+    sbook.setTitle(config_.getHolidayTitle());
+    sbook.setAuthor(config_.getHolidayAuthor());
+    sbook.setPages(config_.getHolidayPages());
+    List<String> lore = new ArrayList<String>(1);
+    lore.add("December 25th, 2013");
+    sbook.setLore(lore);
+    book.setItemMeta(sbook);
+    return book;
+  }
+
+  public ItemStack createFruitcake() {
+    ItemStack cake = new ItemStack(Material.CAKE);
+    ItemMeta meta = cake.getItemMeta();
+    meta.setDisplayName("Fruitcake");
+    List<String> lore = new ArrayList<String>(1);
+    lore.add("Deliciously stale");
+    meta.setLore(lore);
+    cake.setItemMeta(meta);
+    return cake;
+  }
+
+  private String[] turkey_names_ = new String[] {
+    "Turkey",
+    "Turkey",
+    "Turkey",
+    "Turducken",
+    "Tofurkey",
+    "Cearc Frangach",
+    "Dinde",
+    "Kalkoen",
+    "Indeyka",
+    "Pollo d'India",
+    "Pelehu",
+    "Chilmyeonjo"
+  };
+
+  public ItemStack createTurkey() {
+    String turkey_name = turkey_names_[prng_.nextInt(turkey_names_.length)];
+    ItemStack turkey = new ItemStack(Material.COOKED_CHICKEN);
+    ItemMeta meta = turkey.getItemMeta();
+    meta.setDisplayName(turkey_name);
+    List<String> lore = new ArrayList<String>(1);
+    lore.add("Tastes like chicken");
+    meta.setLore(lore);
+    turkey.setItemMeta(meta);
+    return turkey;
+  }
+
+  public ItemStack createCoal() {
+    ItemStack coal = new ItemStack(Material.COAL);
+    ItemMeta meta = coal.getItemMeta();
+    List<String> lore = new ArrayList<String>(1);
+    lore.add("You've been naughty");
+    meta.setLore(lore);
+    coal.setItemMeta(meta);
+    return coal;
+  }
+
+
   // ================================================
   // Playing records in jukeboxen? Gone
 
@@ -1773,6 +1859,11 @@ public class Humbug extends JavaPlugin implements Listener {
         }
       }
       giveN00bBook(sendBookTo);
+      return true;
+    }
+    if (sender instanceof Player
+        && command.getName().equals("bahhumbug")) {
+      giveHolidayPackage((Player)sender);
       return true;
     }
     if (!(sender instanceof ConsoleCommandSender) ||
