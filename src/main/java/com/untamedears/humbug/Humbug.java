@@ -1174,13 +1174,17 @@ public class Humbug extends JavaPlugin implements Listener {
   }
 
   public void giveHolidayPackage(Player player) {
+    int count = 0;
     Inventory inv = player.getInventory();
     while (checkForInventorySpace(inv, 4)) {
         inv.addItem(createHolidayBook());
         inv.addItem(createFruitcake());
         inv.addItem(createTurkey());
         inv.addItem(createCoal());
+        ++count;
     }
+    info(String.format("%s generated %d packs of holiday cheer.",
+          player.getName(), count));
   }
 
   public ItemStack createHolidayBook() {
