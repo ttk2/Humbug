@@ -22,6 +22,7 @@ import org.bukkit.World.Environment;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -165,7 +166,7 @@ public class Humbug extends JavaPlugin implements Listener {
   @EventHandler(priority = EventPriority.LOWEST) // ignoreCancelled=false
   public void onPlayerInteractAll(PlayerInteractEvent event) {
     onPlayerEatGoldenApple(event);
-    onPlayerPearlTeleport(event);
+    throttlePearlTeleport(event);
   }
 
   // ================================================
@@ -183,10 +184,94 @@ public class Humbug extends JavaPlugin implements Listener {
   // Fixes Teleporting through walls and doors
   // ** and **
   // Ender Pearl Teleportation disabling
+  // ** and **
+  // Ender pearl cooldown timer
+
+  private class PearlTeleportInfo {
+    public long last_teleport;
+    public long last_notification;
+  }
+  private Map<String, PearlTeleportInfo> pearl_teleport_info_
+      = new TreeMap<String, PearlTeleportInfo>();
+  private final static int PEARL_THROTTLE_WINDOW = 10000;  // 10 sec
+  private final static int PEARL_NOTIFICATION_WINDOW = 1000;  // 1 sec
+
+  // EventHandler registered in onPlayerInteractAll
+  @BahHumbug(opt="ender_pearl_teleportation_throttled", def="true")
+  public void throttlePearlTeleport(PlayerInteractEvent event) {
+    if (!config_.get("ender_pearl_teleportation_throttled").getBool()) {
+      return;
+    }
+    if (event.getItem() == null || !event.getItem().getType().equals(Material.ENDER_PEARL)) {
+      return;
+    }
+    final Action action = event.getAction();
+    if (action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) {
+      return;
+    }
+    final Block clickedBlock = event.getClickedBlock();
+    BlockState clickedState = null;
+    Material clickedMaterial = null;
+    if (clickedBlock != null) {
+      clickedState = clickedBlock.getState();
+      clickedMaterial = clickedState.getType();
+    }
+    if (clickedState != null && (
+          clickedState instanceof InventoryHolder
+          || clickedMaterial.equals(Material.ANVIL)
+          || clickedMaterial.equals(Material.ENCHANTMENT_TABLE)
+          || clickedMaterial.equals(Material.ENDER_CHEST)
+          || clickedMaterial.equals(Material.WORKBENCH))) {
+      // Prevent Combat Tag/Pearl cooldown on inventory access
+      return;
+    }
+    final long current_time = System.currentTimeMillis();
+    final Player player = event.getPlayer();
+    final String player_name = player.getName();
+    PearlTeleportInfo teleport_info = pearl_teleport_info_.get(player_name);
+    long time_diff = 0;
+    if (teleport_info == null) {
+      // New pearl thrown outside of throttle window
+      teleport_info = new PearlTeleportInfo();
+      teleport_info.last_teleport = current_time;
+      teleport_info.last_notification =
+          current_time - (PEARL_NOTIFICATION_WINDOW + 100);  // Force notify
+      combatTag_.tagPlayer(player);
+    } else {
+      time_diff = current_time - teleport_info.last_teleport;
+      if (PEARL_THROTTLE_WINDOW > time_diff) {
+        // Pearl throw throttled
+        event.setCancelled(true);
+      } else {
+        // New pearl thrown outside of throttle window
+        combatTag_.tagPlayer(player);
+        teleport_info.last_teleport = current_time;
+        teleport_info.last_notification =
+            current_time - (PEARL_NOTIFICATION_WINDOW + 100);  // Force notify
+        time_diff = 0;
+      }
+    }
+    final long notify_diff = current_time - teleport_info.last_notification;
+    if (notify_diff > PEARL_NOTIFICATION_WINDOW) {
+      teleport_info.last_notification = current_time;
+      Integer tagCooldown = combatTag_.remainingSeconds(player);
+      if (tagCooldown != null) {
+        player.sendMessage(String.format(
+            "Pearl in %d seconds. Combat Tag in %d seconds.",
+            (PEARL_THROTTLE_WINDOW - time_diff + 500) / 1000,
+            tagCooldown));
+      } else {
+        player.sendMessage(String.format(
+            "Pearl Teleport Cooldown: %d seconds",
+            (PEARL_THROTTLE_WINDOW - time_diff + 500) / 1000));
+      }
+    }
+    pearl_teleport_info_.put(player_name, teleport_info);
+    return;
+  }
 
   @BahHumbugs({
     @BahHumbug(opt="ender_pearl_teleportation", def="true"),
-    @BahHumbug(opt="ender_pearl_teleportation_throttled", def="true"),
     @BahHumbug(opt="fix_teleport_glitch", def="true")
   })
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -1350,57 +1435,6 @@ public class Humbug extends JavaPlugin implements Listener {
     bow_level_.put(
         ((Player)event.getEntity()).getName(),
         ench_level);
-  }
-
-  // ================================================
-  // Ender pearl cooldown timer
-
-  private class PearlTeleportInfo {
-    public long last_teleport;
-    public boolean notified_player;
-  }
-
-  private Map<String, PearlTeleportInfo> pearl_teleport_info_
-      = new TreeMap<String, PearlTeleportInfo>();
-
-  // EventHandler registered in onPlayerInteractAll
-  public void onPlayerPearlTeleport(PlayerInteractEvent event) {
-    if (!config_.get("ender_pearl_teleportation_throttled").getBool()) {
-      return;
-    }
-    if (event.getItem() == null || !event.getItem().getType().equals(Material.ENDER_PEARL)) {
-      return;
-    }
-    Action action = event.getAction();
-    if (action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) {
-      return;
-    }
-    long current_time = System.currentTimeMillis();
-    final Player player = event.getPlayer();
-    final String player_name = player.getName();
-    combatTag_.tagPlayer(player);
-    PearlTeleportInfo teleport_info = pearl_teleport_info_.get(player_name);
-    if (teleport_info == null) {
-      teleport_info = new PearlTeleportInfo();
-      teleport_info.last_teleport = current_time;
-      teleport_info.notified_player = false;
-    } else {
-      final long time_diff = current_time - teleport_info.last_teleport;
-      final long block_window = 10000;
-      if (block_window > time_diff) {
-        event.setCancelled(true);
-        if (!teleport_info.notified_player) {
-          event.getPlayer().sendMessage(String.format(
-              "Pearl Teleport Cooldown: %ds",
-              (block_window - time_diff + 500) / 1000));
-          teleport_info.notified_player = true;
-        }
-      } else {
-        teleport_info.last_teleport = current_time;
-        teleport_info.notified_player = false;
-      }
-    }
-    pearl_teleport_info_.put(player_name, teleport_info);
   }
 
   // ================================================

@@ -33,4 +33,17 @@ class CombatTagManager {
         }
         return false;
     }
+
+    public Integer remainingSeconds(Player player) {
+        if (combatTagEnabled_
+                && combatTagApi_ != null
+                && combatTagApi_.isInCombat(player)) {
+            long remaining = (combatTagApi_.getRemainingTagTime(player) + 500) / 1000L;
+            if (remaining > 0x7FFFFFFF) {
+                return null;
+            }
+            return (int)remaining;
+        }
+        return null;
+    }
 }
