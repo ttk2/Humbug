@@ -1104,8 +1104,12 @@ public class Humbug extends JavaPlugin implements Listener {
 
   private Set<String> playersWithN00bBooks_ = new TreeSet<String>();
 
+  @BahHumbug(opt="drop_newbie_book", def="true")
   @EventHandler(priority=EventPriority.HIGHEST)
   public void onPlayerDeathBookDrop(PlayerDeathEvent e) {
+    if (!config_.get("drop_newbie_book").getBool()) {
+      return;
+    }
     final String playerName = e.getEntity().getName();
     List<ItemStack> dropList = e.getDrops();
     for (int i = 0; i < dropList.size(); ++i) {
@@ -1124,6 +1128,9 @@ public class Humbug extends JavaPlugin implements Listener {
 
   @EventHandler
   public void onGiveBookOnRespawn(PlayerRespawnEvent event) {
+    if (!config_.get("drop_newbie_book").getBool()) {
+      return;
+    }
     final Player player = event.getPlayer();
     final String playerName = player.getName();
     if (!playersWithN00bBooks_.contains(playerName)) {
@@ -1135,6 +1142,9 @@ public class Humbug extends JavaPlugin implements Listener {
 
   @EventHandler
   public void onGiveBookOnJoin(PlayerJoinEvent event) {
+    if (!config_.get("drop_newbie_book").getBool()) {
+      return;
+    }
     final Player player = event.getPlayer();
     final String playerName = player.getName();
     if (player.hasPlayedBefore() && !playersWithN00bBooks_.contains(playerName)) {
@@ -1885,6 +1895,9 @@ public class Humbug extends JavaPlugin implements Listener {
     }
     if (sender instanceof Player
         && command.getName().equals("introbook")) {
+      if (!config_.get("drop_newbie_book").getBool()) {
+        return true;
+      }
       Player sendBookTo = (Player)sender;
       if (args.length >= 1) {
         Player possible = Bukkit.getPlayerExact(args[0]);
