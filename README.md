@@ -75,6 +75,7 @@ Config file settings:
 - fix_vehicle_logout_bug: Boolean, Fixes a teleport bug when players logout in vehicles
 - player_max_health: Integer, sets all Player maximum health
 - ender_pearl_teleportation: Boolean, Turns on Ender Pearl teleportation
+- prevent_ender_pearl_save: Boolean, Prevents ender pearls being saved when unloaded
 - ender_pearl_teleportation_throttled: Boolean, Activates a cooldown between Ender Pearl teleports
 - ender_pearl_gravity: Double, Alters the gravity which effects Ender Pearl -Y acceleration, default Minecraft value is 0.03
 - ench_gold_app_edible: Boolean, Allows players to eat Enchanted Golden Apples. If false, Enchanted Golden Apples are converted to normal Golden Apples
@@ -127,6 +128,7 @@ Default configuration (biased for CivCraft):
 - fix_vehicle_logout_bug: true
 - player_max_health: 20
 - ender_pearl_teleportation: true
+- prevent_ender_pearl_save: true
 - ender_pearl_teleportation_throttled: true
 - ender_pearl_gravity: 0.06
 - ench_gold_app_edible: false

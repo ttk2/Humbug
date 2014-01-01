@@ -12,6 +12,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
+import net.minecraft.server.v1_6_R3.EntityTypes;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
@@ -28,7 +30,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Boat;
-import org.bukkit.entity.EnderPearl;
+import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Enderman;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -62,12 +64,9 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ExpBottleEvent;
-import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.PotionSplashEvent;
-import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.entity.SheepDyeWoolEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
@@ -104,7 +103,6 @@ import com.untamedears.humbug.annotations.BahHumbug;
 import com.untamedears.humbug.annotations.BahHumbugs;
 import com.untamedears.humbug.annotations.ConfigOption;
 import com.untamedears.humbug.annotations.OptType;
-
 import com.untamedears.humbug.Config;
 import com.untamedears.humbug.CustomNMSItemEnderPearl;
 
@@ -1364,7 +1362,9 @@ public class Humbug extends JavaPlugin implements Listener {
     }
     for (LivingEntity entity : event.getAffectedEntities()) {
       if (entity instanceof Player) {
-        final double newHealth = Math.min(entity.getHealth() + 4.0D, entity.getMaxHealth());
+        final double newHealth = Math.min(
+            ((Damageable)entity).getHealth() + 4.0D,
+            ((Damageable)entity).getMaxHealth());
         entity.setHealth(newHealth);
       }
     }
@@ -1739,6 +1739,14 @@ public class Humbug extends JavaPlugin implements Listener {
     return false;
   }
 
+  @BahHumbug(opt="prevent_ender_pearl_save", def="true")
+  @EventHandler
+  public void enderPearlSave(EnderPearlUnloadEvent event) {
+    if(!config_.get("prevent_ender_pearl_save").getBool())
+      return;
+    event.setCancelled(true);
+  }
+
   @BahHumbug(opt="fix_vehicle_logout_bug", def="true")
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
   public void onDisallowVehicleLogout(PlayerQuitEvent event) {
@@ -1825,18 +1833,33 @@ public class Humbug extends JavaPlugin implements Listener {
   @BahHumbug(opt="ender_pearl_gravity", type=OptType.Double, def="0.060000")
   public void hookEnderPearls() {
     net.minecraft.server.v1_6_R3.Item.byId[256 + 112] = null;
-    net.minecraft.server.v1_6_R3.Item.ENDER_PEARL = (new CustomNMSItemEnderPearl(112, config_)).b("enderPearl");
+    net.minecraft.server.v1_6_R3.Item.ENDER_PEARL = new CustomNMSItemEnderPearl(112, config_).b("enderPearl");
+    try
+    {
+      Method a = EntityTypes.class
+          .getDeclaredMethod("a", new Class[] { Class.class, String.class, Integer.TYPE });
+      a.setAccessible(true);
+
+      a.invoke(a, new Object[] { CustomNMSEntityEnderPearl.class, "ThrownEnderpearl", Integer.valueOf(14) });
+    }
+    catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   // ================================================
   // General
 
+  public void onLoad()
+  {
+    loadConfiguration();
+    hookEnderPearls();
+  }
+
   public void onEnable() {
     registerEvents();
     registerCommands();
-    loadConfiguration();
     removeRecipies();
-    hookEnderPearls();
     global_instance_ = this;
     info("Enabled");
   }
@@ -1859,7 +1882,7 @@ public class Humbug extends JavaPlugin implements Listener {
       return default_value;
     }
   }
-  
+
   public double toDouble(String value, double default_value) {
     try {
       return Double.parseDouble(value);
