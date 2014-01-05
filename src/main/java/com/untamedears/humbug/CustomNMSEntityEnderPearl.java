@@ -27,12 +27,13 @@ public class CustomNMSEntityEnderPearl extends EntityEnderPearl {
     y_adjust_ = gravity;
   }
 
-  protected float e() {
+  protected float i() {
     return (float)y_adjust_;
   }
 
   public void h() {
-    if (tick_ == 0L) {
+    super.h();
+    if (tick_==0) {
       startDeltaX_ = motX;
       startDeltaY_ = motY;
       startDeltaZ_ = motZ;
@@ -40,9 +41,9 @@ public class CustomNMSEntityEnderPearl extends EntityEnderPearl {
       startX_ = locX;
       startY_ = locY;
       startZ_ = locZ;
+      return;
     }
 
-    super.h();
 
     double x = startDeltaX_ * tick_ + startX_;
     double y = e() / -2.0F * (float)tick_ * (float)tick_ + startDeltaY_ * tick_ + startY_;
@@ -54,7 +55,6 @@ public class CustomNMSEntityEnderPearl extends EntityEnderPearl {
 
     super.setPosition(x, y, z);
     tick_ += 1L;
-    Humbug.info("Moved to y "+y);
   }
 
   public long getTick() {

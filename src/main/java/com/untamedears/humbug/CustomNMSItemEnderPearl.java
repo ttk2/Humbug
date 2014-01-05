@@ -1,6 +1,5 @@
 package com.untamedears.humbug;
 
-import java.util.logging.Logger;
 
 import net.minecraft.server.v1_7_R1.EntityHuman;
 import net.minecraft.server.v1_7_R1.ItemEnderPearl;
@@ -36,7 +35,6 @@ public class CustomNMSItemEnderPearl extends ItemEnderPearl {
       if (!world.isStatic) {
         double gravity = cfg_.get("ender_pearl_gravity").getDouble();
         world.addEntity(new CustomNMSEntityEnderPearl(world, entityhuman, gravity));
-        Humbug.info("PearlLaunched");
       }
       return itemstack;
     }

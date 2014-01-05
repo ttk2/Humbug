@@ -1836,7 +1836,8 @@ public class Humbug extends JavaPlugin implements Listener {
   @SuppressWarnings({ "rawtypes", "unchecked" })
   @BahHumbug(opt="ender_pearl_gravity", type=OptType.Double, def="0.060000")
   public void hookEnderPearls() {
-    Item.REGISTRY.a(112, "enderPearl", CustomNMSItemEnderPearl.class);
+    Item.REGISTRY.a(368, "enderPearl", new CustomNMSItemEnderPearl(config_));
+    
     
     try
     {
@@ -1874,6 +1875,7 @@ public class Humbug extends JavaPlugin implements Listener {
     catch (Exception e) {
       e.printStackTrace();
     }
+    info("hooked");
   }
 
   // ================================================
@@ -1882,6 +1884,7 @@ public class Humbug extends JavaPlugin implements Listener {
   public void onLoad()
   {
     loadConfiguration();
+    info("loaded");
     hookEnderPearls();
   }
 
