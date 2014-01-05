@@ -1,6 +1,7 @@
 package com.untamedears.humbug;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -12,7 +13,9 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
-import net.minecraft.server.v1_6_R3.EntityTypes;
+import net.minecraft.server.v1_7_R1.EntityTypes;
+import net.minecraft.server.v1_7_R1.Item;
+
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -1830,17 +1833,43 @@ public class Humbug extends JavaPlugin implements Listener {
   // ================================================
   // Adjust ender pearl gravity
 
+  @SuppressWarnings({ "rawtypes", "unchecked" })
   @BahHumbug(opt="ender_pearl_gravity", type=OptType.Double, def="0.060000")
   public void hookEnderPearls() {
-    net.minecraft.server.v1_6_R3.Item.byId[256 + 112] = null;
-    net.minecraft.server.v1_6_R3.Item.ENDER_PEARL = new CustomNMSItemEnderPearl(112, config_).b("enderPearl");
+    Item.REGISTRY.a(112, "enderPearl", CustomNMSItemEnderPearl.class);
+    
     try
     {
-      Method a = EntityTypes.class
-          .getDeclaredMethod("a", new Class[] { Class.class, String.class, Integer.TYPE });
-      a.setAccessible(true);
-
-      a.invoke(a, new Object[] { CustomNMSEntityEnderPearl.class, "ThrownEnderpearl", Integer.valueOf(14) });
+      //they thought they could stop us by preventing us from registering an item. We'll show them
+      
+      Field fieldStringToClass = EntityTypes.class.getDeclaredField("c");
+      Field fieldClassToString = EntityTypes.class.getDeclaredField("d");
+      fieldStringToClass.setAccessible(true);
+      fieldClassToString.setAccessible(true);
+      
+      Field fieldClassToId = EntityTypes.class.getDeclaredField("f");
+      Field fieldStringToId = EntityTypes.class.getDeclaredField("g");
+      fieldClassToId.setAccessible(true);
+      fieldStringToId.setAccessible(true);
+      
+      
+      Map mapStringToClass=(Map) fieldStringToClass.get(null);
+      Map mapClassToString=(Map) fieldClassToString.get(null);
+      
+      Map mapClassToId=(Map) fieldClassToId.get(null);
+      Map mapStringToId=(Map) fieldStringToId.get(null);
+      
+      mapStringToClass.put("ThrownEnderpearl",CustomNMSEntityEnderPearl.class);
+      mapStringToId.put("ThrownEnderpearl", Integer.valueOf(14));
+      
+      mapClassToString.put(CustomNMSEntityEnderPearl.class, "ThrownEnderpearl");
+      mapClassToId.put(CustomNMSEntityEnderPearl.class, Integer.valueOf(14));
+      
+      fieldStringToClass.set(null, mapStringToClass);
+      fieldClassToString.set(null, mapClassToString);
+      
+      fieldClassToId.set(null, mapClassToId);
+      fieldStringToId.set(null, mapStringToId);
     }
     catch (Exception e) {
       e.printStackTrace();

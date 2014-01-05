@@ -1,9 +1,9 @@
 package com.untamedears.humbug;
 
-import net.minecraft.server.v1_6_R3.EntityEnderPearl;
-import net.minecraft.server.v1_6_R3.EntityLiving;
-import net.minecraft.server.v1_6_R3.NBTTagCompound;
-import net.minecraft.server.v1_6_R3.World;
+import net.minecraft.server.v1_7_R1.EntityEnderPearl;
+import net.minecraft.server.v1_7_R1.EntityLiving;
+import net.minecraft.server.v1_7_R1.NBTTagCompound;
+import net.minecraft.server.v1_7_R1.World;
 import org.bukkit.Bukkit;
 
 public class CustomNMSEntityEnderPearl extends EntityEnderPearl {
@@ -31,7 +31,7 @@ public class CustomNMSEntityEnderPearl extends EntityEnderPearl {
     return (float)y_adjust_;
   }
 
-  public void l_() {
+  public void h() {
     if (tick_ == 0L) {
       startDeltaX_ = motX;
       startDeltaY_ = motY;
@@ -42,7 +42,7 @@ public class CustomNMSEntityEnderPearl extends EntityEnderPearl {
       startZ_ = locZ;
     }
 
-    super.l_();
+    super.h();
 
     double x = startDeltaX_ * tick_ + startX_;
     double y = e() / -2.0F * (float)tick_ * (float)tick_ + startDeltaY_ * tick_ + startY_;
@@ -54,6 +54,7 @@ public class CustomNMSEntityEnderPearl extends EntityEnderPearl {
 
     super.setPosition(x, y, z);
     tick_ += 1L;
+    Humbug.info("Moved to y "+y);
   }
 
   public long getTick() {
