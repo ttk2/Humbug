@@ -938,7 +938,7 @@ public class Humbug extends JavaPlugin implements Listener {
     return BlockFace.SELF;
   }
 
-  public void ConvertLava(Block block) {
+  public void ConvertLava(final Block block) {
     int data = (int)block.getData();
     if (data == 0) {
       return;
@@ -955,7 +955,12 @@ public class Humbug extends JavaPlugin implements Listener {
     if (face == BlockFace.SELF) {
       return;
     }
-    block.setType(Material.AIR);
+    Bukkit.getScheduler().runTask(this, new Runnable() {
+      @Override
+      public void run() {
+        block.setType(Material.AIR);
+      }
+    });
   }
 
   public boolean isLavaSourceNear(Block block, int ttl) {
