@@ -1,6 +1,5 @@
 package com.untamedears.humbug;
 
-
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -27,7 +26,7 @@ class CombatTagManager {
     }
 
     public boolean tagPlayer(String playerName) {
-    	Player player=Bukkit.getServer().getPlayer(playerName);
+        Player player = Bukkit.getServer().getPlayer(playerName);
         if (combatTagEnabled_ && combatTagApi_ != null && player!=null) {
             combatTagApi_.tagPlayer(player);
             return true;

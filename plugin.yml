@@ -1,6 +1,6 @@
 name: Humbug
 main: com.untamedears.humbug.Humbug
-version: 1.4.23
+version: 1.5.0
 softdepend: [CombatTag]
 description: toggles various functionality
 author: erocs

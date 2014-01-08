@@ -1836,13 +1836,10 @@ public class Humbug extends JavaPlugin implements Listener {
   @SuppressWarnings({ "rawtypes", "unchecked" })
   @BahHumbug(opt="ender_pearl_gravity", type=OptType.Double, def="0.060000")
   public void hookEnderPearls() {
-    Item.REGISTRY.a(368, "enderPearl", new CustomNMSItemEnderPearl(config_));
-    
-    
-    try
-    {
-      //they thought they could stop us by preventing us from registering an item. We'll show them
-      
+    Item.REGISTRY.a(256 + 112, "enderPearl", new CustomNMSItemEnderPearl(config_));
+    try {
+      // They thought they could stop us by preventing us from registering an
+      // item. We'll show them
       Field fieldStringToClass = EntityTypes.class.getDeclaredField("c");
       Field fieldClassToString = EntityTypes.class.getDeclaredField("d");
       fieldStringToClass.setAccessible(true);
@@ -1853,12 +1850,11 @@ public class Humbug extends JavaPlugin implements Listener {
       fieldClassToId.setAccessible(true);
       fieldStringToId.setAccessible(true);
       
+      Map mapStringToClass = (Map)fieldStringToClass.get(null);
+      Map mapClassToString = (Map)fieldClassToString.get(null);
       
-      Map mapStringToClass=(Map) fieldStringToClass.get(null);
-      Map mapClassToString=(Map) fieldClassToString.get(null);
-      
-      Map mapClassToId=(Map) fieldClassToId.get(null);
-      Map mapStringToId=(Map) fieldStringToId.get(null);
+      Map mapClassToId = (Map)fieldClassToId.get(null);
+      Map mapStringToId = (Map)fieldStringToId.get(null);
       
       mapStringToClass.put("ThrownEnderpearl",CustomNMSEntityEnderPearl.class);
       mapStringToId.put("ThrownEnderpearl", Integer.valueOf(14));
@@ -1871,11 +1867,10 @@ public class Humbug extends JavaPlugin implements Listener {
       
       fieldClassToId.set(null, mapClassToId);
       fieldStringToId.set(null, mapStringToId);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
+      Humbug.severe("Exception while overriding MC's ender pearl class");
       e.printStackTrace();
     }
-    info("hooked");
   }
 
   // ================================================
@@ -1884,8 +1879,8 @@ public class Humbug extends JavaPlugin implements Listener {
   public void onLoad()
   {
     loadConfiguration();
-    info("loaded");
     hookEnderPearls();
+    info("Loaded");
   }
 
   public void onEnable() {
