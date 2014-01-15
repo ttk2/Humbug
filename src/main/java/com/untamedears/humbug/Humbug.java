@@ -1637,6 +1637,7 @@ public class Humbug extends JavaPlugin implements Listener {
         "Player '%s' kicked for self damaging boat at %s",
         player.getName(), vehicle.getLocation().toString()));
     vehicle.eject();
+    vehicle.getWorld().dropItem(vehicle.getLocation(), new ItemStack(Material.BOAT));
     vehicle.remove();
     ((Player)passenger).kickPlayer("Nope");
   }
@@ -1664,6 +1665,7 @@ public class Humbug extends JavaPlugin implements Listener {
         "Player '%s' removed from land-boat at %s",
         ((Player)passenger).getName(), to.toString()));
     vehicle.eject();
+    vehicle.getWorld().dropItem(vehicle.getLocation(), new ItemStack(Material.BOAT));
     vehicle.remove();
   }
 
