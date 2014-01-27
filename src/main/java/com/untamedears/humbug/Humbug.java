@@ -1331,8 +1331,10 @@ public class Humbug extends JavaPlugin implements Listener {
   //=================================================
   // Changes Strength Potions, strength_multiplier 3 is roughly Pre-1.6 Level
 
-  @BahHumbug(opt="nerf_strength", def="true")
-  @BahHumbug(opt="strength_multiplier", type=OptType.Int, def="3"),
+  @BahHumbugs ({
+    @BahHumbug(opt="nerf_strength", def="true"),
+    @BahHumbug(opt="strength_multiplier", type=OptType.Int, def="3")
+  })
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
   public void onPlayerDamage(EntityDamageByEntityEvent event) {
     if (!config_.get("nerf_strength").getBool()) {
