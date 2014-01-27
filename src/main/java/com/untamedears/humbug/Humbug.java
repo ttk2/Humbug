@@ -1329,7 +1329,7 @@ public class Humbug extends JavaPlugin implements Listener {
   }
 
   //=================================================
-  // Nerfs Strength Potions to Pre-1.6 Levels
+  // Changes Strength Potions, strength_multiplier 3 is roughly Pre-1.6 Level
 
   @BahHumbug(opt="nerf_strength", def="true")
   @BahHumbug(opt="strength_multiplier", type=OptType.Int, def="3"),
