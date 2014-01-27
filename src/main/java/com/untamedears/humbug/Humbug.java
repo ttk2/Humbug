@@ -1342,12 +1342,13 @@ public class Humbug extends JavaPlugin implements Listener {
       return;
     }
     Player player = (Player)event.getDamager();
+    final int strengthMultiplier = config_.get("strength_multiplier").getInt();
     if (player.hasPotionEffect(PotionEffectType.INCREASE_DAMAGE)) {
       for (PotionEffect effect : player.getActivePotionEffects()) {
         if (effect.getType().equals(PotionEffectType.INCREASE_DAMAGE)) {
           final int potionLevel = effect.getAmplifier() + 1;
           final double unbuffedDamage = event.getDamage() / (1.3 * potionLevel + 1);
-          final double newDamage = unbuffedDamage + (potionLevel * strength_multiplier);
+          final double newDamage = unbuffedDamage + (potionLevel * strengthMultiplier);
           event.setDamage(newDamage);
           break;
         }
