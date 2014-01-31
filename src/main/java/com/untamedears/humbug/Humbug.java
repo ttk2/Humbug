@@ -1329,9 +1329,12 @@ public class Humbug extends JavaPlugin implements Listener {
   }
 
   //=================================================
-  // Nerfs Strength Potions to Pre-1.6 Levels
+  // Changes Strength Potions, strength_multiplier 3 is roughly Pre-1.6 Level
 
-  @BahHumbug(opt="nerf_strength", def="true")
+  @BahHumbugs ({
+    @BahHumbug(opt="nerf_strength", def="true"),
+    @BahHumbug(opt="strength_multiplier", type=OptType.Int, def="3")
+  })
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
   public void onPlayerDamage(EntityDamageByEntityEvent event) {
     if (!config_.get("nerf_strength").getBool()) {
@@ -1341,12 +1344,13 @@ public class Humbug extends JavaPlugin implements Listener {
       return;
     }
     Player player = (Player)event.getDamager();
+    final int strengthMultiplier = config_.get("strength_multiplier").getInt();
     if (player.hasPotionEffect(PotionEffectType.INCREASE_DAMAGE)) {
       for (PotionEffect effect : player.getActivePotionEffects()) {
         if (effect.getType().equals(PotionEffectType.INCREASE_DAMAGE)) {
           final int potionLevel = effect.getAmplifier() + 1;
           final double unbuffedDamage = event.getDamage() / (1.3 * potionLevel + 1);
-          final double newDamage = unbuffedDamage + (potionLevel * 3);
+          final double newDamage = unbuffedDamage + (potionLevel * strengthMultiplier);
           event.setDamage(newDamage);
           break;
         }

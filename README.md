@@ -42,7 +42,7 @@ Minecraft server plug-in: Simply toggles various functionality
 - Disables experience except from XP bottles
 - Finds End Portals in a world.
 - Swaps Wither Skeletons or Ghasts in for Zombie Pigmen to raise their spawn rate.
-- Adjust strength and health pots to pre-1.6 power levels
+- Adjust strength and health pots to configurable power levels
 - Sets the base movement speed for all mounted horses
 - Fixes a bug where players in destroyed minecarts fall through the block below
 
@@ -100,6 +100,7 @@ Config file settings:
 - buff_health_pots: Boolean, Buffs the health potion back to pre-1.5 mechanics
 - horse_speed: Double, Sets the base movement speed of all mounted horses. This is MineCraft's adjustment ratio. The default 0.17 is just slower than a minecart.
 - fix_minecart_reenter_bug: Boolean, Fixes the minecart re-enter bug where players in a destroyed minecart could fall through the world
+- strength_multiplier: Integer, multiplier for added damage from strength potion levels.
 
 Default configuration (biased for CivCraft):
 - debug: false
@@ -153,3 +154,4 @@ Default configuration (biased for CivCraft):
 - buff_health_pots: true
 - horse_speed: 0.17
 - fix_minecart_reenter_bug: true
+- strength_multiplier: 3
