@@ -1883,6 +1883,15 @@ public class Humbug extends JavaPlugin implements Listener {
   }
 
   // ================================================
+  // Hunger Changes
+  @BahHumbug(opt="hunger_slowdown", type=OptType.Int, def="0")
+  @EventHandler
+  public void onFoodLevelChange(FoodLevelChangeEvent event) {
+	  Player player = (Player) event.getEntity();
+	  player.setSaturation(player.getSaturation() + config_.get("hunger_slowdown").getInt());
+  }
+
+  // ================================================
   // General
 
   public void onLoad()
