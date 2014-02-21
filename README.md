@@ -45,6 +45,7 @@ Minecraft server plug-in: Simply toggles various functionality
 - Adjust strength and health pots to configurable power levels
 - Sets the base movement speed for all mounted horses
 - Fixes a bug where players in destroyed minecarts fall through the block below
+- Gives player saturation when they lose a point of hunger
 
 The 'humbug' console command can be used to get or set any of the configuration file settings while the server is running. Also available are 'humbug save' and 'humbug reload'.
 
@@ -101,6 +102,7 @@ Config file settings:
 - horse_speed: Double, Sets the base movement speed of all mounted horses. This is MineCraft's adjustment ratio. The default 0.17 is just slower than a minecart.
 - fix_minecart_reenter_bug: Boolean, Fixes the minecart re-enter bug where players in a destroyed minecart could fall through the world
 - strength_multiplier: Integer, multiplier for added damage from strength potion levels.
+- hunger_slowdown: Integer, amount of saturation to give a player when they lose a point of hunger
 
 Default configuration (biased for CivCraft):
 - debug: false
@@ -155,3 +157,4 @@ Default configuration (biased for CivCraft):
 - horse_speed: 0.17
 - fix_minecart_reenter_bug: true
 - strength_multiplier: 3
+- hunger_slowdown: 0
