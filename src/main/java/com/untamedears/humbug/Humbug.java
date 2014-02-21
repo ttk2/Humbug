@@ -67,6 +67,7 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ExpBottleEvent;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.PotionSplashEvent;
 import org.bukkit.event.entity.SheepDyeWoolEvent;
@@ -1886,11 +1887,15 @@ public class Humbug extends JavaPlugin implements Listener {
 
   // ================================================
   // Hunger Changes
-  @BahHumbug(opt="hunger_slowdown", type=OptType.Int, def="0")
+  @BahHumbug(opt="hunger_slowdown", type=OptType.Double, def="0.0")
   @EventHandler
   public void onFoodLevelChange(FoodLevelChangeEvent event) {
-	  Player player = (Player) event.getEntity();
-	  player.setSaturation(player.getSaturation() + config_.get("hunger_slowdown").getInt());
+      final Player player = (Player) event.getEntity();
+      final double mod = config_.get("hunger_slowdown").getDouble();
+      final double saturation = Math.min(
+          player.getSaturation() + mod,
+          20.0D + (mod * 2.0D));
+      player.setSaturation((float)saturation);
   }
 
   // ================================================

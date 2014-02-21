@@ -157,4 +157,4 @@ Default configuration (biased for CivCraft):
 - horse_speed: 0.17
 - fix_minecart_reenter_bug: true
 - strength_multiplier: 3
-- hunger_slowdown: 0
+- hunger_slowdown: 0.0
