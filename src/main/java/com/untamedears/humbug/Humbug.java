@@ -1375,10 +1375,12 @@ public class Humbug extends JavaPlugin implements Listener {
     }
     for (LivingEntity entity : event.getAffectedEntities()) {
       if (entity instanceof Player) {
-        final double newHealth = Math.min(
+        if(((Damageable)entity).getHealth() > 0d) {
+          final double newHealth = Math.min(
             ((Damageable)entity).getHealth() + 4.0D,
             ((Damageable)entity).getMaxHealth());
-        entity.setHealth(newHealth);
+          entity.setHealth(newHealth);
+        }
       }
     }
   }
