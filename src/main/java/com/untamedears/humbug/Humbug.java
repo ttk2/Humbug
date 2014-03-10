@@ -1111,11 +1111,15 @@ public class Humbug extends JavaPlugin implements Listener {
 @BahHumbug(opt="tag_on_join", def="true")
 @EventHandler
   public void tagOnJoin(PlayerJoinEvent event){
+	  if(!config_.get("tag_on_join").getBool()) {
+		  return;
+	  }
 	  Player loginPlayer = event.getPlayer();
-	  combatTag_.tagPlayer(loginPlayer.getName());
-	  String alert = "You have been Combat Tagged on login";
-	  loginPlayer.sendMessage(alert);
-  }
+	      combatTag_.tagPlayer(loginPlayer.getName());
+	   	  String alert = "You have been Combat Tagged on Login";
+	   	  loginPlayer.sendMessage(alert);
+	  }
+
   //================================================
   // Give introduction book to n00bs
 
