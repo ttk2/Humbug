@@ -342,6 +342,6 @@ public class Config {
   }
   
   public void tag_on_join(boolean value){
-	  config_.set("tagOnJoin", value);
+	  config_.set("tag_on_join", value);
   }
 }
