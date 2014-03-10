@@ -1106,6 +1106,15 @@ public class Humbug extends JavaPlugin implements Listener {
     }
   }
 
+//=================================================
+// Combat Tag players on server join
+@EventHandler
+  public void tagOnJoin(PlayerJoinEvent event){
+	  Player loginPlayer = event.getPlayer();
+	  combatTag_.tagPlayer(loginPlayer.getName());
+	  String alert = "You have been Combat Tagged on login";
+	  loginPlayer.sendMessage(alert);
+  }
   //================================================
   // Give introduction book to n00bs
 
