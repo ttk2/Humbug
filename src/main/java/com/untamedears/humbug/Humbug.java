@@ -1913,7 +1913,32 @@ public class Humbug extends JavaPlugin implements Listener {
           20.0D + (mod * 2.0D));
       player.setSaturation((float)saturation);
   }
-
+//=================================================
+  //Remove Book Copying
+  @BahHumbug(opt="copy_book_enable", def= "false")
+  public void removeBooks() {
+    if (config_.get("copy_book_enable").getBool()) {
+      return;
+    }
+    Iterator<Recipe> it = getServer().recipeIterator();
+    while (it.hasNext()) {
+      Recipe recipe = it.next();
+      ItemStack resulting_item = recipe.getResult();
+      if ( // !copy_book_enable_ &&
+          isWrittenBook(resulting_item)) {
+        it.remove();
+        info("Copying Books disabled");
+      }
+    }
+  }
+  
+  public boolean isWrittenBook(ItemStack item) {
+	    if (item == null) {
+	      return false;
+	    }
+	    Material material = item.getType();
+	    return material.equals(Material.WRITTEN_BOOK);
+	  }
   // ================================================
   // General
 
@@ -1928,6 +1953,7 @@ public class Humbug extends JavaPlugin implements Listener {
     registerEvents();
     registerCommands();
     removeRecipies();
+    removeBooks();
     global_instance_ = this;
     info("Enabled");
   }
