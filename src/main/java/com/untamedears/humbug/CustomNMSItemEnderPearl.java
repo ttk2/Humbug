@@ -1,10 +1,10 @@
 package com.untamedears.humbug;
 
 
-import net.minecraft.server.v1_7_R1.EntityHuman;
-import net.minecraft.server.v1_7_R1.ItemEnderPearl;
-import net.minecraft.server.v1_7_R1.ItemStack;
-import net.minecraft.server.v1_7_R1.World;
+import net.minecraft.server.v1_7_R2.EntityHuman;
+import net.minecraft.server.v1_7_R2.ItemEnderPearl;
+import net.minecraft.server.v1_7_R2.ItemStack;
+import net.minecraft.server.v1_7_R2.World;
 
 import com.untamedears.humbug.Config;
 import com.untamedears.humbug.CustomNMSEntityEnderPearl;
