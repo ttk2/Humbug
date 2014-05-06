@@ -1629,7 +1629,7 @@ public class Humbug extends JavaPlugin implements Listener {
     }
     final Inventory pl_inv = player.getInventory();
     final Inventory inv = Bukkit.createInventory(
-        admin, 36, "Player inventory: " + playerName);
+        admin, 36, playerName + "'s Inventory");
     for (int slot = 0; slot < 36; slot++) {
       final ItemStack it = pl_inv.getItem(slot);
       inv.setItem(slot, it);
