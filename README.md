@@ -46,6 +46,7 @@ Minecraft server plug-in: Simply toggles various functionality
 - Sets the base movement speed for all mounted horses
 - Fixes a bug where players in destroyed minecarts fall through the block below
 - Gives player saturation when they lose a point of hunger
+- Prevents a bug that allows tree growth to wrap around the world and overwrite blocks at 1+.
 
 The 'humbug' console command can be used to get or set any of the configuration file settings while the server is running. Also available are 'humbug save' and 'humbug reload'.
 
@@ -103,6 +104,7 @@ Config file settings:
 - fix_minecart_reenter_bug: Boolean, Fixes the minecart re-enter bug where players in a destroyed minecart could fall through the world
 - strength_multiplier: Integer, multiplier for added damage from strength potion levels.
 - hunger_slowdown: Integer, amount of saturation to give a player when they lose a point of hunger
+- prevent_tree_wraparound: Boolean, prevents structure growth from wrapping around from the top of the world to bedrock causing block overwrite.
 
 Default configuration (biased for CivCraft):
 - debug: false
@@ -158,3 +160,4 @@ Default configuration (biased for CivCraft):
 - fix_minecart_reenter_bug: true
 - strength_multiplier: 3
 - hunger_slowdown: 0.0
+- prevent_tree_wraparound: true

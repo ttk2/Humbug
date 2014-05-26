@@ -89,6 +89,7 @@ import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.PortalCreateEvent;
+import org.bukkit.event.world.StructureGrowEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -2032,6 +2033,29 @@ public class Humbug extends JavaPlugin implements Listener {
     }
     Material material = item.getType();
     return material.equals(Material.WRITTEN_BOOK);
+  }
+
+  // ================================================
+  // Prevent tree growth wrap-around
+
+  @BahHumbug(opt="prevent_tree_wraparound", def="true")
+  @EventHandler(priority=EventPriority.LOWEST, ignoreCancelled = true)
+  public void onStructureGrowEvent(StructureGrowEvent event) {
+    if (!config_.get("prevent_tree_wraparound").getBool()) {
+      return;
+    }
+    int maxY = 0, minY = 257;
+    for (BlockState bs : event.getBlocks()) {
+      final int y = bs.getLocation().getBlockY();
+      maxY = Math.max(maxY, y);
+      minY = Math.min(minY, y);
+    }
+    if (maxY - minY > 240) {
+      event.setCancelled(true);
+      final Location loc = event.getLocation();
+      info(String.format("Prevented structure wrap-around at %d, %d, %d",
+          loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()));
+    }
   }
 
   // ================================================
