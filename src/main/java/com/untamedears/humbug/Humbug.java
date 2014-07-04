@@ -1,7 +1,9 @@
 package com.untamedears.humbug;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -11,6 +13,9 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Logger;
+
+import net.minecraft.server.v1_7_R2.EntityTypes;
+import net.minecraft.server.v1_7_R2.Item;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -28,7 +33,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Boat;
-import org.bukkit.entity.EnderPearl;
+import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Enderman;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -62,17 +67,16 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ExpBottleEvent;
-import org.bukkit.event.entity.ItemSpawnEvent;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.PotionSplashEvent;
-import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.entity.SheepDyeWoolEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -85,6 +89,7 @@ import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.PortalCreateEvent;
+import org.bukkit.event.world.StructureGrowEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -104,7 +109,6 @@ import com.untamedears.humbug.annotations.BahHumbug;
 import com.untamedears.humbug.annotations.BahHumbugs;
 import com.untamedears.humbug.annotations.ConfigOption;
 import com.untamedears.humbug.annotations.OptType;
-
 import com.untamedears.humbug.Config;
 import com.untamedears.humbug.CustomNMSItemEnderPearl;
 
@@ -937,7 +941,7 @@ public class Humbug extends JavaPlugin implements Listener {
     return BlockFace.SELF;
   }
 
-  public void ConvertLava(Block block) {
+  public void ConvertLava(final Block block) {
     int data = (int)block.getData();
     if (data == 0) {
       return;
@@ -954,7 +958,12 @@ public class Humbug extends JavaPlugin implements Listener {
     if (face == BlockFace.SELF) {
       return;
     }
-    block.setType(Material.AIR);
+    Bukkit.getScheduler().runTask(this, new Runnable() {
+      @Override
+      public void run() {
+        block.setType(Material.AIR);
+      }
+    });
   }
 
   public boolean isLavaSourceNear(Block block, int ttl) {
@@ -1097,6 +1106,28 @@ public class Humbug extends JavaPlugin implements Listener {
         }
       }
     }
+  }
+
+  //=================================================
+  // Combat Tag players on server join
+
+  @BahHumbug(opt="tag_on_join", def="true")
+  @EventHandler
+  public void tagOnJoin(PlayerJoinEvent event){
+    if(!config_.get("tag_on_join").getBool()) {
+      return;
+    }
+    // Delay two ticks to tag after secure login has been denied.
+    // This opens a 1 tick window for a cheater to login and grab
+    // server info, which should be detectable and bannable.
+    final Player loginPlayer = event.getPlayer();
+    Bukkit.getScheduler().runTaskLater(this, new Runnable() {
+      @Override
+      public void run() {
+        combatTag_.tagPlayer(loginPlayer.getName());
+        loginPlayer.sendMessage("You have been Combat Tagged on Login");
+      }
+    }, 2L);
   }
 
   //================================================
@@ -1323,9 +1354,12 @@ public class Humbug extends JavaPlugin implements Listener {
   }
 
   //=================================================
-  // Nerfs Strength Potions to Pre-1.6 Levels
+  // Changes Strength Potions, strength_multiplier 3 is roughly Pre-1.6 Level
 
-  @BahHumbug(opt="nerf_strength", def="true")
+  @BahHumbugs ({
+    @BahHumbug(opt="nerf_strength", def="true"),
+    @BahHumbug(opt="strength_multiplier", type=OptType.Int, def="3")
+  })
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
   public void onPlayerDamage(EntityDamageByEntityEvent event) {
     if (!config_.get("nerf_strength").getBool()) {
@@ -1335,12 +1369,13 @@ public class Humbug extends JavaPlugin implements Listener {
       return;
     }
     Player player = (Player)event.getDamager();
+    final int strengthMultiplier = config_.get("strength_multiplier").getInt();
     if (player.hasPotionEffect(PotionEffectType.INCREASE_DAMAGE)) {
       for (PotionEffect effect : player.getActivePotionEffects()) {
         if (effect.getType().equals(PotionEffectType.INCREASE_DAMAGE)) {
           final int potionLevel = effect.getAmplifier() + 1;
           final double unbuffedDamage = event.getDamage() / (1.3 * potionLevel + 1);
-          final double newDamage = unbuffedDamage + (potionLevel * 3);
+          final double newDamage = unbuffedDamage + (potionLevel * strengthMultiplier);
           event.setDamage(newDamage);
           break;
         }
@@ -1364,8 +1399,12 @@ public class Humbug extends JavaPlugin implements Listener {
     }
     for (LivingEntity entity : event.getAffectedEntities()) {
       if (entity instanceof Player) {
-        final double newHealth = Math.min(entity.getHealth() + 4.0D, entity.getMaxHealth());
-        entity.setHealth(newHealth);
+        if(((Damageable)entity).getHealth() > 0d) {
+          final double newHealth = Math.min(
+            ((Damageable)entity).getHealth() + 4.0D,
+            ((Damageable)entity).getMaxHealth());
+          entity.setHealth(newHealth);
+        }
       }
     }
   }
@@ -1591,7 +1630,7 @@ public class Humbug extends JavaPlugin implements Listener {
     }
     final Inventory pl_inv = player.getInventory();
     final Inventory inv = Bukkit.createInventory(
-        admin, 36, "Player inventory: " + playerName);
+        admin, 36, playerName + "'s Inventory");
     for (int slot = 0; slot < 36; slot++) {
       final ItemStack it = pl_inv.getItem(slot);
       inv.setItem(slot, it);
@@ -1629,6 +1668,7 @@ public class Humbug extends JavaPlugin implements Listener {
         "Player '%s' kicked for self damaging boat at %s",
         player.getName(), vehicle.getLocation().toString()));
     vehicle.eject();
+    vehicle.getWorld().dropItem(vehicle.getLocation(), new ItemStack(Material.BOAT));
     vehicle.remove();
     ((Player)passenger).kickPlayer("Nope");
   }
@@ -1656,6 +1696,7 @@ public class Humbug extends JavaPlugin implements Listener {
         "Player '%s' removed from land-boat at %s",
         ((Player)passenger).getName(), to.toString()));
     vehicle.eject();
+    vehicle.getWorld().dropItem(vehicle.getLocation(), new ItemStack(Material.BOAT));
     vehicle.remove();
   }
 
@@ -1739,6 +1780,14 @@ public class Humbug extends JavaPlugin implements Listener {
     return false;
   }
 
+  @BahHumbug(opt="prevent_ender_pearl_save", def="true")
+  @EventHandler
+  public void enderPearlSave(EnderPearlUnloadEvent event) {
+    if(!config_.get("prevent_ender_pearl_save").getBool())
+      return;
+    event.setCancelled(true);
+  }
+
   @BahHumbug(opt="fix_vehicle_logout_bug", def="true")
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
   public void onDisallowVehicleLogout(PlayerQuitEvent event) {
@@ -1747,7 +1796,8 @@ public class Humbug extends JavaPlugin implements Listener {
     }
     Player player = event.getPlayer();
     Entity vehicle = player.getVehicle();
-    if (vehicle == null || !(vehicle instanceof Minecart)) {
+    if (vehicle == null
+        || !(vehicle instanceof Minecart || vehicle instanceof Horse)) {
       return;
     }
     Location vehicleLoc = vehicle.getLocation();
@@ -1796,7 +1846,7 @@ public class Humbug extends JavaPlugin implements Listener {
       return;
     }
     final Vehicle vehicle = event.getVehicle();
-    if (vehicle == null || !(vehicle instanceof Minecart)) {
+    if (vehicle == null || !(vehicle instanceof Minecart || vehicle instanceof Horse)) {
       return;
     }
     final Entity passengerEntity = vehicle.getPassenger();
@@ -1822,21 +1872,207 @@ public class Humbug extends JavaPlugin implements Listener {
   // ================================================
   // Adjust ender pearl gravity
 
+  @SuppressWarnings({ "rawtypes", "unchecked" })
   @BahHumbug(opt="ender_pearl_gravity", type=OptType.Double, def="0.060000")
   public void hookEnderPearls() {
-    net.minecraft.server.v1_6_R3.Item.byId[256 + 112] = null;
-    net.minecraft.server.v1_6_R3.Item.ENDER_PEARL = (new CustomNMSItemEnderPearl(112, config_)).b("enderPearl");
+    Item.REGISTRY.a(256 + 112, "enderPearl", new CustomNMSItemEnderPearl(config_));
+    try {
+      // They thought they could stop us by preventing us from registering an
+      // item. We'll show them
+      Field fieldStringToClass = EntityTypes.class.getDeclaredField("c");
+      Field fieldClassToString = EntityTypes.class.getDeclaredField("d");
+      fieldStringToClass.setAccessible(true);
+      fieldClassToString.setAccessible(true);
+      
+      Field fieldClassToId = EntityTypes.class.getDeclaredField("f");
+      Field fieldStringToId = EntityTypes.class.getDeclaredField("g");
+      fieldClassToId.setAccessible(true);
+      fieldStringToId.setAccessible(true);
+      
+      Map mapStringToClass = (Map)fieldStringToClass.get(null);
+      Map mapClassToString = (Map)fieldClassToString.get(null);
+      
+      Map mapClassToId = (Map)fieldClassToId.get(null);
+      Map mapStringToId = (Map)fieldStringToId.get(null);
+      
+      mapStringToClass.put("ThrownEnderpearl",CustomNMSEntityEnderPearl.class);
+      mapStringToId.put("ThrownEnderpearl", Integer.valueOf(14));
+      
+      mapClassToString.put(CustomNMSEntityEnderPearl.class, "ThrownEnderpearl");
+      mapClassToId.put(CustomNMSEntityEnderPearl.class, Integer.valueOf(14));
+      
+      fieldStringToClass.set(null, mapStringToClass);
+      fieldClassToString.set(null, mapClassToString);
+      
+      fieldClassToId.set(null, mapClassToId);
+      fieldStringToId.set(null, mapStringToId);
+    } catch (Exception e) {
+      Humbug.severe("Exception while overriding MC's ender pearl class");
+      e.printStackTrace();
+    }
+  }
+
+  // ================================================
+  // Hunger Changes
+
+  // Keep track if the player just ate.
+  private Map<Player, Double> playerLastEat_ = new HashMap<Player, Double>();
+
+  @BahHumbug(opt="saturation_multiplier", type=OptType.Double, def="0.0")
+  @EventHandler
+  public void setSaturationOnFoodEat(PlayerItemConsumeEvent event) {
+    // Each food sets a different saturation.
+    final Player player = event.getPlayer();
+    ItemStack item = event.getItem();
+    Material mat = item.getType();
+    double multiplier = config_.get("saturation_multiplier").getDouble();
+    if (multiplier <= 0.000001 && multiplier >= -0.000001) {
+      return;
+    }
+    switch(mat) {
+      case APPLE:
+        playerLastEat_.put(player, multiplier*2.4);
+      case BAKED_POTATO:
+        playerLastEat_.put(player, multiplier*7.2);
+      case BREAD:
+        playerLastEat_.put(player, multiplier*6);
+      case CAKE:
+        playerLastEat_.put(player, multiplier*0.4);
+      case CARROT_ITEM:
+        playerLastEat_.put(player, multiplier*4.8);
+      case COOKED_FISH:
+        playerLastEat_.put(player, multiplier*6);
+      case GRILLED_PORK:
+        playerLastEat_.put(player, multiplier*12.8);
+      case COOKIE:
+        playerLastEat_.put(player, multiplier*0.4);
+      case GOLDEN_APPLE:
+        playerLastEat_.put(player, multiplier*9.6);
+      case GOLDEN_CARROT:
+        playerLastEat_.put(player, multiplier*14.4);
+      case MELON:
+        playerLastEat_.put(player, multiplier*1.2);
+      case MUSHROOM_SOUP:
+        playerLastEat_.put(player, multiplier*7.2);
+      case POISONOUS_POTATO:
+        playerLastEat_.put(player, multiplier*1.2);
+      case POTATO:
+        playerLastEat_.put(player, multiplier*0.6);
+      case RAW_FISH:
+        playerLastEat_.put(player, multiplier*1);
+      case PUMPKIN_PIE:
+        playerLastEat_.put(player, multiplier*4.8);
+      case RAW_BEEF:
+        playerLastEat_.put(player,  multiplier*1.8);
+      case RAW_CHICKEN:
+        playerLastEat_.put(player, multiplier*1.2);
+      case PORK:
+        playerLastEat_.put(player,  multiplier*1.8);
+      case ROTTEN_FLESH:
+        playerLastEat_.put(player, multiplier*0.8);
+      case SPIDER_EYE:
+        playerLastEat_.put(player, multiplier*3.2);
+      case COOKED_BEEF:
+        playerLastEat_.put(player, multiplier*12.8);
+      default:
+        playerLastEat_.put(player, multiplier);
+        Bukkit.getServer().getScheduler().runTaskLater(this, new Runnable() {
+          // In case the player ingested a potion, this removes the
+          // saturation from the list. Unsure if I have every item
+          // listed. There is always the other cases of like food
+          // that shares same id
+          @Override
+          public void run() {
+            playerLastEat_.remove(player);
+          }
+        }, 80);
+    }
+  }
+
+  @BahHumbug(opt="hunger_slowdown", type=OptType.Double, def="0.0")
+  @EventHandler
+  public void onFoodLevelChange(FoodLevelChangeEvent event) {
+    final Player player = (Player) event.getEntity();
+    final double mod = config_.get("hunger_slowdown").getDouble();
+    Double saturation;
+    if (playerLastEat_.containsKey(player)) { // if the player just ate
+      saturation = playerLastEat_.get(player);
+      if (saturation == null) {
+        saturation = ((Float)player.getSaturation()).doubleValue();
+      }
+    } else {
+      saturation = Math.min(
+          player.getSaturation() + mod,
+          20.0D + (mod * 2.0D));
+    }
+    player.setSaturation(saturation.floatValue());
+  }
+
+  //=================================================
+  //Remove Book Copying
+  @BahHumbug(opt="copy_book_enable", def= "false")
+  public void removeBooks() {
+    if (config_.get("copy_book_enable").getBool()) {
+      return;
+    }
+    Iterator<Recipe> it = getServer().recipeIterator();
+    while (it.hasNext()) {
+      Recipe recipe = it.next();
+      ItemStack resulting_item = recipe.getResult();
+      if ( // !copy_book_enable_ &&
+          isWrittenBook(resulting_item)) {
+        it.remove();
+        info("Copying Books disabled");
+      }
+    }
+  }
+  
+  public boolean isWrittenBook(ItemStack item) {
+    if (item == null) {
+      return false;
+    }
+    Material material = item.getType();
+    return material.equals(Material.WRITTEN_BOOK);
+  }
+
+  // ================================================
+  // Prevent tree growth wrap-around
+
+  @BahHumbug(opt="prevent_tree_wraparound", def="true")
+  @EventHandler(priority=EventPriority.LOWEST, ignoreCancelled = true)
+  public void onStructureGrowEvent(StructureGrowEvent event) {
+    if (!config_.get("prevent_tree_wraparound").getBool()) {
+      return;
+    }
+    int maxY = 0, minY = 257;
+    for (BlockState bs : event.getBlocks()) {
+      final int y = bs.getLocation().getBlockY();
+      maxY = Math.max(maxY, y);
+      minY = Math.min(minY, y);
+    }
+    if (maxY - minY > 240) {
+      event.setCancelled(true);
+      final Location loc = event.getLocation();
+      info(String.format("Prevented structure wrap-around at %d, %d, %d",
+          loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()));
+    }
   }
 
   // ================================================
   // General
 
+  public void onLoad()
+  {
+    loadConfiguration();
+    hookEnderPearls();
+    info("Loaded");
+  }
+
   public void onEnable() {
     registerEvents();
     registerCommands();
-    loadConfiguration();
     removeRecipies();
-    hookEnderPearls();
+    removeBooks();
     global_instance_ = this;
     info("Enabled");
   }
@@ -1859,7 +2095,7 @@ public class Humbug extends JavaPlugin implements Listener {
       return default_value;
     }
   }
-  
+
   public double toDouble(String value, double default_value) {
     try {
       return Double.parseDouble(value);

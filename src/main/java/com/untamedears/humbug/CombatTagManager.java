@@ -1,7 +1,5 @@
 package com.untamedears.humbug;
 
-import java.util.logging.Logger;
-
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -21,13 +19,15 @@ class CombatTagManager {
 
     public boolean tagPlayer(Player player) {
         if (combatTagEnabled_ && combatTagApi_ != null) {
-            return combatTagApi_.tagPlayer(player);
+            combatTagApi_.tagPlayer(player);
+            return true;
         }
         return false;
     }
 
-    public boolean tagPlayer(String player) {
-        if (combatTagEnabled_ && combatTagApi_ != null) {
+    public boolean tagPlayer(String playerName) {
+        Player player = Bukkit.getServer().getPlayer(playerName);
+        if (combatTagEnabled_ && combatTagApi_ != null && player!=null) {
             combatTagApi_.tagPlayer(player);
             return true;
         }
@@ -37,8 +37,8 @@ class CombatTagManager {
     public Integer remainingSeconds(Player player) {
         if (combatTagEnabled_
                 && combatTagApi_ != null
-                && combatTagApi_.isInCombat(player)) {
-            long remaining = (combatTagApi_.getRemainingTagTime(player) + 500) / 1000L;
+                && combatTagApi_.isInCombat(player.getName())) {
+            long remaining = (combatTagApi_.getRemainingTagTime(player.getName()) + 500) / 1000L;
             if (remaining > 0x7FFFFFFF) {
                 return null;
             }

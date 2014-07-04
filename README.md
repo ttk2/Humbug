@@ -42,9 +42,11 @@ Minecraft server plug-in: Simply toggles various functionality
 - Disables experience except from XP bottles
 - Finds End Portals in a world.
 - Swaps Wither Skeletons or Ghasts in for Zombie Pigmen to raise their spawn rate.
-- Adjust strength and health pots to pre-1.6 power levels
+- Adjust strength and health pots to configurable power levels
 - Sets the base movement speed for all mounted horses
 - Fixes a bug where players in destroyed minecarts fall through the block below
+- Gives player saturation when they lose a point of hunger
+- Prevents a bug that allows tree growth to wrap around the world and overwrite blocks at 1+.
 
 The 'humbug' console command can be used to get or set any of the configuration file settings while the server is running. Also available are 'humbug save' and 'humbug reload'.
 
@@ -75,6 +77,7 @@ Config file settings:
 - fix_vehicle_logout_bug: Boolean, Fixes a teleport bug when players logout in vehicles
 - player_max_health: Integer, sets all Player maximum health
 - ender_pearl_teleportation: Boolean, Turns on Ender Pearl teleportation
+- prevent_ender_pearl_save: Boolean, Prevents ender pearls being saved when unloaded
 - ender_pearl_teleportation_throttled: Boolean, Activates a cooldown between Ender Pearl teleports
 - ender_pearl_gravity: Double, Alters the gravity which effects Ender Pearl -Y acceleration, default Minecraft value is 0.03
 - ench_gold_app_edible: Boolean, Allows players to eat Enchanted Golden Apples. If false, Enchanted Golden Apples are converted to normal Golden Apples
@@ -99,6 +102,9 @@ Config file settings:
 - buff_health_pots: Boolean, Buffs the health potion back to pre-1.5 mechanics
 - horse_speed: Double, Sets the base movement speed of all mounted horses. This is MineCraft's adjustment ratio. The default 0.17 is just slower than a minecart.
 - fix_minecart_reenter_bug: Boolean, Fixes the minecart re-enter bug where players in a destroyed minecart could fall through the world
+- strength_multiplier: Integer, multiplier for added damage from strength potion levels.
+- hunger_slowdown: Integer, amount of saturation to give a player when they lose a point of hunger
+- prevent_tree_wraparound: Boolean, prevents structure growth from wrapping around from the top of the world to bedrock causing block overwrite.
 
 Default configuration (biased for CivCraft):
 - debug: false
@@ -127,6 +133,7 @@ Default configuration (biased for CivCraft):
 - fix_vehicle_logout_bug: true
 - player_max_health: 20
 - ender_pearl_teleportation: true
+- prevent_ender_pearl_save: true
 - ender_pearl_teleportation_throttled: true
 - ender_pearl_gravity: 0.06
 - ench_gold_app_edible: false
@@ -151,3 +158,6 @@ Default configuration (biased for CivCraft):
 - buff_health_pots: true
 - horse_speed: 0.17
 - fix_minecart_reenter_bug: true
+- strength_multiplier: 3
+- hunger_slowdown: 0.0
+- prevent_tree_wraparound: true

@@ -340,4 +340,8 @@ public class Config {
     }
     return sb.toString();
   }
+  
+  public void tag_on_join(boolean value){
+	  config_.set("tag_on_join", value);
+  }
 }
