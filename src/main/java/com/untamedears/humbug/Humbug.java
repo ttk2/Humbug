@@ -1617,10 +1617,15 @@ public class Humbug extends JavaPlugin implements Listener {
     }
     final Inventory src = event.getSource();
     final InventoryHolder srcHolder = src.getHolder();
-    if (srcHolder instanceof Hopper) {
-      event.setCancelled(true);
+    if (!(srcHolder instanceof Hopper)) {
       return;
     }
+    final Inventory dest = event.getDestination();
+    final InventoryHolder destHolder = dest.getHolder();
+    if (destHolder instanceof Player) {
+      return;
+    }
+    event.setCancelled(true);
   }
 
   // ================================================
