@@ -28,6 +28,8 @@ import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.Dropper;
+import org.bukkit.block.Hopper;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -71,6 +73,7 @@ import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.PotionSplashEvent;
 import org.bukkit.event.entity.SheepDyeWoolEvent;
+import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
@@ -1601,6 +1604,23 @@ public class Humbug extends JavaPlugin implements Listener {
       if (holder instanceof StorageMinecart || holder instanceof HopperMinecart) {
         event.setCancelled(true);
       }
+    }
+  }
+
+  // ================================================
+  // Disable outbound hopper transfers
+
+  @BahHumbug(opt="disable_hopper_out_transfers", def="false")
+  @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+  public void onInventoryMoveItem(InventoryMoveItemEvent event) {
+    if (!config_.get("disable_hopper_out_transfers").getBool()) {
+      return;
+    }
+    final Inventory src = event.getSource();
+    final InventoryHolder srcHolder = inv.getHolder();
+    if (srcHolder instanceof Hopper) {
+      event.setCancelled(true);
+      return;
     }
   }
 

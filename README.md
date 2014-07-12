@@ -34,6 +34,7 @@ Minecraft server plug-in: Simply toggles various functionality
 - Prevents records from playing in jukeboxes
 - Disabled dying sheep
 - Disables water usage in main world hell biomes
+- Disables outbound hopper transfers
 - Prevents end portal tiles from being destroyed
 - Prevents inventories, not your own, from being opened while in vehicles
 - Prevents container carts from being opened
@@ -105,6 +106,7 @@ Config file settings:
 - strength_multiplier: Integer, multiplier for added damage from strength potion levels.
 - hunger_slowdown: Integer, amount of saturation to give a player when they lose a point of hunger
 - prevent_tree_wraparound: Boolean, prevents structure growth from wrapping around from the top of the world to bedrock causing block overwrite.
+- disable_hopper_out_transfers: Boolean, disables transfers from hoppers to other hoppers or droppers
 
 Default configuration (biased for CivCraft):
 - debug: false
@@ -161,3 +163,4 @@ Default configuration (biased for CivCraft):
 - strength_multiplier: 3
 - hunger_slowdown: 0.0
 - prevent_tree_wraparound: true
+- disable_hopper_out_transfers: false
